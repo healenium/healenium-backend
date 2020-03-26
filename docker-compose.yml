@@ -1,0 +1,42 @@
+version: "3.3"
+
+services:
+
+  mongod:
+    image: mongo:latest
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+    ports:
+      - "27017:27017"
+    restart: always
+    networks:
+      - healenium
+
+  mongosetup:
+    image: mongo:latest
+    depends_on:
+      - mongod
+    environment:
+      - MONGO1=mongod
+    volumes:
+      - ./scripts:/scripts
+    entrypoint: [ "/scripts/setup.sh" ]
+    networks:
+      - healenium
+
+  healenium:
+    restart: on-failure
+    build: .
+    ports:
+      - "7878:7878"
+    links:
+      - mongod
+    depends_on:
+      - mongosetup
+    environment:
+      - SPRING_MONGO_HOST=mongod
+      - SPRING_CONTAINER_NAME=healenium
+    networks:
+      - healenium
+
+networks:
+  healenium:

@@ -1,0 +1,26 @@
+server:
+  port: 7878
+
+spring:
+  main.allow-bean-definition-overriding: true
+  output.ansi.enabled: DETECT
+  data:
+    mongodb:
+      host: ${SPRING_MONGO_HOST:localhost}
+      port: ${SPRING_MONGO_PORT:27017}
+
+app:
+  host: ${SPRING_HOST_NAME:localhost}
+  port: 7878
+  selenium.host: ${SPRING_SELENIUM_HOST:localhost}
+  url:
+    page-source: http://${SPRING_CONTAINER_NAME:localhost}:${app.port}/pages
+    report: http://${app.host}:${app.port}/healenium/report
+
+logging:
+  level:
+    ROOT: ${SPRING_LOG_LEVEL:INFO}
+    org.springframework: INFO
+    org.mongodb.driver.connection: WARN
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS,Europe/Moscow} %clr(%5p) %clr(${PID:- }){magenta} %clr(-){faint} %clr([%11.11t]){faint} %clr(%-32.32logger{30}){cyan} %clr(:){faint} %replace(%m){''[\n\r]'',''\\n ''} %replace(%ex){''[\r\n]'', ''\\n ''}%nopex%n'
