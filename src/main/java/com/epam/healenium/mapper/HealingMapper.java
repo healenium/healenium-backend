@@ -23,14 +23,9 @@ public interface HealingMapper {
     Set<HealingResult> resultDtoToModel(Collection<HealingResultDto> dto);
 
     @InheritInverseConfiguration
-    @Mappings({
-            @Mapping(target = "screenshotName", ignore = true),
-    })
     HealingResultDto modelToResultDto(HealingResult model);
 
     @IterableMapping(elementTargetType = HealingResultDto.class)
     Set<HealingResultDto> modelToResultDto(Collection<HealingResult> model);
-
-
 
 }

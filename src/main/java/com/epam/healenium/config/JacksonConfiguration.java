@@ -19,6 +19,7 @@ public class JacksonConfiguration {
         module.addDeserializer(Node.class, new NodeDeserializer());
         ObjectMapper mapper = new ObjectMapper().registerModule(module);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
         return mapper;
     }
 

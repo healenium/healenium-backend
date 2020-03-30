@@ -5,6 +5,7 @@ import com.epam.healenium.model.dto.HealingResultDto;
 import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
 import com.epam.healenium.service.HealingService;
+import com.epam.healenium.treecomparing.Node;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -27,9 +29,19 @@ public class HealingController {
      *
      * @param request
      */
-    @PostMapping("/info")
+    @PostMapping()
     public void save(@Valid @RequestBody SelectorRequestDto request) {
         healingService.saveSelector(request);
+    }
+
+    /**
+     *
+     * @param dto
+     * @return
+     */
+    @GetMapping()
+    public List<Node> getPath(RequestDto dto) {
+        return healingService.getSelectorPath(dto);
     }
 
     /**
@@ -39,11 +51,11 @@ public class HealingController {
      * @return
      */
     @PostMapping("/healing")
-    public void save(@Valid @RequestParam("dto") HealingRequestDto dto, @RequestParam("screenshots") MultipartFile[] screenshots, @RequestHeader(value = "sessionKey", required = false) String sessionId) {
+    public void save(@Valid @RequestParam("dto") HealingRequestDto dto, @RequestParam("screenshot") MultipartFile screenshot, @RequestHeader(value = "sessionKey", required = false) String sessionId) {
         if (StringUtils.isEmpty(sessionId)) {
             log.warn("Session key is not present. Current issue would not be presented in any reports, but still available in replacement!");
         }
-        healingService.saveHealing(dto, screenshots, sessionId);
+        healingService.saveHealing(dto, screenshot, sessionId);
     }
 
     /**
@@ -56,6 +68,5 @@ public class HealingController {
     public Set<HealingResultDto> getResults(RequestDto dto) {
         return healingService.getHealingResults(dto);
     }
-
 
 }

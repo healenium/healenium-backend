@@ -2,7 +2,6 @@ package com.epam.healenium.model.domain;
 
 import com.epam.healenium.model.Locator;
 import lombok.Data;
-import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -16,8 +15,6 @@ public class HealingResult {
     private String uid;
     private Locator locator;
     private Double score;
-    @ToString.Exclude
-    private String screenshotPath;
     private LocalDateTime createDate;
 
 }

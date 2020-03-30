@@ -15,6 +15,7 @@ import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.repository.SelectorRepository;
 import com.epam.healenium.service.HealingService;
+import com.epam.healenium.treecomparing.Node;
 import com.epam.healenium.util.Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -50,9 +50,15 @@ public class HealingServiceImpl implements HealingService {
     }
 
     @Override
-    public void saveHealing(HealingRequestDto dto, MultipartFile[] screenshots, String sessionId) {
+    public List<Node> getSelectorPath(RequestDto dto) {
+        String selectorId = Utils.buildKey(dto.getClassName(), dto.getMethodName(), dto.getLocator());
+        return selectorRepository.findById(selectorId).map(Selector::getNodePath).orElse(Collections.emptyList());
+    }
+
+    @Override
+    public void saveHealing(HealingRequestDto dto, MultipartFile screenshot, String sessionId) {
         // collect healing results
-        Collection<HealingResult> healingResults = buildHealingResults(dto.getResults(), screenshots, sessionId);
+        Collection<HealingResult> healingResults = buildHealingResults(dto.getResults());
         HealingResult selectedResult = healingResults.stream()
                 .filter(it-> {
                     String firstLocator, secondLocator;
@@ -65,7 +71,7 @@ public class HealingServiceImpl implements HealingService {
         // obtain healing
         Healing healing = saveHealingResults(healingResults, getHealing(dto)) ;
         // add report record
-        createReportRecord( selectedResult, healing, sessionId);
+        createReportRecord( selectedResult, healing, sessionId, screenshot);
     }
 
 
@@ -90,16 +96,8 @@ public class HealingServiceImpl implements HealingService {
         });
     }
 
-    private List<HealingResult> buildHealingResults(List<HealingResultDto> dtos, MultipartFile[] screenshots, String sessionId) {
-        String screenshotDir = "/screenshots/" + sessionId;
-        Map<String, MultipartFile> screenshotMap = Arrays.stream(screenshots)
-                .collect(Collectors.toMap(MultipartFile::getOriginalFilename, Function.identity()));
-        return dtos.stream().map(it -> {
-            persistScreenshot(screenshotMap.get(it.getScreenshotName()), screenshotDir);
-            HealingResult result = healingMapper.resultDtoToModel(it);
-            result.setScreenshotPath(screenshotDir + "/" + it.getScreenshotName());
-            return result;
-        }).collect(Collectors.toList());
+    private List<HealingResult> buildHealingResults(List<HealingResultDto> dtos) {
+        return dtos.stream().map(healingMapper::resultDtoToModel).collect(Collectors.toList());
     }
 
     /**
@@ -127,11 +125,13 @@ public class HealingServiceImpl implements HealingService {
      * @param healing
      * @param sessionId
      */
-    private void createReportRecord(HealingResult result, Healing healing, String sessionId){
+    private void createReportRecord(HealingResult result, Healing healing, String sessionId, MultipartFile screenshot){
         if (!StringUtils.isEmpty(sessionId)) {
+            String screenshotDir = "/screenshots/" + sessionId;
+            String screenshotPath = persistScreenshot(screenshot, screenshotDir);
             // if healing performs during test phase, add report record
             reportRepository.findById(sessionId).ifPresent(r -> {
-                    r.addRecord(healing, result);
+                    r.addRecord(healing, result, screenshotPath);
                     reportRepository.save(r);
             });
         }
@@ -142,7 +142,7 @@ public class HealingServiceImpl implements HealingService {
      * @param file
      * @param filePath
      */
-    private void persistScreenshot(MultipartFile file, String filePath){
+    private String persistScreenshot(MultipartFile file, String filePath){
         String rootDir = Paths.get("").toAbsolutePath().toString();
         String baseDir = Paths.get(rootDir, filePath).toString();
         try{
@@ -151,5 +151,6 @@ public class HealingServiceImpl implements HealingService {
         } catch (Exception ex){
             log.warn("Failed to save screenshot {} in {}", file.getOriginalFilename(), baseDir);
         }
+        return Paths.get(filePath,file.getOriginalFilename()).toString();
     }
 }

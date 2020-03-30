@@ -8,6 +8,6 @@ public class FieldName {
     public static final String ID = "id";
     public static final String CLASSES = "classes";
     public static final String CLASS = "class";
-    public static final String OTHER = "otherAttributes";
+    public static final String OTHER = "other";
 
 }

@@ -4,8 +4,10 @@ import com.epam.healenium.model.dto.HealingRequestDto;
 import com.epam.healenium.model.dto.HealingResultDto;
 import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
+import com.epam.healenium.treecomparing.Node;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Set;
 
 public interface HealingService {
@@ -16,13 +18,20 @@ public interface HealingService {
      * @param sessionId
      * @return
      */
-    void saveHealing(HealingRequestDto dto, MultipartFile[] screenshots, String sessionId);
+    void saveHealing(HealingRequestDto dto, MultipartFile screenshot, String sessionId);
 
     /**
      * Store selector
      * @param request
      */
     void saveSelector(SelectorRequestDto request);
+
+    /**
+     *
+     * @param dto
+     * @return
+     */
+    List<Node> getSelectorPath(RequestDto dto);
 
     /**
      * Search for stored healing results

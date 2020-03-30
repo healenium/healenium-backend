@@ -27,7 +27,9 @@ public class NodeDeserializer extends JsonDeserializer<Node> {
         Set<String> classes = codec.treeToValue(tree.path(FieldName.CLASSES), Set.class);
         Map<String, String> attributes = codec.treeToValue(tree.path(FieldName.OTHER), Map.class);
         attributes.put(FieldName.ID, id);
-        attributes.put(FieldName.CLASS, classes.toString());
+        if(classes != null){
+            attributes.put(FieldName.CLASS, classes.toString());
+        }
         return new NodeBuilder()
                 .setTag(tag)
                 .setIndex(index)

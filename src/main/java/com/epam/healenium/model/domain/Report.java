@@ -31,7 +31,7 @@ public class Report {
      * @param healing
      * @param healingResult
      */
-    public void addRecord(Healing healing, HealingResult healingResult){
+    public void addRecord(Healing healing, HealingResult healingResult, String screenshotPath){
         Selector selector = healing.getSelector();
 
         Record record = new Record();
@@ -40,7 +40,7 @@ public class Report {
         record.setMethodName(selector.getMethodName());
         record.setFailedLocator(selector.getLocator());
         record.setHealedLocator(healingResult.getLocator());
-        record.setScreenShotPath(healingResult.getScreenshotPath());
+        record.setScreenShotPath(screenshotPath);
         elements.add(record);
     }
 
