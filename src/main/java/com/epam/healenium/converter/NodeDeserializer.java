@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 
 @SuppressWarnings("unchecked")
 public class NodeDeserializer extends JsonDeserializer<Node> {
@@ -24,12 +23,11 @@ public class NodeDeserializer extends JsonDeserializer<Node> {
         Integer index = codec.treeToValue(tree.path(FieldName.INDEX), Integer.class);
         String innerText = codec.treeToValue(tree.path(FieldName.INNER_TEXT), String.class);
         String id = codec.treeToValue(tree.path(FieldName.ID), String.class);
-        Set<String> classes = codec.treeToValue(tree.path(FieldName.CLASSES), Set.class);
+        String classes = codec.treeToValue(tree.path(FieldName.CLASSES), String.class);
         Map<String, String> attributes = codec.treeToValue(tree.path(FieldName.OTHER), Map.class);
         attributes.put(FieldName.ID, id);
-        if(classes != null){
-            attributes.put(FieldName.CLASS, classes.toString());
-        }
+        attributes.put(FieldName.CLASS, classes);
+
         return new NodeBuilder()
                 .setTag(tag)
                 .setIndex(index)
