@@ -25,6 +25,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.*;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class HealingServiceImpl implements HealingService {
 
     private final HealingRepository healingRepository;
@@ -57,8 +59,10 @@ public class HealingServiceImpl implements HealingService {
 
     @Override
     public void saveHealing(HealingRequestDto dto, MultipartFile screenshot, String sessionId) {
+        // obtain healing
+        Healing healing = getHealing(dto);
         // collect healing results
-        Collection<HealingResult> healingResults = buildHealingResults(dto.getResults());
+        Collection<HealingResult> healingResults = buildHealingResults(dto.getResults(), healing);
         HealingResult selectedResult = healingResults.stream()
                 .filter(it-> {
                     String firstLocator, secondLocator;
@@ -68,8 +72,6 @@ public class HealingServiceImpl implements HealingService {
                 })
                 .findFirst()
                 .orElseThrow(()-> new IllegalArgumentException("Internal exception! Somehow we lost selected healing result on save"));
-        // obtain healing
-        Healing healing = saveHealingResults(healingResults, getHealing(dto)) ;
         // add report record
         createReportRecord( selectedResult, healing, sessionId, screenshot);
     }
@@ -96,8 +98,9 @@ public class HealingServiceImpl implements HealingService {
         });
     }
 
-    private List<HealingResult> buildHealingResults(List<HealingResultDto> dtos) {
-        return dtos.stream().map(healingMapper::resultDtoToModel).collect(Collectors.toList());
+    private List<HealingResult> buildHealingResults(List<HealingResultDto> dtos, Healing healing) {
+        List<HealingResult> results = dtos.stream().map(healingMapper::resultDtoToModel).peek(it-> it.setHealing(healing)).collect(Collectors.toList());
+        return resultRepository.saveAll(results);
     }
 
     /**
@@ -107,16 +110,14 @@ public class HealingServiceImpl implements HealingService {
      * @param healingResults
      * @return
      */
-    private Healing saveHealingResults(Collection<HealingResult> healingResults, Healing healing) {
+    private void saveHealingResults(Collection<HealingResult> healingResults, Healing healing) {
         if (!CollectionUtils.isEmpty(healing.getResults())) {
             // remove old results for given healing object
             resultRepository.deleteAll(healing.getResults());
         }
+
         // save new results
         List<HealingResult> results = resultRepository.saveAll(healingResults);
-        // link new results with healing document
-        healing.setResults(new HashSet<>(results));
-        return healingRepository.save(healing);
     }
 
     /**

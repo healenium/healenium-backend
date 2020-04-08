@@ -176,7 +176,6 @@ public class HealingTest extends TestContainersInitializer {
         HealingResultDto dto = new HealingResultDto();
         dto.setLocator(new Locator("//div[@title='inner2']", "xpath"));
         dto.setScore(.538);
-//        dto.setScreenshotName("test_image.png");
         return dto;
     }
 

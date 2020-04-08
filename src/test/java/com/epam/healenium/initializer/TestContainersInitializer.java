@@ -1,6 +1,5 @@
 package com.epam.healenium.initializer;
 
-import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
@@ -8,8 +7,7 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Slf4j
@@ -19,23 +17,24 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public abstract class TestContainersInitializer {
 
-    @Container
-    public static GenericContainer<?> mongoContainer = new GenericContainer<>("mongo:latest")
-        .withExposedPorts(27017)
-        .withCommand("--replSet rs0 --bind_ip_all");
+    private static PostgreSQLContainer<?> postgresContainer;
+
+    static {
+        postgresContainer = new PostgreSQLContainer<>()
+                .withDatabaseName("healenium")
+                .withPassword("YDk2nmNs4s9aCP6K")
+                .withUsername("healenium_user");
+        postgresContainer.start();
+    }
 
     static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-            try {
-                mongoContainer.execInContainer("/bin/bash", "-c", "mongo --eval 'rs.initiate()' --quiet");
-                TestPropertyValues.of(
-                    "spring.data.mongodb.host="+ mongoContainer.getContainerIpAddress(),
-                    "spring.data.mongodb.port="+ mongoContainer.getMappedPort(27017))
-                    .applyTo(configurableApplicationContext.getEnvironment());
-            } catch (IOException | InterruptedException e) {
-                log.error("Failed to initialize context", e);
-            }
+            TestPropertyValues.of(
+                    "spring.datasource.url=" + postgresContainer.getJdbcUrl(),
+                    "spring.datasource.username=" + postgresContainer.getUsername(),
+                    "spring.datasource.password=" + postgresContainer.getPassword()
+            ).applyTo(configurableApplicationContext.getEnvironment());
         }
     }
 }

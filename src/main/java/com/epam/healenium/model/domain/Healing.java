@@ -1,13 +1,9 @@
 package com.epam.healenium.model.domain;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.Accessors;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.persistence.*;
 import java.util.Set;
 
 /**
@@ -16,17 +12,27 @@ import java.util.Set;
  */
 
 @Accessors(chain = true)
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
-@Document(collection = "healing_document")
+@Entity
+@Table(name = "healing")
 public class Healing {
 
     @Id
+    @Column(name = "uid")
     private String uid;
-    @DBRef
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "selector_id", referencedColumnName = "uid", nullable = false)
     private Selector selector;
-    @DBRef
+
+    @OneToMany(mappedBy = "healing")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<HealingResult> results;
+
+    @Column(name = "page_content")
     @ToString.Exclude
     private String pageContent;
 

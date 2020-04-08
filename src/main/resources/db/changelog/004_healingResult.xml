@@ -1,0 +1,41 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   logicalFilePath="changelog/004_healingResult.xml"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet author="nkobzev" id="9">
+        <createTable tableName="HEALING_RESULT">
+            <column name="ID" type="BIGINT">
+                <constraints nullable="false" />
+            </column>
+            <column name="LOCATOR" type="VARCHAR(264)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="HEALING_ID" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SCORE" type="DOUBLE" defaultValueNumeric="0.0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATE_DATE" type="TIMESTAMP(6)" defaultValueComputed="current_timestamp"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="nkobzev" id="10" >
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="HEALING_RESULT_PK" />
+            </not>
+        </preConditions>
+        <createIndex indexName="HEALING_RESULT_PK" tableName="HEALING_RESULT" unique="true">
+            <column name="ID"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                baseColumnNames="HEALING_ID" baseTableName="HEALING_RESULT"
+                constraintName="FK_HEALING_RESULT-HEALING" deferrable="false" initiallyDeferred="false"
+                onDelete="RESTRICT" onUpdate="RESTRICT"
+                referencedColumnNames="UID" referencedTableName="HEALING"/>
+    </changeSet>
+
+</databaseChangeLog>
