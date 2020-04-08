@@ -22,7 +22,7 @@ dependencies {
     implementation 'org.liquibase:liquibase-core:3.7.0'
     implementation 'org.postgresql:postgresql:42.2.6'
     implementation 'com.zaxxer:HikariCP:3.3.1'
-    implementation 'com.vladmihalcea:HikariCP:3.3.1'
+    implementation 'com.vladmihalcea:hibernate-types-52:2.7.0'
 
     compile 'org.testcontainers:junit-jupiter:1.12.5'
     compile 'org.seleniumhq.selenium:selenium-java:3.141.59'

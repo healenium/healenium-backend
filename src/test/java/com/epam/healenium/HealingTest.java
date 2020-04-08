@@ -73,8 +73,8 @@ public class HealingTest extends TestContainersInitializer {
         // proceed healing
         HealingRequestDto healingRequest = buildHealingRequest();
         String sessionId = UUID.randomUUID().toString();
-        MultipartFile[] screenshots = new MultipartFile[]{buildMultipart()};
-        healingService.saveHealing(healingRequest, screenshots, sessionId);
+        MultipartFile screenshot = buildMultipart();
+        healingService.saveHealing(healingRequest, screenshot, sessionId);
         Assertions.assertEquals(1, healingRepository.count());
         Assertions.assertEquals(1, healingResultRepository.count());
 
@@ -176,7 +176,6 @@ public class HealingTest extends TestContainersInitializer {
         HealingResultDto dto = new HealingResultDto();
         dto.setLocator(new Locator("//div[@title='inner2']", "xpath"));
         dto.setScore(.538);
-        dto.setScreenshotName("test_image.png");
         return dto;
     }
 
