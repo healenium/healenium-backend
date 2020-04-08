@@ -4,10 +4,42 @@ server:
 spring:
   main.allow-bean-definition-overriding: true
   output.ansi.enabled: DETECT
-  data:
-    mongodb:
-      host: ${SPRING_MONGO_HOST:localhost}
-      port: ${SPRING_MONGO_PORT:27017}
+  jpa:
+    properties.hibernate:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      temp.use_jdbc_metadata_defaults: false
+      jdbc.batch_size: 4
+      order_inserts: true
+    open-in-view: false
+
+  datasource:
+    host: localhost
+    port: 5432
+    database: ${SPRING_POSTGRES_DB:healenium}
+    username: ${SPRING_POSTGRES_USER:healenium_user}
+    password: ${SPRING_POSTGRES_PASSWORD:YDk2nmNs4s9aCP6K}
+    url: jdbc:postgresql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.database}?autoReconnect=true
+    hikari:
+      maximumPoolSize: 6
+      minimumIdle: 4
+      driverClassName: org.postgresql.Driver
+      jdbcUrl: ${SPRING_POSTGRES_URL:${spring.datasource.url}}
+    jpa:
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
+      packages_to_scan: com.epam.healenium.model
+      generate-ddl: false
+      hibernate:
+        ddl-auto: validate
+        naming.strategy: org.hibernate.cfg.EJB3NamingStrategy
+        use-new-id-generator-mappings: true
+      properties:
+        hibernate.default_schema: public
+        hibernate.format_sql: true
+    jmx:
+      enabled: false
+  liquibase:
+    change-log: classpath:/db/changelog/changelog-main.xml
+    enabled: true
 
 app:
   host: ${SPRING_HOST_NAME:localhost}

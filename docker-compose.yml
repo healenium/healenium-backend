@@ -2,24 +2,17 @@ version: "3.3"
 
 services:
 
-  mongod:
-    image: mongo:latest
-    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+  db:
+    image: postgres:11-alpine
     ports:
-      - "27017:27017"
-    restart: always
-    networks:
-      - healenium
-
-  mongosetup:
-    image: mongo:latest
-    depends_on:
-      - mongod
-    environment:
-      - MONGO1=mongod
+      - "5432:5432"
     volumes:
-      - ./scripts:/scripts
-    entrypoint: [ "/scripts/setup.sh" ]
+      - ./src/main/resources/db/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: always
+    environment:
+      - POSTGRES_DB=healenium
+      - POSTGRES_USER=healenium_user
+      - POSTGRES_PASSWORD=YDk2nmNs4s9aCP6K
     networks:
       - healenium
 
@@ -29,12 +22,13 @@ services:
     ports:
       - "7878:7878"
     links:
-      - mongod
-    depends_on:
-      - mongosetup
+      - db
     environment:
-      - SPRING_MONGO_HOST=mongod
       - SPRING_CONTAINER_NAME=healenium
+      - SPRING_POSTGRES_DB=healenium
+      - SPRING_POSTGRES_USER=healenium_user
+      - SPRING_POSTGRES_PASSWORD=YDk2nmNs4s9aCP6K
+      - SPRING_POSTGRES_URL=jdbc:postgresql://db:5432/healenium?currentSchema=healenium
     networks:
       - healenium
 

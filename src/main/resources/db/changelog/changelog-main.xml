@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+	<property name="endOfDays" value="to_date('01/01/9999', 'dd/mm/yyyy')" dbms="postgresql"/>
+	<property name="currentDate" value="current_timestamp" dbms="postgresql"/>
+	<property name="countChecklist" value="0" dbms="postgresql"/>
+	<property name="systemPropertyStringDefaultValue" value="-"/>
+	<property name="defaultSchemaName" value=""/>
+
+	<include file="001_createSequence.xml" relativeToChangelogFile="true"/>
+
+	<include file="002_selector.xml" relativeToChangelogFile="true"/>
+	<include file="003_healing.xml" relativeToChangelogFile="true"/>
+	<include file="004_healingResult.xml" relativeToChangelogFile="true"/>
+	<include file="005_report.xml" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

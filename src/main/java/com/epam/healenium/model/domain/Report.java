@@ -1,12 +1,16 @@
 package com.epam.healenium.model.domain;
 
 import com.epam.healenium.model.Locator;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,12 +22,24 @@ import java.util.Set;
 
 @Accessors(chain = true)
 @Data
-@Document(collection = "report_document")
+@Entity
+@Table(name = "report")
+@TypeDefs({
+        @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
+})
 public class Report {
 
     @Id
+    @Column(name = "uid")
     private String uid;
+
+    @Column(name = "elements", columnDefinition = "jsonb")
+    @Type(type = "jsonb")
+    @Basic(fetch = FetchType.LAZY)
     private Set<Record> elements = new HashSet<>();
+
+    @Column(name = "create_date")
+    @CreationTimestamp
     private LocalDateTime createdDate;
 
     /**
