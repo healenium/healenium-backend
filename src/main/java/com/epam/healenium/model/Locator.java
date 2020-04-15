@@ -3,10 +3,11 @@ package com.epam.healenium.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
+
+import java.io.Serializable;
 
 @Data
-public class Locator {
+public class Locator implements Serializable {
 
     private final String value;
     private final String type;
