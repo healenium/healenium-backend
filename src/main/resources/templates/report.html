@@ -154,12 +154,6 @@
             margin-right: 5px;
         }
 
-        .screenshot-image {
-            width: 141px;
-            height: 88px;
-            box-shadow: 0 2px 24px 0 rgba(0, 0, 0, 0.09);
-        }
-
         .element-field-holder {
             padding-bottom: 5px;
             font-family: 'Roboto Mono', monospace;
@@ -196,57 +190,149 @@
             text-align: right;
             cursor: pointer;
         }
+
+        #myImg {
+          border-radius: 5px;
+          cursor: pointer;
+          transition: 0.3s;
+        }
+
+        #myImg:hover {opacity: 0.7;}
+
+        .modal {
+          display: none;
+          position: fixed;
+          z-index: 1;
+          padding-top: 100px;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          overflow: auto;
+          background-color: rgb(0,0,0);
+          background-color: rgba(0,0,0,0.9);
+        }
+
+        .modal-content {
+          margin: auto;
+          display: block;
+          width: 80%;
+          max-width: 700px;
+        }
+
+        #caption {
+          margin: auto;
+          display: block;
+          width: 80%;
+          max-width: 700px;
+          text-align: center;
+          color: #ccc;
+          padding: 10px 0;
+          height: 150px;
+        }
+
+        .modal-content, #caption {
+          animation-name: zoom;
+          animation-duration: 0.6s;
+        }
+
+        @keyframes zoom {
+          from {transform:scale(0)}
+          to {transform:scale(1)}
+        }
+
+        .close {
+          position: absolute;
+          top: 15px;
+          right: 35px;
+          color: #f1f1f1;
+          font-size: 40px;
+          font-weight: bold;
+          transition: 0.3s;
+        }
+
+        .close:hover,
+        .close:focus {
+          color: #bbb;
+          text-decoration: none;
+          cursor: pointer;
+        }
+
+        @media only screen and (max-width: 700px){
+          .modal-content {
+            width: 100%;
+          }
+        }
+
     </style>
 </head>
-    <body>
-        <header class="header">
-            <div class="content-wrapper">
-                <div class="logo">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><g fill="none" fill-rule="evenodd" transform="rotate(45 10 10)"><path fill="#F8F8F8" stroke="#000" stroke-width="2" d="M0 10a5 5 0 0 1 5-5h10a5 5 0 0 1 0 10H5a5 5 0 0 1-5-5z"></path><path fill="#F8F8F8" stroke="#000" stroke-width="2" d="M10 0a5 5 0 0 1 5 5v10a5 5 0 0 1-10 0V5a5 5 0 0 1 5-5z"></path><rect width="4" height="6" x="8" y="7" fill="#000" rx="2"></rect></g></svg>
-                </div>
-                <span class="logo-title">SHA</span>
-            </div>
-        </header>
-        <main class="content-wrapper">
-            <div class="main-area">
-                <h2 class="report-info">
-                    <span class="report-name" data-report-name th:text="${dto.name}" />
-                    <span class="report-time" data-report-time th:text="${dto.time}" />
-                </h2>
-                <div class="report-content">
-                    <div class="elements-table-header">
+<body>
+<header class="header">
+    <div class="content-wrapper">
+        <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+                <g fill="none" fill-rule="evenodd" transform="rotate(45 10 10)">
+                    <path fill="#F8F8F8" stroke="#000" stroke-width="2"
+                          d="M0 10a5 5 0 0 1 5-5h10a5 5 0 0 1 0 10H5a5 5 0 0 1-5-5z"></path>
+                    <path fill="#F8F8F8" stroke="#000" stroke-width="2"
+                          d="M10 0a5 5 0 0 1 5 5v10a5 5 0 0 1-10 0V5a5 5 0 0 1 5-5z"></path>
+                    <rect width="4" height="6" x="8" y="7" fill="#000" rx="2"></rect>
+                </g>
+            </svg>
+        </div>
+        <span class="logo-title">SHA</span>
+    </div>
+</header>
+<main class="content-wrapper">
+    <div class="main-area">
+        <h2 class="report-info">
+            <span class="report-name" data-report-name th:text="${dto.name}"/>
+            <span class="report-time" data-report-time th:text="${dto.time}"/>
+        </h2>
+        <div class="report-content">
+            <div class="elements-table-header">
                         <span class="element-column">
                             Element
                         </span>
-                        <span class="screenshot-column">
+                <span class="screenshot-column">
                             Screenshot
                         </span>
+            </div>
+            <div data-elements-table>
+                <div class="elements-table-row content-hidden" th:each="elem,iter : ${dto.data}">
+                    <div class="row-caption element-column" th:attr="data-row-index=${iter.index}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="8" height="13" viewBox="0 0 8 13">
+                            <path fill="none" fill-rule="evenodd" stroke="#000" stroke-width="2" d="M1 11.5l5-5-5-5"/>
+                        </svg>
+                        <span class="row-caption-text" th:text="${elem.declaringClass}"/>
                     </div>
-                    <div data-elements-table>
-                        <div class="elements-table-row content-hidden" th:each="elem,iter : ${dto.data}">
-                            <div class="row-caption element-column" th:attr="data-row-index=${iter.index}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="8" height="13" viewBox="0 0 8 13">
-                                    <path fill="none" fill-rule="evenodd" stroke="#000" stroke-width="2" d="M1 11.5l5-5-5-5"/>
-                                </svg>
-                                <span class="row-caption-text" th:text="${elem.declaringClass}" />
-                            </div>
-                            <div class="row-content">
-                                <div class="element-column">
-                                    <div class="element-field-holder" th:text="'failedLocatorValue = ' + ${elem.failedLocatorValue}" />
-                                    <div class="element-field-holder" th:text="'failedLocatorType = ' + ${elem.failedLocatorType}" />
-                                    <div class="element-field-holder" th:text="'healedLocatorValue = ' + ${elem.healedLocatorValue}" />
-                                    <div class="element-field-holder" th:text="'healedLocatorType = ' + ${elem.healedLocatorType}" />
-                                </div>
-                                <div class="screenshot-column">
-                                    <img th:src="${elem.screenShotPath}" class="screenshot-image" />
-                                </div>
+                    <div class="row-content">
+                        <div class="element-column">
+                            <div class="element-field-holder"
+                                 th:text="'failedLocatorValue = ' + ${elem.failedLocatorValue}"/>
+                            <div class="element-field-holder"
+                                 th:text="'failedLocatorType = ' + ${elem.failedLocatorType}"/>
+                            <div class="element-field-holder"
+                                 th:text="'healedLocatorValue = ' + ${elem.healedLocatorValue}"/>
+                            <div class="element-field-holder"
+                                 th:text="'healedLocatorType = ' + ${elem.healedLocatorType}"/>
+                        </div>
+                        <div class="screenshot-column">
+                            <img id="myImg" th:src="${elem.screenShotPath}" style="width:100%;max-width:300px"
+                                 onclick="zoomImage(this);">
+                            <div id="myModal" class="modal">
+                                <span class="close">&times;</span>
+                                <img class="modal-content" id="img01">
+                                <div id="caption"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </main>
-    </body>
+        </div>
+    </div>
+</main>
+</body>
 <script>
 
         let elements = [];
@@ -267,11 +353,33 @@
           toggleElementContent(targetElement);
         }
 
+        function zoomImage(event) {
+            const targetElement = event;
+            var modal = document.getElementById("myModal");
+            var img = targetElement;
+            var modalImg = document.getElementById("img01");
+            var captionText = document.getElementById("caption");
+
+            // When the user clicks on image open the modal
+              modal.style.display = "block";
+              modalImg.src = img.src;
+              captionText.innerHTML = img.alt;
+
+            // Get the <span> element that closes the modal
+            var span = document.getElementsByClassName("close")[0];
+
+            // When the user clicks on <span> (x), close the modal
+            span.onclick = function() {
+              modal.style.display = "none";
+            }
+        }
+
         function renderElements() {
           const elementsTable = document.querySelector('[data-elements-table]');
           elementsTable.addEventListener('click', rowClickHandler);
         }
 
         renderElements();
-    </script>
+
+</script>
 </html>
