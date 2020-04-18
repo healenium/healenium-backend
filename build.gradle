@@ -27,7 +27,7 @@ dependencies {
     implementation 'com.zaxxer:HikariCP:3.3.1'
     implementation 'com.vladmihalcea:hibernate-types-52:2.7.0'
 
-    compile 'org.testcontainers:junit-jupiter:1.12.5'
+    compile 'org.testcontainers:junit-jupiter:1.13.0'
     compile 'org.seleniumhq.selenium:selenium-java:3.141.59'
     compile 'com.epam.healenium:tree-comparing:0.4.5'
     compile 'org.projectlombok:lombok:1.18.8'

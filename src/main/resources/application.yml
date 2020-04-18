@@ -47,7 +47,7 @@ app:
   selenium.host: ${SPRING_SELENIUM_HOST:localhost}
   url:
     page-source: http://${SPRING_CONTAINER_NAME:localhost}:${app.port}/pages
-    report: http://${app.host}:${app.port}/healenium/report
+    report: healenium/report
 
 logging:
   level:
