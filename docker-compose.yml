@@ -23,6 +23,8 @@ services:
       - "7878:7878"
     links:
       - db
+    depends_on:
+      - db
     environment:
       - SPRING_CONTAINER_NAME=healenium
       - SPRING_POSTGRES_DB=healenium
