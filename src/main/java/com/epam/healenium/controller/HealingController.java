@@ -1,9 +1,6 @@
 package com.epam.healenium.controller;
 
-import com.epam.healenium.model.dto.HealingRequestDto;
-import com.epam.healenium.model.dto.HealingResultDto;
-import com.epam.healenium.model.dto.RequestDto;
-import com.epam.healenium.model.dto.SelectorRequestDto;
+import com.epam.healenium.model.dto.*;
 import com.epam.healenium.service.HealingService;
 import com.epam.healenium.treecomparing.Node;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +32,7 @@ public class HealingController {
     }
 
     /**
-     *
+     * Getting last valid path for provided request
      * @param dto
      * @return
      */
@@ -56,6 +53,16 @@ public class HealingController {
             log.warn("Session key is not present. Current issue would not be presented in any reports, but still available in replacement!");
         }
         healingService.saveHealing(dto, screenshot, sessionId);
+    }
+
+    /**
+     * Getting healing with their results for provided request
+     * @param dto
+     * @return
+     */
+    @GetMapping("/healing")
+    public Set<HealingDto> getHealings(RequestDto dto) {
+        return healingService.getHealings(dto);
     }
 
     /**
