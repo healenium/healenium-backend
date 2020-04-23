@@ -6,16 +6,15 @@ import com.epam.healenium.mapper.SelectorMapper;
 import com.epam.healenium.model.domain.Healing;
 import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.domain.Selector;
-import com.epam.healenium.model.dto.HealingRequestDto;
-import com.epam.healenium.model.dto.HealingResultDto;
-import com.epam.healenium.model.dto.RequestDto;
-import com.epam.healenium.model.dto.SelectorRequestDto;
+import com.epam.healenium.model.dto.*;
 import com.epam.healenium.repository.HealingRepository;
 import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.repository.SelectorRepository;
 import com.epam.healenium.service.HealingService;
+import com.epam.healenium.specification.HealingSpecBuilder;
 import com.epam.healenium.treecomparing.Node;
+import com.epam.healenium.util.StreamUtils;
 import com.epam.healenium.util.Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,6 +75,30 @@ public class HealingServiceImpl implements HealingService {
         createReportRecord( selectedResult, healing, sessionId, screenshot);
     }
 
+    @Override
+    public Set<HealingDto> getHealings(RequestDto dto) {
+        Set<HealingDto> result = new HashSet<>();
+        healingRepository.findAll(HealingSpecBuilder.buildSpec(dto)).stream()
+                .collect(Collectors.groupingBy(Healing::getSelector))
+                .forEach((selector, healingList) -> {
+                    // collect healing results
+                    Set<HealingResultDto> healingResults = healingList.stream()
+                            .flatMap(it -> it.getResults().stream())
+                            .sorted(Comparator.comparing(HealingResult::getScore, Comparator.reverseOrder()))
+                            .filter(StreamUtils.distinctByKey(HealingResult::getLocator))
+                            .map(healingMapper::modelToResultDto)
+                            .collect(Collectors.toSet());
+                    // build healing dto
+                    HealingDto healingDto = new HealingDto()
+                    .setClassName(selector.getClassName())
+                    .setMethodName(selector.getMethodName())
+                    .setLocator(selector.getLocator().getValue())
+                    .setResults(healingResults);
+                    // add dto to result collection
+                    result.add(healingDto);
+                });
+        return result;
+    }
 
     @Override
     public Set<HealingResultDto> getHealingResults(RequestDto dto) {

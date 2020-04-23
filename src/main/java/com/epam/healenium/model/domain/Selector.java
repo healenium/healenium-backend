@@ -7,12 +7,11 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+import org.hibernate.annotations.*;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -43,9 +42,10 @@ public class Selector {
     @Column(name = "method_name")
     private String methodName;
 
-    @Column(name = "locator", columnDefinition = "jsonb")
+    @Column(name = "locator", columnDefinition = "json")
     @Type(type = "jsonb")
     @Basic(fetch = FetchType.LAZY)
+    @ColumnTransformer(read = "locator::json")
     private Locator locator;
 
     @Column(name = "node_path")

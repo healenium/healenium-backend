@@ -1,9 +1,6 @@
 package com.epam.healenium.service;
 
-import com.epam.healenium.model.dto.HealingRequestDto;
-import com.epam.healenium.model.dto.HealingResultDto;
-import com.epam.healenium.model.dto.RequestDto;
-import com.epam.healenium.model.dto.SelectorRequestDto;
+import com.epam.healenium.model.dto.*;
 import com.epam.healenium.treecomparing.Node;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +29,13 @@ public interface HealingService {
      * @return
      */
     List<Node> getSelectorPath(RequestDto dto);
+
+    /**
+     *
+     * @param dto
+     * @return
+     */
+    Set<HealingDto> getHealings(RequestDto dto);
 
     /**
      * Search for stored healing results

@@ -13,6 +13,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="PAGE_CONTENT" type="VARCHAR"/>
+            <column name="CREATE_DATE" type="TIMESTAMP(6)" defaultValueComputed="current_timestamp"/>
         </createTable>
     </changeSet>
 
