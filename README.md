@@ -17,3 +17,5 @@ To start hlm-backend and simply run docker-compose
 ```
 docker-compose up -d
 ```
+### BACKEND AECHITECTURE DIAGRAM
+![](https://i.imgur.com/AEiPXoq.png)
