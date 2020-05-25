@@ -3,15 +3,14 @@ Client for Healenium
 Back-end of 2 docker containers: healenium-backend and healenium-db. Process healing results storage and obtaining 
 https://hub.docker.com/repository/docker/healenium/hlm-backend
 
-Download Example of compose descriptor to test project 
+Download [Example of compose descriptor](https://github.com/healenium/healenium-client/blob/master/example/docker-compose.yaml) into your test project 
 ```
-$ curl https://raw.githubusercontent.com/healenium/healenium-client/master/docker-compose.yml -o docker-compose.yaml
+$ curl https://raw.githubusercontent.com/healenium/healenium-client/example/master/docker-compose.yml -o docker-compose.yaml
 ```
 
-Add init.sql into ./db/sql/init.sql folder in your project
+Add [init.sql file](https://github.com/healenium/healenium-client/blob/master/example/init.sql)  into ./db/sql/init.sql folder in your project
 ```
-CREATE SCHEMA healenium AUTHORIZATION healenium_user;
-GRANT USAGE ON SCHEMA healenium TO healenium_user;
+$ curl https://raw.githubusercontent.com/healenium/healenium-client/example/master/init.sql -o init.sql
 ```
 
 To start hlm-backend and simply run docker-compose 
