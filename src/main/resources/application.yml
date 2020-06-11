@@ -2,6 +2,9 @@ server:
   port: 7878
 
 spring:
+  servlet.multipart:
+    max-file-size: -1
+    max-request-size: -1
   main.allow-bean-definition-overriding: true
   output.ansi.enabled: DETECT
   jpa:
