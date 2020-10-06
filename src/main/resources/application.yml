@@ -11,7 +11,7 @@ spring:
     properties.hibernate:
       dialect: org.hibernate.dialect.PostgreSQLDialect
       temp.use_jdbc_metadata_defaults: false
-      jdbc.batch_size: 4
+      jdbc.batch_size: 40
       order_inserts: true
     open-in-view: false
 
@@ -51,6 +51,25 @@ app:
   url:
     page-source: http://${SPRING_CONTAINER_NAME:localhost}:${app.port}/pages
     report: healenium/report
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+        pushgateway:
+          enabled: true
 
 logging:
   level:

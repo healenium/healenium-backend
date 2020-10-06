@@ -5,6 +5,7 @@ import com.epam.healenium.treecomparing.Node;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface HealingService {
@@ -12,10 +13,10 @@ public interface HealingService {
     /**
      * Healing attempt of given target selector in presented page source
      * @param dto
-     * @param sessionId
+     * @param headers
      * @return
      */
-    void saveHealing(HealingRequestDto dto, MultipartFile screenshot, String sessionId);
+    void saveHealing(HealingRequestDto dto, MultipartFile screenshot, Map<String, String> headers);
 
     /**
      * Store selector

@@ -1,12 +1,17 @@
 package com.epam.healenium.service.impl;
 
+import com.epam.healenium.config.PrometheusConfiguration;
 import com.epam.healenium.exception.MissingSelectorException;
 import com.epam.healenium.mapper.HealingMapper;
 import com.epam.healenium.mapper.SelectorMapper;
 import com.epam.healenium.model.domain.Healing;
 import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.domain.Selector;
-import com.epam.healenium.model.dto.*;
+import com.epam.healenium.model.dto.HealingDto;
+import com.epam.healenium.model.dto.HealingRequestDto;
+import com.epam.healenium.model.dto.HealingResultDto;
+import com.epam.healenium.model.dto.RequestDto;
+import com.epam.healenium.model.dto.SelectorRequestDto;
 import com.epam.healenium.repository.HealingRepository;
 import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.ReportRepository;
@@ -16,9 +21,12 @@ import com.epam.healenium.specification.HealingSpecBuilder;
 import com.epam.healenium.treecomparing.Node;
 import com.epam.healenium.util.StreamUtils;
 import com.epam.healenium.util.Utils;
+import io.prometheus.client.SimpleTimer;
+import io.prometheus.client.Summary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.io.FileHandler;
+import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusPushGatewayManager;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -27,8 +35,17 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.transaction.Transactional;
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.epam.healenium.constants.Constants.SESSION_KEY;
 
 @Slf4j
 @Service
@@ -44,6 +61,13 @@ public class HealingServiceImpl implements HealingService {
     private final SelectorMapper selectorMapper;
     private final HealingMapper healingMapper;
 
+    private final PrometheusConfiguration prometheusConfiguration;
+
+    private static final Summary healLatency = Summary.build()
+            .name("healing_latency")
+            .help("Duration in seconds of healing")
+            .register();
+
     @Override
     public void saveSelector(SelectorRequestDto request) {
         final Selector selector = selectorMapper.dtoToDocument(request);
@@ -57,22 +81,27 @@ public class HealingServiceImpl implements HealingService {
     }
 
     @Override
-    public void saveHealing(HealingRequestDto dto, MultipartFile screenshot, String sessionId) {
+    public void saveHealing(HealingRequestDto dto, MultipartFile screenshot, Map<String, String> headers) {
+        PrometheusPushGatewayManager prometheusPushGatewayManager = prometheusConfiguration.prometheusPushGatewayManager(headers);
+        SimpleTimer requestTimer = new SimpleTimer();
         // obtain healing
         Healing healing = getHealing(dto);
         // collect healing results
         Collection<HealingResult> healingResults = buildHealingResults(dto.getResults(), healing);
         HealingResult selectedResult = healingResults.stream()
-                .filter(it-> {
+                .filter(it -> {
                     String firstLocator, secondLocator;
                     firstLocator = it.getLocator().getValue();
                     secondLocator = dto.getUsedResult().getLocator().getValue();
                     return firstLocator.equals(secondLocator);
                 })
                 .findFirst()
-                .orElseThrow(()-> new IllegalArgumentException("Internal exception! Somehow we lost selected healing result on save"));
+                .orElseThrow(() -> new IllegalArgumentException("Internal exception! Somehow we lost selected healing result on save"));
         // add report record
-        createReportRecord( selectedResult, healing, sessionId, screenshot);
+        createReportRecord( selectedResult, healing, headers.get(SESSION_KEY), screenshot);
+
+        healLatency.observe(requestTimer.elapsedSeconds());
+        prometheusPushGatewayManager.shutdown();
     }
 
     @Override
@@ -90,10 +119,10 @@ public class HealingServiceImpl implements HealingService {
                             .collect(Collectors.toSet());
                     // build healing dto
                     HealingDto healingDto = new HealingDto()
-                    .setClassName(selector.getClassName())
-                    .setMethodName(selector.getMethodName())
-                    .setLocator(selector.getLocator().getValue())
-                    .setResults(healingResults);
+                            .setClassName(selector.getClassName())
+                            .setMethodName(selector.getMethodName())
+                            .setLocator(selector.getLocator().getValue())
+                            .setResults(healingResults);
                     // add dto to result collection
                     result.add(healingDto);
                 });
@@ -108,7 +137,7 @@ public class HealingServiceImpl implements HealingService {
                 .collect(Collectors.toSet());
     }
 
-    private Healing getHealing(HealingRequestDto dto){
+    private Healing getHealing(HealingRequestDto dto) {
         // build selector key
         String selectorId = Utils.buildKey(dto.getClassName(), dto.getMethodName(), dto.getLocator());
         // build healing key
@@ -122,7 +151,7 @@ public class HealingServiceImpl implements HealingService {
     }
 
     private List<HealingResult> buildHealingResults(List<HealingResultDto> dtos, Healing healing) {
-        List<HealingResult> results = dtos.stream().map(healingMapper::resultDtoToModel).peek(it-> it.setHealing(healing)).collect(Collectors.toList());
+        List<HealingResult> results = dtos.stream().map(healingMapper::resultDtoToModel).peek(it -> it.setHealing(healing)).collect(Collectors.toList());
         return resultRepository.saveAll(results);
     }
 
@@ -145,36 +174,36 @@ public class HealingServiceImpl implements HealingService {
 
     /**
      * Create record in report about healing
+     *
      * @param result
      * @param healing
      * @param sessionId
      */
-    private void createReportRecord(HealingResult result, Healing healing, String sessionId, MultipartFile screenshot){
+    private void createReportRecord(HealingResult result, Healing healing, String sessionId, MultipartFile screenshot) {
         if (!StringUtils.isEmpty(sessionId)) {
             String screenshotDir = "/screenshots/" + sessionId;
             String screenshotPath = persistScreenshot(screenshot, screenshotDir);
             // if healing performs during test phase, add report record
             reportRepository.findById(sessionId).ifPresent(r -> {
-                    r.addRecord(healing, result, screenshotPath);
-                    reportRepository.save(r);
+                r.addRecord(healing, result, screenshotPath);
+                reportRepository.save(r);
             });
         }
     }
 
     /**
-     *
      * @param file
      * @param filePath
      */
-    private String persistScreenshot(MultipartFile file, String filePath){
+    private String persistScreenshot(MultipartFile file, String filePath) {
         String rootDir = Paths.get("").toAbsolutePath().toString();
         String baseDir = Paths.get(rootDir, filePath).toString();
-        try{
+        try {
             FileHandler.createDir(new File(baseDir));
             file.transferTo(Paths.get(baseDir, file.getOriginalFilename()));
-        } catch (Exception ex){
+        } catch (Exception ex) {
             log.warn("Failed to save screenshot {} in {}", file.getOriginalFilename(), baseDir);
         }
-        return Paths.get(filePath,file.getOriginalFilename()).toString();
+        return Paths.get(filePath, file.getOriginalFilename()).toString();
     }
 }

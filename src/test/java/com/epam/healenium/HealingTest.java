@@ -18,7 +18,14 @@ import io.restassured.config.ObjectMapperConfig;
 import io.restassured.config.RestAssuredConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +37,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -72,9 +81,9 @@ public class HealingTest extends TestContainersInitializer {
 
         // proceed healing
         HealingRequestDto healingRequest = buildHealingRequest();
-        String sessionId = UUID.randomUUID().toString();
+        Map<String, String> headers = getHeaders();
         MultipartFile screenshot = buildMultipart();
-        healingService.saveHealing(healingRequest, screenshot, sessionId);
+        healingService.saveHealing(healingRequest, screenshot, headers);
         Assertions.assertEquals(1, healingRepository.count());
         Assertions.assertEquals(1, healingResultRepository.count());
 
@@ -197,6 +206,14 @@ public class HealingTest extends TestContainersInitializer {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Map<String, String> getHeaders() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("sessionKey", UUID.randomUUID().toString());
+        headers.put("hostProject", getClass().getName());
+        headers.put("instance", RestAssured.DEFAULT_URI);
+        return headers;
     }
 
 }
