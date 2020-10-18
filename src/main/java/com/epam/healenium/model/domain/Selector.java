@@ -2,18 +2,25 @@ package com.epam.healenium.model.domain;
 
 import com.epam.healenium.converter.NodeConverter;
 import com.epam.healenium.model.Locator;
-import com.epam.healenium.treecomparing.Node;
+import com.epam.healenium.model.wrapper.NodePathWrapper;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.hibernate.annotations.*;
+import org.hibernate.annotations.ColumnTransformer;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * Contains selector information.
@@ -51,7 +58,7 @@ public class Selector {
     @Column(name = "node_path")
     @ToString.Exclude
     @Convert(converter = NodeConverter.class)
-    private List<Node> nodePath;
+    private NodePathWrapper nodePathWrapper;
 
     @Column(name = "create_date")
     @CreationTimestamp

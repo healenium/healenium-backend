@@ -3,6 +3,7 @@ package com.epam.healenium.mapper;
 import com.epam.healenium.model.Locator;
 import com.epam.healenium.model.domain.Selector;
 import com.epam.healenium.model.dto.SelectorRequestDto;
+import com.epam.healenium.model.wrapper.NodePathWrapper;
 import com.epam.healenium.util.Utils;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
@@ -19,7 +20,7 @@ public interface SelectorMapper {
         element.setMethodName(dto.getMethodName());
         element.setName(dto.getClassName() + "." + dto.getMethodName() + "()");
         element.setLocator(new Locator(dto.getLocator(), dto.getType()));
-        element.setNodePath(dto.getNodePath());
+        element.setNodePathWrapper(new NodePathWrapper(dto.getNodePath()));
         element.setCreatedDate(LocalDateTime.now());
         return element;
     }

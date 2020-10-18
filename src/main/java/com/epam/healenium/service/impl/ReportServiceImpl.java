@@ -33,7 +33,7 @@ public class ReportServiceImpl implements ReportService {
         if (optionalReport.isPresent()) {
             Report report = optionalReport.get();
             result.setTime(report.getCreatedDate().format(DateTimeFormatter.ISO_DATE_TIME));
-            report.getElements().forEach(it -> {
+            report.getElements().getRecords().forEach(it -> {
                 ReportRecord reportRecord = new ReportRecord();
                 reportRecord.setDeclaringClass(it.getName());
                 reportRecord.setScreenShotPath(it.getScreenShotPath());

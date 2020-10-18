@@ -1,6 +1,8 @@
 package com.epam.healenium.model.domain;
 
+import com.epam.healenium.converter.RecordWrapperConverter;
 import com.epam.healenium.model.Locator;
+import com.epam.healenium.model.wrapper.RecordWrapper;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Data;
 import lombok.ToString;
@@ -12,8 +14,6 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Represent report about healing during test.
@@ -36,9 +36,9 @@ public class Report {
     private String uid;
 
     @Column(name = "elements", columnDefinition = "jsonb")
-    @Type(type = "jsonb")
     @Basic(fetch = FetchType.LAZY)
-    private Set<Record> elements = new HashSet<>();
+    @Convert(converter = RecordWrapperConverter.class)
+    private RecordWrapper elements;
 
     @Column(name = "create_date")
     @CreationTimestamp
@@ -59,7 +59,7 @@ public class Report {
         record.setFailedLocator(selector.getLocator());
         record.setHealedLocator(healingResult.getLocator());
         record.setScreenShotPath(screenshotPath);
-        elements.add(record);
+        elements.getRecords().add(record);
     }
 
     @Data
