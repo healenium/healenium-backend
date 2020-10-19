@@ -6,6 +6,7 @@ import com.epam.healenium.model.dto.HealingRequestDto;
 import com.epam.healenium.model.dto.HealingResultDto;
 import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
+import com.epam.healenium.model.wrapper.NodePathWrapper;
 import com.epam.healenium.repository.HealingRepository;
 import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.ReportRepository;
@@ -202,7 +203,7 @@ public class HealingTest extends TestContainersInitializer {
         try {
             byte[] bytes = StreamUtils.copyToByteArray(this.getClass().getResourceAsStream("/nodes"));
             //noinspection unchecked
-            return objectMapper.readValue(bytes, List.class);
+            return objectMapper.readValue(bytes, NodePathWrapper.class).getNodePath();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

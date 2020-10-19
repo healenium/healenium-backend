@@ -77,7 +77,9 @@ public class HealingServiceImpl implements HealingService {
     @Override
     public List<Node> getSelectorPath(RequestDto dto) {
         String selectorId = Utils.buildKey(dto.getClassName(), dto.getMethodName(), dto.getLocator());
-        return selectorRepository.findById(selectorId).map(Selector::getNodePath).orElse(Collections.emptyList());
+        return selectorRepository.findById(selectorId)
+                .map(t -> t.getNodePathWrapper().getNodePath())
+                .orElse(Collections.emptyList());
     }
 
     @Override
@@ -98,7 +100,7 @@ public class HealingServiceImpl implements HealingService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Internal exception! Somehow we lost selected healing result on save"));
         // add report record
-        createReportRecord( selectedResult, healing, headers.get(SESSION_KEY), screenshot);
+        createReportRecord(selectedResult, healing, headers.get(SESSION_KEY), screenshot);
 
         healLatency.observe(requestTimer.elapsedSeconds());
         prometheusPushGatewayManager.shutdown();
