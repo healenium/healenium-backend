@@ -21,7 +21,7 @@ public class RecordWrapperConverter implements AttributeConverter<RecordWrapper,
     public String convertToDatabaseColumn(RecordWrapper recordWrapper) {
         String recordWrapperJson = null;
         try {
-            recordWrapperJson = objectMapper.writeValueAsString(recordWrapper.getRecords());
+            recordWrapperJson = objectMapper.writeValueAsString(recordWrapper);
         } catch (final JsonProcessingException e) {
             log.error("JSON writing error", e);
         }
