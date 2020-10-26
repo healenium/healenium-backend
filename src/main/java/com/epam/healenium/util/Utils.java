@@ -6,16 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.DigestUtils;
 
 import javax.crypto.SecretKey;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.Base64;
 
 @Slf4j
@@ -50,7 +43,8 @@ public class Utils {
     @SneakyThrows
     public String getKeyFromKeyStore(String alias) {
         KeyStore keyStore = KeyStore.getInstance("JCEKS");
-        InputStream keyStoreFile = new FileInputStream("src/main/resources/keystore/prometrics.ks");
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        InputStream keyStoreFile = classloader.getResourceAsStream("keystore/prometrics.ks");
         char[] keyStorePassword = "uSi51JkQTJlgi".toCharArray();
         keyStore.load(keyStoreFile, keyStorePassword);
         SecretKey key = (SecretKey) keyStore.getKey(alias, keyStorePassword);

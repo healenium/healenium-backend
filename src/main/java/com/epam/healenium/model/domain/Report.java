@@ -38,7 +38,7 @@ public class Report {
     @Column(name = "elements", columnDefinition = "jsonb")
     @Basic(fetch = FetchType.LAZY)
     @Convert(converter = RecordWrapperConverter.class)
-    private RecordWrapper elements;
+    private RecordWrapper recordWrapper = new RecordWrapper();
 
     @Column(name = "create_date")
     @CreationTimestamp
@@ -59,7 +59,7 @@ public class Report {
         record.setFailedLocator(selector.getLocator());
         record.setHealedLocator(healingResult.getLocator());
         record.setScreenShotPath(screenshotPath);
-        elements.getRecords().add(record);
+        recordWrapper.getRecords().add(record);
     }
 
     @Data
