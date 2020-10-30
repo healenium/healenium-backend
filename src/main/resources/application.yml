@@ -1,5 +1,8 @@
 server:
   port: 7878
+  tomcat:
+    max-http-post-size: -1
+    max-swallow-size: -1
 
 spring:
   servlet.multipart:
