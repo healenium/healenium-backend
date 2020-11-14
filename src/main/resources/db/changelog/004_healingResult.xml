@@ -18,6 +18,9 @@
             <column name="SCORE" type="DOUBLE" defaultValueNumeric="0.0">
                 <constraints nullable="false"/>
             </column>
+            <column name="SUCCESS_HEALING" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
             <column name="CREATE_DATE" type="TIMESTAMP(6)" defaultValueComputed="current_timestamp"/>
         </createTable>
     </changeSet>

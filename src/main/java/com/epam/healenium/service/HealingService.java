@@ -14,7 +14,7 @@ public interface HealingService {
      * Healing attempt of given target selector in presented page source
      * @param dto
      * @param headers
-     * @return
+     * @param screenshot
      */
     void saveHealing(HealingRequestDto dto, MultipartFile screenshot, Map<String, String> headers);
 
@@ -45,4 +45,9 @@ public interface HealingService {
      */
     Set<HealingResultDto> getHealingResults(RequestDto dto);
 
+    /**
+     * Store successHealing
+     * @param dto
+     */
+    void saveSuccessHealing(RecordDto.ReportRecord dto);
 }

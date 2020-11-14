@@ -71,6 +71,10 @@
             flex: 2 0 10%;
         }
 
+        .confirmation-column {
+            flex: 1 0 5%;
+        }
+
         .actions-column {
             flex: 1 0 10%;
             text-align: right;
@@ -194,7 +198,7 @@
         #myImg {
           border-radius: 5px;
           cursor: pointer;
-          transition: 0.3s;
+          transition: 0.5s;
         }
 
         #myImg:hover {opacity: 0.7;}
@@ -248,7 +252,7 @@
           color: #f1f1f1;
           font-size: 40px;
           font-weight: bold;
-          transition: 0.3s;
+          transition: 0.5s;
         }
 
         .close:hover,
@@ -258,11 +262,47 @@
           cursor: pointer;
         }
 
+        input[type="checkbox"] {
+            width: 80px;
+            height: 35px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background: #E67574;
+            outline: none;
+            border-radius: 25px;
+            box-shadow: inset 0 0 3px rgba(0,0,0, .2);
+            transition: 0.5s;
+            position: relative;
+        }
+
+        input:checked[type="checkbox"] {
+            background: #6ECBA0;
+        }
+
+        input[type="checkbox"]::before {
+            content: '';
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            top: 0;
+            left: 0;
+            background: #fff;
+            transform: scale(1.1);
+            box-shadow: 0 1px 4px rgba(0,0,0, .2);
+            transition: 0.5s;
+        }
+
+        input:checked[type="checkbox"]::before {
+            left: 50px;
+        }
+
         @media only screen and (max-width: 700px){
           .modal-content {
             width: 100%;
           }
         }
+
 
     </style>
 </head>
@@ -291,12 +331,9 @@
         </h2>
         <div class="report-content">
             <div class="elements-table-header">
-                        <span class="element-column">
-                            Element
-                        </span>
-                <span class="screenshot-column">
-                            Screenshot
-                        </span>
+                <span class="element-column">Element</span>
+                <span class="screenshot-column">Screenshot</span>
+                <span class="confirmation-column">Success</span>
             </div>
             <div data-elements-table>
                 <div class="elements-table-row content-hidden" th:each="elem,iter : ${dto.data}">
@@ -326,6 +363,13 @@
                                 <div id="caption"></div>
                             </div>
                         </div>
+                        <div class="confirmation-column">
+                            <div style="padding-left: 50px;">
+                                <input id="successHealingCheckbox" type="checkbox" onclick="successHealing(this);"
+                                       th:healingResultId="${elem.healingResultId}"
+                                       th:successHealing="${elem.successHealing}">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -333,6 +377,7 @@
     </div>
 </main>
 </body>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
 
         let elements = [];
@@ -345,12 +390,41 @@
           if (rowIndex) {
             elementWithIndex.parentNode.classList.toggle('content-hidden');
           }
+          var successHealingCheckbox = document.getElementById("successHealingCheckbox");
+          successHealingCheckbox.checked = successHealingCheckbox.getAttribute("successHealing") == 'true';
         }
 
         function rowClickHandler(event) {
           const targetElement = event.target;
 
           toggleElementContent(targetElement);
+        }
+
+        function successHealing(targetElement) {
+            var dto = {
+                "successHealing" : targetElement.checked,
+                "healingResultId" :  targetElement.getAttribute("healingResultId")
+            }
+            targetElement.setAttribute("successHealing", targetElement.checked);
+
+            $.ajax({
+                type: "POST",
+                contentType: "application/json",
+                url: "/healenium/healing/success",
+                data: JSON.stringify(dto),
+                dataType: 'json',
+                cache: false,
+                timeout: 600000,
+                success: function (html) {
+                    console.log("success")
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    if (200 != jqXHR.status) {
+                        console.log(jqXHR.status + ' ' + jqXHR.responseText)
+                        alert("Couldn't execute accordance");
+                    }
+                }
+            });
         }
 
         function zoomImage(event) {
@@ -380,6 +454,7 @@
         }
 
         renderElements();
+
 
 </script>
 </html>

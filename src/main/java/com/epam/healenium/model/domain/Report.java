@@ -1,18 +1,23 @@
 package com.epam.healenium.model.domain;
 
 import com.epam.healenium.converter.RecordWrapperConverter;
-import com.epam.healenium.model.Locator;
 import com.epam.healenium.model.wrapper.RecordWrapper;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Data;
-import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.hibernate.annotations.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.Table;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -44,32 +49,4 @@ public class Report {
     @CreationTimestamp
     private LocalDateTime createdDate;
 
-    /**
-     * Add record to report
-     * @param healing
-     * @param healingResult
-     */
-    public void addRecord(Healing healing, HealingResult healingResult, String screenshotPath){
-        Selector selector = healing.getSelector();
-
-        Record record = new Record();
-        record.setName(selector.getName());
-        record.setClassName(selector.getClassName());
-        record.setMethodName(selector.getMethodName());
-        record.setFailedLocator(selector.getLocator());
-        record.setHealedLocator(healingResult.getLocator());
-        record.setScreenShotPath(screenshotPath);
-        recordWrapper.getRecords().add(record);
-    }
-
-    @Data
-    public static class Record implements Serializable {
-        private String name;
-        private String className;
-        private String methodName;
-        private Locator failedLocator;
-        private Locator healedLocator;
-        @ToString.Exclude
-        private String screenShotPath;
-    }
 }
