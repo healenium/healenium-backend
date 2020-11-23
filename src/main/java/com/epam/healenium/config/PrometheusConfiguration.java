@@ -4,16 +4,18 @@ import com.epam.healenium.util.Utils;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
 import io.prometheus.client.exporter.PushGateway;
+import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusPushGatewayManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
+import java.net.URL;
 import java.time.Duration;
 import java.util.Map;
 
 import static com.epam.healenium.constants.Constants.PROMETHEUS_JOB_NAME;
-import static com.epam.healenium.constants.Constants.PUSHGATEWAY_SERVER_ADDRESS;
 
 /**
  * @author rdanilov
@@ -22,14 +24,18 @@ import static com.epam.healenium.constants.Constants.PUSHGATEWAY_SERVER_ADDRESS;
 @Configuration
 public class PrometheusConfiguration {
 
+    @Value("${app.prometheus.url}")
+    private String prometheusURL;
+
     @Bean
     @Scope(value = "prototype")
-    public PrometheusPushGatewayManager prometheusPushGatewayManager(Map<String, String> headers) {
-        PushGateway pg = new PushGateway(PUSHGATEWAY_SERVER_ADDRESS);
+    @SneakyThrows
+    public PrometheusPushGatewayManager prometheusPushGatewayManager(Map<String, String> groupingKeys) {
+        PushGateway pg = new PushGateway(new URL(prometheusURL));
         pg.setConnectionFactory(new BasicAuthHttpConnectionFactory(
                 Utils.getKeyFromKeyStore("loginAlias"),
                 Utils.getKeyFromKeyStore("passwordAlias")));
         return new PrometheusPushGatewayManager(pg, CollectorRegistry.defaultRegistry, Duration.ofSeconds(1L),
-                PROMETHEUS_JOB_NAME, headers, PrometheusPushGatewayManager.ShutdownOperation.PUSH);
+                PROMETHEUS_JOB_NAME, groupingKeys, PrometheusPushGatewayManager.ShutdownOperation.PUSH);
     }
 }

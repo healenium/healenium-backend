@@ -365,9 +365,10 @@
                         </div>
                         <div class="confirmation-column">
                             <div style="padding-left: 50px;">
-                                <input id="successHealingCheckbox" type="checkbox" onclick="successHealing(this);"
+                                <input type="checkbox" onclick="successHealing(this);"
                                        th:healingResultId="${elem.healingResultId}"
-                                       th:successHealing="${elem.successHealing}">
+                                       th:successHealing="${elem.successHealing}"
+                                       th:data-row-index="${iter.index}">
                             </div>
                         </div>
                     </div>
@@ -390,8 +391,13 @@
           if (rowIndex) {
             elementWithIndex.parentNode.classList.toggle('content-hidden');
           }
-          var successHealingCheckbox = document.getElementById("successHealingCheckbox");
-          successHealingCheckbox.checked = successHealingCheckbox.getAttribute("successHealing") == 'true';
+          var successHealingCheckboxes = document.getElementsByTagName('input');
+          for(var i = 0; i < successHealingCheckboxes.length; i++) {
+            if (rowIndex == successHealingCheckboxes[i].getAttribute('data-row-index')) {
+                $(successHealingCheckboxes[i]).prop("checked", successHealingCheckboxes[i].getAttribute("successHealing") == 'true');
+                break;
+            }
+          }
         }
 
         function rowClickHandler(event) {

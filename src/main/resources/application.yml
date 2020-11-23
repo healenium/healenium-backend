@@ -54,6 +54,8 @@ app:
   url:
     page-source: http://${SPRING_CONTAINER_NAME:localhost}:${app.port}/pages
     report: healenium/report
+  prometheus:
+    url: https://hlm-monitoring.tk:9091
 
 management:
   endpoints:
