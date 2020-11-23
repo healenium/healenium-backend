@@ -1,6 +1,5 @@
 package com.epam.healenium.service.impl;
 
-import com.epam.healenium.config.PrometheusConfiguration;
 import com.epam.healenium.exception.MissingSelectorException;
 import com.epam.healenium.mapper.HealingMapper;
 import com.epam.healenium.mapper.SelectorMapper;
@@ -18,6 +17,7 @@ import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.repository.SelectorRepository;
 import com.epam.healenium.service.HealingService;
+import com.epam.healenium.service.PrometheusService;
 import com.epam.healenium.specification.HealingSpecBuilder;
 import com.epam.healenium.treecomparing.Node;
 import com.epam.healenium.util.StreamUtils;
@@ -27,7 +27,6 @@ import io.prometheus.client.Summary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.io.FileHandler;
-import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusPushGatewayManager;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -62,12 +61,7 @@ public class HealingServiceImpl implements HealingService {
     private final SelectorMapper selectorMapper;
     private final HealingMapper healingMapper;
 
-    private final PrometheusConfiguration prometheusConfiguration;
-
-    private static final Summary healLatency = Summary.build()
-            .name("healing_latency")
-            .help("Duration in seconds of healing")
-            .register();
+    private final PrometheusService prometheusService;
 
     @Override
     public void saveSelector(SelectorRequestDto request) {
@@ -85,7 +79,7 @@ public class HealingServiceImpl implements HealingService {
 
     @Override
     public void saveHealing(HealingRequestDto dto, MultipartFile screenshot, Map<String, String> headers) {
-        PrometheusPushGatewayManager prometheusPushGatewayManager = prometheusConfiguration.prometheusPushGatewayManager(headers);
+        Summary healLatency = prometheusService.createSummaryLatency();
         SimpleTimer requestTimer = new SimpleTimer();
         // obtain healing
         Healing healing = getHealing(dto);
@@ -104,7 +98,7 @@ public class HealingServiceImpl implements HealingService {
         createReportRecord(selectedResult, healing, headers.get(SESSION_KEY), screenshot);
 
         healLatency.observe(requestTimer.elapsedSeconds());
-        prometheusPushGatewayManager.shutdown();
+        prometheusService.pushAndClear(headers);
     }
 
     @Override
@@ -147,6 +141,9 @@ public class HealingServiceImpl implements HealingService {
             HealingResult healingResult = healingResultOptional.get();
             healingResult.setSuccessHealing(dto.isSuccessHealing());
             resultRepository.save(healingResult);
+            if (!dto.isSuccessHealing()) {
+                prometheusService.pushUnseccessHealingResult(healingResult);
+            }
         }
     }
 
