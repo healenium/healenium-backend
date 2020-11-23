@@ -10,6 +10,7 @@ import com.epam.healenium.model.domain.Selector;
 import com.epam.healenium.model.dto.HealingDto;
 import com.epam.healenium.model.dto.HealingRequestDto;
 import com.epam.healenium.model.dto.HealingResultDto;
+import com.epam.healenium.model.dto.RecordDto;
 import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
 import com.epam.healenium.repository.HealingRepository;
@@ -139,6 +140,16 @@ public class HealingServiceImpl implements HealingService {
                 .collect(Collectors.toSet());
     }
 
+    @Override
+    public void saveSuccessHealing(RecordDto.ReportRecord dto) {
+        Optional<HealingResult> healingResultOptional = resultRepository.findById(dto.getHealingResultId());
+        if (healingResultOptional.isPresent()) {
+            HealingResult healingResult = healingResultOptional.get();
+            healingResult.setSuccessHealing(dto.isSuccessHealing());
+            resultRepository.save(healingResult);
+        }
+    }
+
     private Healing getHealing(HealingRequestDto dto) {
         // build selector key
         String selectorId = Utils.buildKey(dto.getClassName(), dto.getMethodName(), dto.getLocator());
@@ -162,7 +173,6 @@ public class HealingServiceImpl implements HealingService {
      *
      * @param healing
      * @param healingResults
-     * @return
      */
     private void saveHealingResults(Collection<HealingResult> healingResults, Healing healing) {
         if (!CollectionUtils.isEmpty(healing.getResults())) {
@@ -187,7 +197,7 @@ public class HealingServiceImpl implements HealingService {
             String screenshotPath = persistScreenshot(screenshot, screenshotDir);
             // if healing performs during test phase, add report record
             reportRepository.findById(sessionId).ifPresent(r -> {
-                r.addRecord(healing, result, screenshotPath);
+                r.getRecordWrapper().addRecord(healing, result, screenshotPath);
                 reportRepository.save(r);
             });
         }

@@ -1,23 +1,25 @@
 package com.epam.healenium.service.impl;
 
+import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.domain.Report;
 import com.epam.healenium.model.dto.RecordDto;
 import com.epam.healenium.model.dto.RecordDto.ReportRecord;
+import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.service.ReportService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
-
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class ReportServiceImpl implements ReportService {
 
     private final ReportRepository reportRepository;
+    private final HealingResultRepository resultRepository;
 
     @Override
     public String initialize() {
@@ -41,6 +43,9 @@ public class ReportServiceImpl implements ReportService {
                 reportRecord.setFailedLocatorValue(it.getFailedLocator().getValue());
                 reportRecord.setHealedLocatorType(it.getHealedLocator().getType());
                 reportRecord.setHealedLocatorValue(it.getHealedLocator().getValue());
+                Optional<HealingResult> healingResultOptional = resultRepository.findById(it.getHealingResultId());
+                reportRecord.setSuccessHealing(healingResultOptional.get().isSuccessHealing());
+                reportRecord.setHealingResultId(it.getHealingResultId());
                 result.getData().add(reportRecord);
             });
         }

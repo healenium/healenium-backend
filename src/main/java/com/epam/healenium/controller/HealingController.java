@@ -3,6 +3,7 @@ package com.epam.healenium.controller;
 import com.epam.healenium.model.dto.HealingDto;
 import com.epam.healenium.model.dto.HealingRequestDto;
 import com.epam.healenium.model.dto.HealingResultDto;
+import com.epam.healenium.model.dto.RecordDto;
 import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
 import com.epam.healenium.service.HealingService;
@@ -94,4 +95,8 @@ public class HealingController {
         return healingService.getHealingResults(dto);
     }
 
+    @PostMapping("/healing/success")
+    public void successHealing(@Valid @RequestBody RecordDto.ReportRecord dto) {
+        healingService.saveSuccessHealing(dto);
+    }
 }
