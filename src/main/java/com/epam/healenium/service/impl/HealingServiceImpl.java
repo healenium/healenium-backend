@@ -142,7 +142,9 @@ public class HealingServiceImpl implements HealingService {
             healingResult.setSuccessHealing(dto.isSuccessHealing());
             resultRepository.save(healingResult);
             if (!dto.isSuccessHealing()) {
-                prometheusService.pushUnseccessHealingResult(healingResult);
+                prometheusService.pushUnsuccessHealingResult(healingResult);
+            } else {
+                prometheusService.deleteSuccessHealingResult(healingResult);
             }
         }
     }
