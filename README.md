@@ -5,12 +5,12 @@ https://hub.docker.com/repository/docker/healenium/hlm-backend
 
 Download [Example of compose descriptor](https://github.com/healenium/healenium-client/blob/master/example/docker-compose.yaml) into your test project 
 ```
-$ curl https://raw.githubusercontent.com/healenium/healenium-client/example/master/docker-compose.yml -o docker-compose.yaml
+$ curl  https://raw.githubusercontent.com/healenium/healenium-client/master/example/docker-compose.yaml  -o docker-compose.yaml
 ```
 
 Add [init.sql file](https://github.com/healenium/healenium-client/blob/master/example/init.sql)  into ./db/sql/init.sql folder in your project
 ```
-$ curl https://raw.githubusercontent.com/healenium/healenium-client/example/master/init.sql -o init.sql
+$ curl https://raw.githubusercontent.com/healenium/healenium-client/master/example/init.sql -o init.sql
 ```
 
 To start hlm-backend and simply run docker-compose 
