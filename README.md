@@ -13,6 +13,7 @@ Create /db/sql folder on the same level in your project. Add [init.sql file](htt
 $ curl https://raw.githubusercontent.com/healenium/healenium-client/master/example/init.sql -o init.sql
 ```
 For example, you should have the project structure as below
+
 ![img.png](img.png)
 
 To start hlm-backend and simply run docker-compose 
