@@ -7,6 +7,8 @@ import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Summary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusPushGatewayManager;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -27,17 +29,35 @@ public class PrometheusServiceImpl implements PrometheusService {
     private final PrometheusConfiguration prometheusConfiguration;
 
     @Override
-    public void pushUnseccessHealingResult(HealingResult healingResult) {
+    public void pushUnsuccessHealingResult(HealingResult healingResult) {
+        createSummaryDOM(healingResult);
+        pushAndClear(getHealingIdAsGroupingKeys(healingResult));
+    }
+
+    @Override
+    public void deleteSuccessHealingResult(HealingResult healingResult) {
+        deleteAndClear(getHealingIdAsGroupingKeys(healingResult));
+    }
+
+    @NotNull
+    private Map<String, String> getHealingIdAsGroupingKeys(HealingResult healingResult) {
         Map<String, String> groupingKeys = new HashMap<>();
         groupingKeys.put(HEALING_ID, String.valueOf(healingResult.getHealing().getUid()));
-        createSummaryDOM(healingResult);
-        pushAndClear(groupingKeys);
+        return groupingKeys;
     }
 
     @Override
     public void pushAndClear(Map<String, String> groupingKeys) {
         prometheusConfiguration
-                .prometheusPushGatewayManager(getFilteredPrometheusGroupingKeys(groupingKeys))
+                .prometheusPushGatewayManager(getFilteredPrometheusGroupingKeys(groupingKeys), PrometheusPushGatewayManager.ShutdownOperation.PUSH)
+                .shutdown();
+        CollectorRegistry.defaultRegistry.clear();
+    }
+
+    @Override
+    public void deleteAndClear(Map<String, String> groupingKeys) {
+        prometheusConfiguration
+                .prometheusPushGatewayManager(getFilteredPrometheusGroupingKeys(groupingKeys), PrometheusPushGatewayManager.ShutdownOperation.DELETE)
                 .shutdown();
         CollectorRegistry.defaultRegistry.clear();
     }

@@ -30,12 +30,13 @@ public class PrometheusConfiguration {
     @Bean
     @Scope(value = "prototype")
     @SneakyThrows
-    public PrometheusPushGatewayManager prometheusPushGatewayManager(Map<String, String> groupingKeys) {
+    public PrometheusPushGatewayManager prometheusPushGatewayManager(Map<String, String> groupingKeys,
+                                                                     PrometheusPushGatewayManager.ShutdownOperation method) {
         PushGateway pg = new PushGateway(new URL(prometheusURL));
         pg.setConnectionFactory(new BasicAuthHttpConnectionFactory(
                 Utils.getKeyFromKeyStore("loginAlias"),
                 Utils.getKeyFromKeyStore("passwordAlias")));
         return new PrometheusPushGatewayManager(pg, CollectorRegistry.defaultRegistry, Duration.ofSeconds(1L),
-                PROMETHEUS_JOB_NAME, groupingKeys, PrometheusPushGatewayManager.ShutdownOperation.PUSH);
+                PROMETHEUS_JOB_NAME, groupingKeys, method);
     }
 }
