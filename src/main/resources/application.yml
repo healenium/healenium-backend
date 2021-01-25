@@ -1,5 +1,5 @@
 server:
-  port: 7878
+  port: ${SPRING_SERVER_PORT:7878}
   tomcat:
     max-http-post-size: -1
     max-swallow-size: -1
@@ -19,8 +19,8 @@ spring:
     open-in-view: false
 
   datasource:
-    host: localhost
-    port: 5432
+    host: ${SPRING_POSTGRES_DB_HOST:localhost}
+    port: ${SPRING_POSTGRES_DB_PORT:5432}
     database: ${SPRING_POSTGRES_DB:healenium}
     username: ${SPRING_POSTGRES_USER:healenium_user}
     password: ${SPRING_POSTGRES_PASSWORD:YDk2nmNs4s9aCP6K}
@@ -49,7 +49,7 @@ spring:
 
 app:
   host: ${SPRING_HOST_NAME:localhost}
-  port: 7878
+  port: ${SPRING_SERVER_PORT:7878}
   selenium.host: ${SPRING_SELENIUM_HOST:localhost}
   url:
     page-source: http://${SPRING_CONTAINER_NAME:localhost}:${app.port}/pages

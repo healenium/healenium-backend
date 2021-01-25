@@ -31,6 +31,8 @@ services:
       - SPRING_POSTGRES_USER=healenium_user
       - SPRING_POSTGRES_PASSWORD=YDk2nmNs4s9aCP6K
       - SPRING_POSTGRES_URL=jdbc:postgresql://db:5432/healenium?currentSchema=healenium
+      - SPRING_POSTGRES_DB_PORT=5432
+      - SPRING_SERVER_PORT=7878
     networks:
       - healenium
 
