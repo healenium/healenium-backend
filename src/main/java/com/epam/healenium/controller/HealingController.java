@@ -52,7 +52,7 @@ public class HealingController {
      * @return
      */
     @GetMapping()
-    public List<Node> getPath(RequestDto dto) {
+    public List<List<Node>> getPath(RequestDto dto) {
         return healingService.getSelectorPath(dto);
     }
 

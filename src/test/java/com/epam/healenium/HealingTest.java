@@ -199,7 +199,7 @@ public class HealingTest extends TestContainersInitializer {
         return dto;
     }
 
-    private List<Node> getLastValidPath() {
+    private List<List<Node>> getLastValidPath() {
         try {
             byte[] bytes = StreamUtils.copyToByteArray(this.getClass().getResourceAsStream("/nodes"));
             //noinspection unchecked

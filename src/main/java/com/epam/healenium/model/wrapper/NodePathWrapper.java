@@ -12,6 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 public class NodePathWrapper {
 
-    private List<Node> nodePath;
+    private List<List<Node>> nodePath;
 
 }
