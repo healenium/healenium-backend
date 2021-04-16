@@ -70,7 +70,7 @@ public class HealingServiceImpl implements HealingService {
     }
 
     @Override
-    public List<Node> getSelectorPath(RequestDto dto) {
+    public List<List<Node>> getSelectorPath(RequestDto dto) {
         String selectorId = Utils.buildKey(dto.getClassName(), dto.getMethodName(), dto.getLocator());
         return selectorRepository.findById(selectorId)
                 .map(t -> t.getNodePathWrapper().getNodePath())

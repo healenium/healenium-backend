@@ -13,7 +13,7 @@ public class SelectorRequestDto extends RequestDto{
 
     private String type;
     @ToString.Exclude
-    private List<Node> nodePath;
+    private List<List<Node>> nodePath;
 
 }
 

@@ -29,7 +29,7 @@ public interface HealingService {
      * @param dto
      * @return
      */
-    List<Node> getSelectorPath(RequestDto dto);
+    List<List<Node>> getSelectorPath(RequestDto dto);
 
     /**
      *
