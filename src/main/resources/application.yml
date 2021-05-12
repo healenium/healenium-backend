@@ -76,6 +76,16 @@ management:
         pushgateway:
           enabled: true
 
+cloud:
+  aws:
+    region:
+      static: eu-central-1
+    stack:
+      auto: false
+    credentials:
+      accessKey: AKIAWE35TXKOBD6KTW4I
+      secretKey: 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
+
 logging:
   level:
     ROOT: ${SPRING_LOG_LEVEL:INFO}
