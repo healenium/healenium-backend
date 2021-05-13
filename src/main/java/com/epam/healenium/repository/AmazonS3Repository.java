@@ -1,19 +1,17 @@
 package com.epam.healenium.repository;
 
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectListing;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Resource;
 import java.io.File;
 
 @Repository
 public class AmazonS3Repository {
 
-    private final AmazonS3Client s3Client;
-
-    public AmazonS3Repository(AmazonS3Client s3Client) {
-        this.s3Client = s3Client;
-    }
+    @Resource(name = "amazonS3Client")
+    private AmazonS3 s3Client;
 
     public void deleteObject(String bucket, String key) {
         s3Client.deleteObject(bucket, key);

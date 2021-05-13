@@ -43,11 +43,11 @@ public class Utils {
     }
 
     @SneakyThrows
-    public String getKeyFromKeyStore(String alias) {
+    public String getKeyFromKeyStore(String alias, String password, String filePath) {
         KeyStore keyStore = KeyStore.getInstance("JCEKS");
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        InputStream keyStoreFile = classloader.getResourceAsStream("keystore/prometrics.ks");
-        char[] keyStorePassword = "uSi51JkQTJlgi".toCharArray();
+        InputStream keyStoreFile = classloader.getResourceAsStream(filePath);
+        char[] keyStorePassword = password.toCharArray();
         keyStore.load(keyStoreFile, keyStorePassword);
         SecretKey key = (SecretKey) keyStore.getKey(alias, keyStorePassword);
         return new String(Base64.getDecoder().decode(key.getEncoded()));
