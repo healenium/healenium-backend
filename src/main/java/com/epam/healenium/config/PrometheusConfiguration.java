@@ -34,8 +34,8 @@ public class PrometheusConfiguration {
                                                                      PrometheusPushGatewayManager.ShutdownOperation method) {
         PushGateway pg = new PushGateway(new URL(prometheusURL));
         pg.setConnectionFactory(new BasicAuthHttpConnectionFactory(
-                Utils.getKeyFromKeyStore("loginAlias"),
-                Utils.getKeyFromKeyStore("passwordAlias")));
+                Utils.getKeyFromKeyStore("loginAlias", "uSi51JkQTJlgi", "keystore/prometrics.ks"),
+                Utils.getKeyFromKeyStore("passwordAlias", "uSi51JkQTJlgi", "keystore/prometrics.ks")));
         return new PrometheusPushGatewayManager(pg, CollectorRegistry.defaultRegistry, Duration.ofSeconds(1L),
                 PROMETHEUS_JOB_NAME, groupingKeys, method);
     }

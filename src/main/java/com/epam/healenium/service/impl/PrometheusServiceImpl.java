@@ -3,6 +3,7 @@ package com.epam.healenium.service.impl;
 import com.epam.healenium.config.PrometheusConfiguration;
 import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.service.PrometheusService;
+import com.epam.healenium.util.Utils;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Summary;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +13,6 @@ import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusPush
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -49,7 +48,8 @@ public class PrometheusServiceImpl implements PrometheusService {
     @Override
     public void pushAndClear(Map<String, String> groupingKeys) {
         prometheusConfiguration
-                .prometheusPushGatewayManager(getFilteredPrometheusGroupingKeys(groupingKeys), PrometheusPushGatewayManager.ShutdownOperation.PUSH)
+                .prometheusPushGatewayManager(getFilteredPrometheusGroupingKeys(groupingKeys),
+                        PrometheusPushGatewayManager.ShutdownOperation.PUSH)
                 .shutdown();
         CollectorRegistry.defaultRegistry.clear();
     }
@@ -57,7 +57,8 @@ public class PrometheusServiceImpl implements PrometheusService {
     @Override
     public void deleteAndClear(Map<String, String> groupingKeys) {
         prometheusConfiguration
-                .prometheusPushGatewayManager(getFilteredPrometheusGroupingKeys(groupingKeys), PrometheusPushGatewayManager.ShutdownOperation.DELETE)
+                .prometheusPushGatewayManager(getFilteredPrometheusGroupingKeys(groupingKeys),
+                        PrometheusPushGatewayManager.ShutdownOperation.DELETE)
                 .shutdown();
         CollectorRegistry.defaultRegistry.clear();
     }
@@ -72,7 +73,7 @@ public class PrometheusServiceImpl implements PrometheusService {
 
     private void createSummaryDOM(HealingResult healingResult) {
         Summary.build()
-                .name("time_" + getCurrentTime())
+                .name("time_" + Utils.getCurrentDate(HH_MM_SS_DD_MMM_YYYY))
                 .help(healingResult.getHealing().getPageContent() + " UnsuccessfulHealingResult: " + healingResult.getLocator().toString())
                 .register();
     }
@@ -81,15 +82,8 @@ public class PrometheusServiceImpl implements PrometheusService {
         return groupingKeys.entrySet().stream()
                 .filter(map -> !map.getValue().contains("/"))
                 .filter(map -> SESSION_KEY.equals(map.getKey())
-                        || INSTANCE.equals(map.getKey())
                         || HOST_PROJECT.equals(map.getKey())
                         || HEALING_ID.equals(map.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
-    private String getCurrentTime() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HHmmss_dd_MMM_yyyy");
-        LocalDateTime now = LocalDateTime.now();
-        return now.format(formatter);
     }
 }

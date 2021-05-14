@@ -76,6 +76,13 @@ management:
         pushgateway:
           enabled: true
 
+cloud:
+  aws:
+    region:
+      static: eu-central-1
+    stack:
+      auto: false
+
 logging:
   level:
     ROOT: ${SPRING_LOG_LEVEL:INFO}

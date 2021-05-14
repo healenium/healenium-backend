@@ -9,6 +9,8 @@ import javax.crypto.SecretKey;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 @Slf4j
@@ -21,7 +23,7 @@ public class Utils {
      * @param className  the fully qualified name of the class
      * @param methodName the name of the method
      * @param locator    the selector value
-     * @return
+     * @return hashed key of locator
      */
     public String buildKey(String className, String methodName, String locator) {
         String rawKey = className.concat(methodName) + locator.hashCode();
@@ -33,7 +35,7 @@ public class Utils {
      *
      * @param elementId  unique identifier of selector META
      * @param pageSource searching context object
-     * @return
+     * @return hashed key of healing element
      */
     public String buildHealingKey(String elementId, String pageSource) {
         String rawKey = elementId + pageSource.hashCode();
@@ -41,14 +43,19 @@ public class Utils {
     }
 
     @SneakyThrows
-    public String getKeyFromKeyStore(String alias) {
+    public String getKeyFromKeyStore(String alias, String password, String filePath) {
         KeyStore keyStore = KeyStore.getInstance("JCEKS");
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        InputStream keyStoreFile = classloader.getResourceAsStream("keystore/prometrics.ks");
-        char[] keyStorePassword = "uSi51JkQTJlgi".toCharArray();
+        InputStream keyStoreFile = classloader.getResourceAsStream(filePath);
+        char[] keyStorePassword = password.toCharArray();
         keyStore.load(keyStoreFile, keyStorePassword);
         SecretKey key = (SecretKey) keyStore.getKey(alias, keyStorePassword);
         return new String(Base64.getDecoder().decode(key.getEncoded()));
     }
 
+    public static String getCurrentDate(String format) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+        LocalDateTime now = LocalDateTime.now();
+        return now.format(formatter);
+    }
 }

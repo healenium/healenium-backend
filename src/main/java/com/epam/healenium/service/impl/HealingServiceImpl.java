@@ -16,20 +16,20 @@ import com.epam.healenium.repository.HealingRepository;
 import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.repository.SelectorRepository;
+import com.epam.healenium.service.AmazonS3Service;
 import com.epam.healenium.service.HealingService;
 import com.epam.healenium.service.PrometheusService;
 import com.epam.healenium.specification.HealingSpecBuilder;
 import com.epam.healenium.treecomparing.Node;
 import com.epam.healenium.util.StreamUtils;
 import com.epam.healenium.util.Utils;
-import io.prometheus.client.SimpleTimer;
 import io.prometheus.client.Summary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.io.FileHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
@@ -45,7 +45,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.epam.healenium.constants.Constants.SESSION_KEY;
+import static com.epam.healenium.constants.Constants.*;
 
 @Slf4j
 @Service
@@ -62,6 +62,7 @@ public class HealingServiceImpl implements HealingService {
     private final HealingMapper healingMapper;
 
     private final PrometheusService prometheusService;
+    private final AmazonS3Service amazonS3Service;
 
     @Override
     public void saveSelector(SelectorRequestDto request) {
@@ -79,8 +80,6 @@ public class HealingServiceImpl implements HealingService {
 
     @Override
     public void saveHealing(HealingRequestDto dto, MultipartFile screenshot, Map<String, String> headers) {
-        Summary healLatency = prometheusService.createSummaryLatency();
-        SimpleTimer requestTimer = new SimpleTimer();
         // obtain healing
         Healing healing = getHealing(dto);
         // collect healing results
@@ -96,9 +95,7 @@ public class HealingServiceImpl implements HealingService {
                 .orElseThrow(() -> new IllegalArgumentException("Internal exception! Somehow we lost selected healing result on save"));
         // add report record
         createReportRecord(selectedResult, healing, headers.get(SESSION_KEY), screenshot);
-
-        healLatency.observe(requestTimer.elapsedSeconds());
-        prometheusService.pushAndClear(headers);
+        pushMetrics(dto, headers, selectedResult);
     }
 
     @Override
@@ -142,9 +139,9 @@ public class HealingServiceImpl implements HealingService {
             healingResult.setSuccessHealing(dto.isSuccessHealing());
             resultRepository.save(healingResult);
             if (!dto.isSuccessHealing()) {
-                prometheusService.pushUnsuccessHealingResult(healingResult);
+                amazonS3Service.moveObject(SUCCESSFUL_HEALING_BUCKET, UNSUCCESSFUL_HEALING_BUCKET, healingResult);
             } else {
-                prometheusService.deleteSuccessHealingResult(healingResult);
+                amazonS3Service.moveObject(UNSUCCESSFUL_HEALING_BUCKET, SUCCESSFUL_HEALING_BUCKET, healingResult);
             }
         }
     }
@@ -216,5 +213,14 @@ public class HealingServiceImpl implements HealingService {
             log.warn("Failed to save screenshot {} in {}", file.getOriginalFilename(), baseDir);
         }
         return Paths.get(filePath, file.getOriginalFilename()).toString();
+    }
+
+    private void pushMetrics(HealingRequestDto dto, Map<String, String> headers, HealingResult selectedResult) {
+        Summary healLatency = prometheusService.createSummaryLatency();
+        healLatency.observe(Double.parseDouble(StringUtils.defaultIfEmpty(headers.get(HEALING_TIME), "0.0")));
+        prometheusService.pushAndClear(headers);
+
+        amazonS3Service.uploadObject(selectedResult, dto.getLocator(),
+                StringUtils.defaultIfEmpty(headers.get(HOST_PROJECT), EMPTY_PROJECT));
     }
 }
