@@ -262,6 +262,18 @@
           cursor: pointer;
         }
 
+        .plea {
+            width: 250px;
+            float: right;
+            font-size: 14px;
+            font-family: Roboto, sans-serif;
+            margin-top: 30px;color: #9b9b9b;
+        }
+
+        .header-float {
+            float: left;
+        }
+
         input[type="checkbox"] {
             width: 80px;
             height: 35px;
@@ -325,10 +337,15 @@
 </header>
 <main class="content-wrapper">
     <div class="main-area">
-        <h2 class="report-info">
-            <span class="report-name" data-report-name th:text="${dto.name}"/>
-            <span class="report-time" data-report-time th:text="${dto.time}"/>
-        </h2>
+        <div>
+            <div class="header-float">
+                <h2 class="report-info">
+                    <span class="report-name" data-report-name th:text="${dto.name}"/>
+                    <span class="report-time" data-report-time th:text="${dto.time}"/>
+                </h2>
+            </div>
+            <div class="plea">Please, provide feedback on healing success to make algorithm stronger</div>
+        </div>
         <div class="report-content">
             <div class="elements-table-header">
                 <span class="element-column">Element</span>
