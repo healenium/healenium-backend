@@ -1,7 +1,11 @@
-# healenium-client
-Client for Healenium
-Back-end of 2 docker containers: healenium-backend and healenium-db. Process healing results storage and obtaining 
+# healenium-backend
+[<img src="https://cdn0.iconfinder.com/data/icons/social-media-2104/24/social_media_social_media_logo_docker-128.png" width="30"/>](https://cdn0.iconfinder.com/data/icons/social-media-2104/24/social_media_social_media_logo_docker-128.png)
+[![Dockerhub](https://img.shields.io/docker/v/healenium/hlm-backend.svg?sort=date)](https://img.shields.io/docker/v/healenium/hlm-backend.svg?sort=date)
+
+Healenium Backend of 2 docker containers: healenium-backend and healenium-db. Process healing results storage and processing 
 https://hub.docker.com/repository/docker/healenium/hlm-backend
+
+## How to start:
 
 Download [Example of compose descriptor](https://github.com/healenium/healenium-client/blob/master/example/docker-compose.yaml) into your test project 
 ```
