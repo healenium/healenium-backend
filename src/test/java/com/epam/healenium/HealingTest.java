@@ -84,7 +84,7 @@ public class HealingTest extends TestContainersInitializer {
         HealingRequestDto healingRequest = buildHealingRequest();
         Map<String, String> headers = getHeaders();
         MultipartFile screenshot = buildMultipart();
-        healingService.saveHealing(healingRequest, screenshot, headers);
+        healingService.saveHealing(healingRequest, screenshot, headers, null);
         Assertions.assertEquals(1, healingRepository.count());
         Assertions.assertEquals(1, healingResultRepository.count());
 

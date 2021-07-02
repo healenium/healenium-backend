@@ -1,6 +1,7 @@
 package com.epam.healenium.repository;
 
 import com.epam.healenium.model.domain.Healing;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +16,6 @@ public interface HealingRepository extends JpaRepository<Healing, String>, JpaSp
     @Query("select h from Healing h WHERE h.selector.uid = :id")
     List<Healing> findBySelectorId(@Param("id") String id);
 
+    @Query("select h from Healing h WHERE h.selector.uid = :id order by h.createdDate desc")
+    List<Healing> findLastBySelectorId(@Param("id") String id, Pageable pageable);
 }
