@@ -6,6 +6,7 @@ import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.domain.Selector;
 import lombok.Data;
 import lombok.ToString;
+import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -18,24 +19,25 @@ public class RecordWrapper {
 
     /**
      * Add record to report
+     *
      * @param healing
      * @param healingResult
      */
-    public void addRecord(Healing healing, HealingResult healingResult, String screenshotPath){
+    public void addRecord(Healing healing, HealingResult healingResult, String screenshotPath) {
         Selector selector = healing.getSelector();
 
-        Record record = new Record();
-        record.setName(selector.getName());
-        record.setClassName(selector.getClassName());
-        record.setMethodName(selector.getMethodName());
-        record.setFailedLocator(selector.getLocator());
-        record.setHealedLocator(healingResult.getLocator());
-        record.setScreenShotPath(screenshotPath);
-        record.setHealingResultId(healingResult.getId());
-        records.add(record);
+        records.add(new Record()
+                .setName(selector.getName())
+                .setClassName(selector.getClassName())
+                .setMethodName(selector.getMethodName())
+                .setFailedLocator(selector.getLocator())
+                .setHealedLocator(healingResult.getLocator())
+                .setScreenShotPath(screenshotPath)
+                .setHealingResultId(healingResult.getId()));
     }
 
     @Data
+    @Accessors(chain = true)
     public static class Record implements Serializable {
         private String name;
         private String className;

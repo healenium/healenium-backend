@@ -26,15 +26,12 @@ public class AmazonS3ServiceImpl implements AmazonS3Service {
     private final AmazonS3Repository amazonS3Repository;
 
     @Override
-    public void uploadObject(HealingResult selectedResult, String targetLocator, String hostProject) {
-        String healedLocator = selectedResult.getLocator().getValue();
+    public void uploadObject(String metrics, HealingResult selectedResult, String hostProject) {
         String fileName = getFileName(selectedResult).toString();
         try {
             File file = new File(fileName);
             new BufferedWriter(new FileWriter(fileName))
-                    .append(TARGET_LOCATOR).append(targetLocator).append(System.lineSeparator()).append(System.lineSeparator())
-                    .append(HEALED_LOCATOR).append(healedLocator).append(System.lineSeparator()).append(System.lineSeparator())
-                    .append(selectedResult.getHealing().getPageContent())
+                    .append(metrics)
                     .close();
             amazonS3Repository.putObject(SUCCESSFUL_HEALING_BUCKET, getObjectKey(fileName, hostProject), file);
             Files.deleteIfExists(file.toPath());

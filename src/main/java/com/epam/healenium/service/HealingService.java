@@ -1,10 +1,8 @@
 package com.epam.healenium.service;
 
 import com.epam.healenium.model.dto.*;
-import com.epam.healenium.treecomparing.Node;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,10 +11,11 @@ public interface HealingService {
     /**
      * Healing attempt of given target selector in presented page source
      * @param dto
-     * @param headers
      * @param screenshot
+     * @param headers
+     * @param metrics
      */
-    void saveHealing(HealingRequestDto dto, MultipartFile screenshot, Map<String, String> headers);
+    void saveHealing(HealingRequestDto dto, MultipartFile screenshot, Map<String, String> headers, String metrics);
 
     /**
      * Store selector
@@ -29,7 +28,7 @@ public interface HealingService {
      * @param dto
      * @return
      */
-    List<List<Node>> getSelectorPath(RequestDto dto);
+    LastHealingDataDto getSelectorPath(RequestDto dto);
 
     /**
      *

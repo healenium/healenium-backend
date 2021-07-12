@@ -11,6 +11,7 @@ import com.epam.healenium.model.dto.HealingRequestDto;
 import com.epam.healenium.model.dto.HealingResultDto;
 import com.epam.healenium.model.dto.RecordDto;
 import com.epam.healenium.model.dto.RequestDto;
+import com.epam.healenium.model.dto.LastHealingDataDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
 import com.epam.healenium.repository.HealingRepository;
 import com.epam.healenium.repository.HealingResultRepository;
@@ -24,10 +25,12 @@ import com.epam.healenium.treecomparing.Node;
 import com.epam.healenium.util.StreamUtils;
 import com.epam.healenium.util.Utils;
 import io.prometheus.client.Summary;
+import jdk.internal.joptsimple.internal.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.io.FileHandler;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -71,15 +74,19 @@ public class HealingServiceImpl implements HealingService {
     }
 
     @Override
-    public List<List<Node>> getSelectorPath(RequestDto dto) {
+    public LastHealingDataDto getSelectorPath(RequestDto dto) {
         String selectorId = Utils.buildKey(dto.getClassName(), dto.getMethodName(), dto.getLocator());
-        return selectorRepository.findById(selectorId)
+        List<Healing> lastHealing = healingRepository.findLastBySelectorId(selectorId, PageRequest.of(0, 1));
+        List<List<Node>> paths = selectorRepository.findById(selectorId)
                 .map(t -> t.getNodePathWrapper().getNodePath())
                 .orElse(Collections.emptyList());
+        return new LastHealingDataDto()
+                .setPaths(paths)
+                .setPageContent(lastHealing.isEmpty() ? Strings.EMPTY : lastHealing.get(0).getPageContent());
     }
 
     @Override
-    public void saveHealing(HealingRequestDto dto, MultipartFile screenshot, Map<String, String> headers) {
+    public void saveHealing(HealingRequestDto dto, MultipartFile screenshot, Map<String, String> headers, String metrics) {
         // obtain healing
         Healing healing = getHealing(dto);
         // collect healing results
@@ -95,7 +102,7 @@ public class HealingServiceImpl implements HealingService {
                 .orElseThrow(() -> new IllegalArgumentException("Internal exception! Somehow we lost selected healing result on save"));
         // add report record
         createReportRecord(selectedResult, healing, headers.get(SESSION_KEY), screenshot);
-        pushMetrics(dto, headers, selectedResult);
+        pushMetrics(metrics, headers, selectedResult);
     }
 
     @Override
@@ -215,12 +222,12 @@ public class HealingServiceImpl implements HealingService {
         return Paths.get(filePath, file.getOriginalFilename()).toString();
     }
 
-    private void pushMetrics(HealingRequestDto dto, Map<String, String> headers, HealingResult selectedResult) {
+    private void pushMetrics(String metrics, Map<String, String> headers, HealingResult selectedResult) {
         Summary healLatency = prometheusService.createSummaryLatency();
         healLatency.observe(Double.parseDouble(StringUtils.defaultIfEmpty(headers.get(HEALING_TIME), "0.0")));
         prometheusService.pushAndClear(headers);
 
-        amazonS3Service.uploadObject(selectedResult, dto.getLocator(),
+        amazonS3Service.uploadObject(metrics, selectedResult,
                 StringUtils.defaultIfEmpty(headers.get(HOST_PROJECT), EMPTY_PROJECT));
     }
 }
