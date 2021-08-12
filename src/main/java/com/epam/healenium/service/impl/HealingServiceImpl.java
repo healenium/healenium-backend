@@ -223,11 +223,15 @@ public class HealingServiceImpl implements HealingService {
     }
 
     private void pushMetrics(String metrics, Map<String, String> headers, HealingResult selectedResult) {
-        Summary healLatency = prometheusService.createSummaryLatency();
-        healLatency.observe(Double.parseDouble(StringUtils.defaultIfEmpty(headers.get(HEALING_TIME), "0.0")));
-        prometheusService.pushAndClear(headers);
+        try {
+            Summary healLatency = prometheusService.createSummaryLatency();
+            healLatency.observe(Double.parseDouble(StringUtils.defaultIfEmpty(headers.get(HEALING_TIME), "0.0")));
+            prometheusService.pushAndClear(headers);
 
-        amazonS3Service.uploadObject(metrics, selectedResult,
-                StringUtils.defaultIfEmpty(headers.get(HOST_PROJECT), EMPTY_PROJECT));
+            amazonS3Service.uploadObject(metrics, selectedResult,
+                    StringUtils.defaultIfEmpty(headers.get(HOST_PROJECT), EMPTY_PROJECT));
+        } catch (Exception ex) {
+            log.warn("Error during push Prometheus metrics: {}", ex.getMessage());
+        }
     }
 }
