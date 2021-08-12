@@ -145,10 +145,14 @@ public class HealingServiceImpl implements HealingService {
             HealingResult healingResult = healingResultOptional.get();
             healingResult.setSuccessHealing(dto.isSuccessHealing());
             resultRepository.save(healingResult);
-            if (!dto.isSuccessHealing()) {
-                amazonS3Service.moveObject(SUCCESSFUL_HEALING_BUCKET, UNSUCCESSFUL_HEALING_BUCKET, healingResult);
-            } else {
-                amazonS3Service.moveObject(UNSUCCESSFUL_HEALING_BUCKET, SUCCESSFUL_HEALING_BUCKET, healingResult);
+            try {
+                if (!dto.isSuccessHealing()) {
+                    amazonS3Service.moveObject(SUCCESSFUL_HEALING_BUCKET, UNSUCCESSFUL_HEALING_BUCKET, healingResult);
+                } else {
+                    amazonS3Service.moveObject(UNSUCCESSFUL_HEALING_BUCKET, SUCCESSFUL_HEALING_BUCKET, healingResult);
+                }
+            } catch (Exception ex) {
+                log.warn("Error during move metrics: {}", ex.getMessage());
             }
         }
     }
@@ -231,7 +235,7 @@ public class HealingServiceImpl implements HealingService {
             amazonS3Service.uploadObject(metrics, selectedResult,
                     StringUtils.defaultIfEmpty(headers.get(HOST_PROJECT), EMPTY_PROJECT));
         } catch (Exception ex) {
-            log.warn("Error during push Prometheus metrics: {}", ex.getMessage());
+            log.warn("Error during push metrics: {}", ex.getMessage());
         }
     }
 }
