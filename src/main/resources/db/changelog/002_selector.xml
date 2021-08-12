@@ -18,7 +18,7 @@
             <column name="METHOD_NAME" type="VARCHAR(128)">
                 <constraints nullable="false"/>
             </column>
-            <column name="LOCATOR" type="VARCHAR(264)">
+            <column name="LOCATOR" type="VARCHAR">
                 <constraints nullable="false"/>
             </column>
             <column name="NODE_PATH" type="VARCHAR">
