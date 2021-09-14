@@ -102,7 +102,7 @@ public class HealingServiceImpl implements HealingService {
                 .orElseThrow(() -> new IllegalArgumentException("Internal exception! Somehow we lost selected healing result on save"));
         // add report record
         createReportRecord(selectedResult, healing, headers.get(SESSION_KEY), screenshot);
-        pushMetrics(metrics, headers, selectedResult);
+//        pushMetrics(metrics, headers, selectedResult);
     }
 
     @Override
@@ -208,6 +208,7 @@ public class HealingServiceImpl implements HealingService {
                 reportRepository.save(r);
             });
         }
+        reportRepository.flush();
     }
 
     /**
