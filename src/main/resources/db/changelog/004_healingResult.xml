@@ -9,7 +9,7 @@
             <column name="ID" type="BIGINT">
                 <constraints nullable="false" />
             </column>
-            <column name="LOCATOR" type="VARCHAR(264)">
+            <column name="LOCATOR" type="VARCHAR">
                 <constraints nullable="false"/>
             </column>
             <column name="HEALING_ID" type="VARCHAR(64)">

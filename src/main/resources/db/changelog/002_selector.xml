@@ -9,13 +9,13 @@
             <column name="UID" type="VARCHAR(64)">
                 <constraints nullable="false"/>
             </column>
-            <column name="NAME" type="VARCHAR(128)">
+            <column name="NAME" type="VARCHAR(264)">
                 <constraints nullable="false"/>
             </column>
-            <column name="CLASS_NAME" type="VARCHAR(128)">
+            <column name="CLASS_NAME" type="VARCHAR(264)">
                 <constraints nullable="false"/>
             </column>
-            <column name="METHOD_NAME" type="VARCHAR(128)">
+            <column name="METHOD_NAME" type="VARCHAR(264)">
                 <constraints nullable="false"/>
             </column>
             <column name="LOCATOR" type="VARCHAR">
