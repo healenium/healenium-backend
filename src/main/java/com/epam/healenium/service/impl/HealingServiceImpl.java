@@ -75,7 +75,7 @@ public class HealingServiceImpl implements HealingService {
 
     @Override
     public LastHealingDataDto getSelectorPath(RequestDto dto) {
-        String selectorId = Utils.buildKey(dto.getClassName(), dto.getMethodName(), dto.getLocator());
+        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator());
         List<Healing> lastHealing = healingRepository.findLastBySelectorId(selectorId, PageRequest.of(0, 1));
         List<List<Node>> paths = selectorRepository.findById(selectorId)
                 .map(t -> t.getNodePathWrapper().getNodePath())
@@ -132,7 +132,7 @@ public class HealingServiceImpl implements HealingService {
 
     @Override
     public Set<HealingResultDto> getHealingResults(RequestDto dto) {
-        String selectorId = Utils.buildKey(dto.getClassName(), dto.getMethodName(), dto.getLocator());
+        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator());
         return healingRepository.findBySelectorId(selectorId).stream()
                 .flatMap(it -> healingMapper.modelToResultDto(it.getResults()).stream())
                 .collect(Collectors.toSet());
@@ -159,7 +159,7 @@ public class HealingServiceImpl implements HealingService {
 
     private Healing getHealing(HealingRequestDto dto) {
         // build selector key
-        String selectorId = Utils.buildKey(dto.getClassName(), dto.getMethodName(), dto.getLocator());
+        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator());
         // build healing key
         String healingId = Utils.buildHealingKey(selectorId, dto.getPageContent());
         return healingRepository.findById(healingId).orElseGet(() -> {

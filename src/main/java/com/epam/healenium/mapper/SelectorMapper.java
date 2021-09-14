@@ -15,7 +15,7 @@ public interface SelectorMapper {
 
     default Selector dtoToDocument(SelectorRequestDto dto) {
         Selector element = new Selector();
-        element.setUid(Utils.buildKey(dto.getClassName(), dto.getMethodName(), dto.getLocator()));
+        element.setUid(Utils.buildKey(dto.getClassName(), dto.getLocator()));
         element.setClassName(dto.getClassName());
         element.setMethodName(dto.getMethodName());
         element.setName(dto.getClassName() + "." + dto.getMethodName() + "()");
