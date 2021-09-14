@@ -21,12 +21,11 @@ public class Utils {
      * Builds ID for element that represent selector meta
      *
      * @param className  the fully qualified name of the class
-     * @param methodName the name of the method
      * @param locator    the selector value
      * @return hashed key of locator
      */
-    public String buildKey(String className, String methodName, String locator) {
-        String rawKey = className.concat(methodName) + locator.hashCode();
+    public String buildKey(String className, String locator) {
+        String rawKey = className + locator.hashCode();
         return DigestUtils.md5DigestAsHex(rawKey.trim().getBytes(StandardCharsets.UTF_8));
     }
 
