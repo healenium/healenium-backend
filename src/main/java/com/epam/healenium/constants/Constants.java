@@ -10,7 +10,7 @@ public class Constants {
     public static final String TXT = ".txt";
     public static final String SUCCESSFUL_HEALING_BUCKET = "successful-healing";
     public static final String UNSUCCESSFUL_HEALING_BUCKET = "unsuccessful-healing";
-    public static final String DD_MMM_YYYY = "dd_MMM_yyyy";
+    public static final String YYYY_MM_DD = "yyyy_MM_dd";
     public static final String HH_MM_SS_DD_MMM_YYYY = "HH_mm_ss dd_MMM_yyyy";
     public static final String TARGET_LOCATOR = "Target locator: ";
     public static final String HEALED_LOCATOR = "Healed locator: ";
