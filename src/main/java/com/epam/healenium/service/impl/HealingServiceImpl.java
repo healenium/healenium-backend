@@ -17,14 +17,13 @@ import com.epam.healenium.repository.HealingRepository;
 import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.repository.SelectorRepository;
-import com.epam.healenium.service.AmazonS3Service;
+import com.epam.healenium.rest.AmazonRestService;
 import com.epam.healenium.service.HealingService;
 import com.epam.healenium.service.PrometheusService;
 import com.epam.healenium.specification.HealingSpecBuilder;
 import com.epam.healenium.treecomparing.Node;
 import com.epam.healenium.util.StreamUtils;
 import com.epam.healenium.util.Utils;
-import io.prometheus.client.Summary;
 import jdk.internal.joptsimple.internal.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +64,7 @@ public class HealingServiceImpl implements HealingService {
     private final HealingMapper healingMapper;
 
     private final PrometheusService prometheusService;
-    private final AmazonS3Service amazonS3Service;
+    private final AmazonRestService amazonRestService;
 
     @Override
     public void saveSelector(SelectorRequestDto request) {
@@ -102,7 +101,7 @@ public class HealingServiceImpl implements HealingService {
                 .orElseThrow(() -> new IllegalArgumentException("Internal exception! Somehow we lost selected healing result on save"));
         // add report record
         createReportRecord(selectedResult, healing, headers.get(SESSION_KEY), screenshot);
-//        pushMetrics(metrics, headers, selectedResult);
+        pushMetrics(metrics, headers, selectedResult);
     }
 
     @Override
@@ -147,9 +146,9 @@ public class HealingServiceImpl implements HealingService {
             resultRepository.save(healingResult);
             try {
                 if (!dto.isSuccessHealing()) {
-                    amazonS3Service.moveObject(SUCCESSFUL_HEALING_BUCKET, UNSUCCESSFUL_HEALING_BUCKET, healingResult);
+                    amazonRestService.moveMetrics(SUCCESSFUL_HEALING_BUCKET, healingResult);
                 } else {
-                    amazonS3Service.moveObject(UNSUCCESSFUL_HEALING_BUCKET, SUCCESSFUL_HEALING_BUCKET, healingResult);
+                    amazonRestService.moveMetrics(UNSUCCESSFUL_HEALING_BUCKET, healingResult);
                 }
             } catch (Exception ex) {
                 log.warn("Error during move metrics: {}", ex.getMessage());
@@ -229,11 +228,11 @@ public class HealingServiceImpl implements HealingService {
 
     private void pushMetrics(String metrics, Map<String, String> headers, HealingResult selectedResult) {
         try {
-            Summary healLatency = prometheusService.createSummaryLatency();
-            healLatency.observe(Double.parseDouble(StringUtils.defaultIfEmpty(headers.get(HEALING_TIME), "0.0")));
-            prometheusService.pushAndClear(headers);
+//            Summary healLatency = prometheusService.createSummaryLatency();
+//            healLatency.observe(Double.parseDouble(StringUtils.defaultIfEmpty(headers.get(HEALING_TIME), "0.0")));
+//            prometheusService.pushAndClear(headers);
 
-            amazonS3Service.uploadObject(metrics, selectedResult,
+            amazonRestService.uploadMetrics(metrics, selectedResult,
                     StringUtils.defaultIfEmpty(headers.get(HOST_PROJECT), EMPTY_PROJECT));
         } catch (Exception ex) {
             log.warn("Error during push metrics: {}", ex.getMessage());
