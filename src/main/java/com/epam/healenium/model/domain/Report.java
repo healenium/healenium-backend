@@ -35,8 +35,8 @@ import java.time.LocalDateTime;
 public class Report {
 
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid2")
+    @GeneratedValue(generator = "report-uuid-generator")
+    @GenericGenerator(name = "report-uuid-generator", strategy = "com.epam.healenium.generator.ReportUUIDGenerator")
     @Column(name = "uid")
     private String uid;
 
