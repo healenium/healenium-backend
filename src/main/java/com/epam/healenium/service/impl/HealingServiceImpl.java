@@ -9,9 +9,9 @@ import com.epam.healenium.model.domain.Selector;
 import com.epam.healenium.model.dto.HealingDto;
 import com.epam.healenium.model.dto.HealingRequestDto;
 import com.epam.healenium.model.dto.HealingResultDto;
+import com.epam.healenium.model.dto.LastHealingDataDto;
 import com.epam.healenium.model.dto.RecordDto;
 import com.epam.healenium.model.dto.RequestDto;
-import com.epam.healenium.model.dto.LastHealingDataDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
 import com.epam.healenium.repository.HealingRepository;
 import com.epam.healenium.repository.HealingResultRepository;
@@ -47,7 +47,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.epam.healenium.constants.Constants.*;
+import static com.epam.healenium.constants.Constants.EMPTY_PROJECT;
+import static com.epam.healenium.constants.Constants.HOST_PROJECT;
+import static com.epam.healenium.constants.Constants.SESSION_KEY;
+import static com.epam.healenium.constants.Constants.SUCCESSFUL_HEALING_BUCKET;
+import static com.epam.healenium.constants.Constants.UNSUCCESSFUL_HEALING_BUCKET;
 
 @Slf4j
 @Service

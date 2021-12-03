@@ -33,6 +33,12 @@ public class ReportController {
         return reportService.initialize();
     }
 
+    @PostMapping("/init/{uid}")
+    public String initById(@PathVariable String uid) {
+        String key = reportService.initialize(uid);
+        return Paths.get(reportUrl, key).toString();
+    }
+
     @PostMapping("/build")
     public String build(@RequestHeader("sessionKey") String key) {
         return Paths.get(reportUrl, key).toString();

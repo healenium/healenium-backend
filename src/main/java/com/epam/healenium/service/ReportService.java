@@ -11,10 +11,18 @@ public interface ReportService {
     String initialize();
 
     /**
+     * Initialize new report
+     * @param uid
+     * @return
+     */
+    String initialize(String uid);
+
+    /**
      * Finalize report
      * @param key
      * @return
      */
     RecordDto generate(String key);
+
 
 }

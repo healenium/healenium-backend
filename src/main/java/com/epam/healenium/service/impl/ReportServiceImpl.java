@@ -1,5 +1,6 @@
 package com.epam.healenium.service.impl;
 
+import com.epam.healenium.constants.Constants;
 import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.domain.Report;
 import com.epam.healenium.model.dto.RecordDto;
@@ -29,6 +30,14 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
+    public String initialize(String uid) {
+        Report report = new Report()
+                .setUid(uid)
+                .setCreatedDate(LocalDateTime.now());
+        return reportRepository.save(report).getUid();
+    }
+
+    @Override
     public RecordDto generate(String key) {
         RecordDto result = new RecordDto();
         Optional<Report> optionalReport = reportRepository.findById(key);
@@ -37,7 +46,9 @@ public class ReportServiceImpl implements ReportService {
             result.setTime(report.getCreatedDate().format(DateTimeFormatter.ISO_DATE_TIME));
             report.getRecordWrapper().getRecords().forEach(it -> {
                 ReportRecord reportRecord = new ReportRecord();
-                reportRecord.setDeclaringClass(it.getName());
+                reportRecord.setDeclaringClass(Constants.PROXY_POST_METHOD_CLASS_PATH.equals(it.getName())
+                        ? it.getFailedLocator().getValue()
+                        : it.getName());
                 reportRecord.setScreenShotPath(it.getScreenShotPath());
                 reportRecord.setFailedLocatorType(it.getFailedLocator().getType());
                 reportRecord.setFailedLocatorValue(it.getFailedLocator().getValue());
