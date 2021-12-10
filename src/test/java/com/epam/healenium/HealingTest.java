@@ -158,6 +158,7 @@ public class HealingTest extends TestContainersInitializer {
         dto.setLocator("//div[@title='inner']");
         dto.setClassName("com.epam.healenium.SomeTest");
         dto.setMethodName("testMethod()");
+        dto.setUrl("https://test-url");
         return dto;
     }
 
@@ -176,6 +177,7 @@ public class HealingTest extends TestContainersInitializer {
         dto.setType("xpath");
         dto.setClassName("com.epam.healenium.SomeTest");
         dto.setMethodName("testMethod()");
+        dto.setUrl("https://test-url");
         dto.setPageContent(new String(StreamUtils.copyToByteArray(this.getClass().getResourceAsStream("/index.html"))));
         dto.setResults(Collections.singletonList(healingResultDto));
         dto.setUsedResult(healingResultDto);
@@ -195,6 +197,7 @@ public class HealingTest extends TestContainersInitializer {
         dto.setType("xpath");
         dto.setClassName("com.epam.healenium.SomeTest");
         dto.setMethodName("testMethod()");
+        dto.setUrl("https://test-url");
         dto.setNodePath(getLastValidPath());
         return dto;
     }

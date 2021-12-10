@@ -8,5 +8,6 @@ public class RequestDto {
     private String locator;
     private String className;
     private String methodName;
+    private String url;
 
 }

@@ -27,7 +27,6 @@ public class RecordWrapper {
         Selector selector = healing.getSelector();
 
         records.add(new Record()
-                .setName(selector.getName())
                 .setClassName(selector.getClassName())
                 .setMethodName(selector.getMethodName())
                 .setFailedLocator(selector.getLocator())
@@ -39,7 +38,6 @@ public class RecordWrapper {
     @Data
     @Accessors(chain = true)
     public static class Record implements Serializable {
-        private String name;
         private String className;
         private String methodName;
         private Locator failedLocator;

@@ -22,10 +22,11 @@ public class Utils {
      *
      * @param className  the fully qualified name of the class
      * @param locator    the selector value
+     * @param url
      * @return hashed key of locator
      */
-    public String buildKey(String className, String locator) {
-        String rawKey = className + locator.hashCode();
+    public String buildKey(String className, String locator, String url) {
+        String rawKey = className.concat(url) + locator.hashCode();
         return DigestUtils.md5DigestAsHex(rawKey.trim().getBytes(StandardCharsets.UTF_8));
     }
 

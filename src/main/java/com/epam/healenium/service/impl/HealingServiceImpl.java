@@ -19,7 +19,6 @@ import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.repository.SelectorRepository;
 import com.epam.healenium.rest.AmazonRestService;
 import com.epam.healenium.service.HealingService;
-import com.epam.healenium.service.PrometheusService;
 import com.epam.healenium.specification.HealingSpecBuilder;
 import com.epam.healenium.treecomparing.Node;
 import com.epam.healenium.util.StreamUtils;
@@ -67,7 +66,6 @@ public class HealingServiceImpl implements HealingService {
     private final SelectorMapper selectorMapper;
     private final HealingMapper healingMapper;
 
-    private final PrometheusService prometheusService;
     private final AmazonRestService amazonRestService;
 
     @Override
@@ -78,7 +76,7 @@ public class HealingServiceImpl implements HealingService {
 
     @Override
     public LastHealingDataDto getSelectorPath(RequestDto dto) {
-        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator());
+        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator(), dto.getUrl());
         List<Healing> lastHealing = healingRepository.findLastBySelectorId(selectorId, PageRequest.of(0, 1));
         List<List<Node>> paths = selectorRepository.findById(selectorId)
                 .map(t -> t.getNodePathWrapper().getNodePath())
@@ -135,7 +133,7 @@ public class HealingServiceImpl implements HealingService {
 
     @Override
     public Set<HealingResultDto> getHealingResults(RequestDto dto) {
-        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator());
+        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator(), dto.getUrl());
         return healingRepository.findBySelectorId(selectorId).stream()
                 .flatMap(it -> healingMapper.modelToResultDto(it.getResults()).stream())
                 .collect(Collectors.toSet());
@@ -162,7 +160,7 @@ public class HealingServiceImpl implements HealingService {
 
     private Healing getHealing(HealingRequestDto dto) {
         // build selector key
-        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator());
+        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator(), dto.getUrl());
         // build healing key
         String healingId = Utils.buildHealingKey(selectorId, dto.getPageContent());
         return healingRepository.findById(healingId).orElseGet(() -> {
@@ -232,10 +230,6 @@ public class HealingServiceImpl implements HealingService {
 
     private void pushMetrics(String metrics, Map<String, String> headers, HealingResult selectedResult) {
         try {
-//            Summary healLatency = prometheusService.createSummaryLatency();
-//            healLatency.observe(Double.parseDouble(StringUtils.defaultIfEmpty(headers.get(HEALING_TIME), "0.0")));
-//            prometheusService.pushAndClear(headers);
-
             amazonRestService.uploadMetrics(metrics, selectedResult,
                     StringUtils.defaultIfEmpty(headers.get(HOST_PROJECT), EMPTY_PROJECT));
         } catch (Exception ex) {
