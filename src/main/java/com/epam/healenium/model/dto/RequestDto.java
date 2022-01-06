@@ -9,5 +9,6 @@ public class RequestDto {
     private String className;
     private String methodName;
     private String url;
+    private byte[] screenshot;
 
 }

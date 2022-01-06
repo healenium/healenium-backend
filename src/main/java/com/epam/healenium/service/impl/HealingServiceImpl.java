@@ -9,6 +9,7 @@ import com.epam.healenium.model.domain.Selector;
 import com.epam.healenium.model.dto.HealingDto;
 import com.epam.healenium.model.dto.HealingRequestDto;
 import com.epam.healenium.model.dto.HealingResultDto;
+import com.epam.healenium.model.dto.HealingResultRequestDto;
 import com.epam.healenium.model.dto.LastHealingDataDto;
 import com.epam.healenium.model.dto.RecordDto;
 import com.epam.healenium.model.dto.RequestDto;
@@ -27,11 +28,10 @@ import jdk.internal.joptsimple.internal.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.openqa.selenium.io.FileHandler;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
+import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 import javax.transaction.Transactional;
 import java.io.File;
@@ -87,23 +87,23 @@ public class HealingServiceImpl implements HealingService {
     }
 
     @Override
-    public void saveHealing(HealingRequestDto dto, MultipartFile screenshot, Map<String, String> headers, String metrics) {
+    public void saveHealing(HealingResultRequestDto dto, Map<String, String> headers) {
         // obtain healing
-        Healing healing = getHealing(dto);
+        Healing healing = getHealing(dto.getRequestDto());
         // collect healing results
-        Collection<HealingResult> healingResults = buildHealingResults(dto.getResults(), healing);
+        Collection<HealingResult> healingResults = buildHealingResults(dto.getRequestDto().getResults(), healing);
         HealingResult selectedResult = healingResults.stream()
                 .filter(it -> {
                     String firstLocator, secondLocator;
                     firstLocator = it.getLocator().getValue();
-                    secondLocator = dto.getUsedResult().getLocator().getValue();
+                    secondLocator = dto.getRequestDto().getUsedResult().getLocator().getValue();
                     return firstLocator.equals(secondLocator);
                 })
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Internal exception! Somehow we lost selected healing result on save"));
         // add report record
-        createReportRecord(selectedResult, healing, headers.get(SESSION_KEY), screenshot);
-        pushMetrics(metrics, headers, selectedResult);
+        createReportRecord(selectedResult, healing, headers.get(SESSION_KEY), dto.getRequestDto().getScreenshot());
+        pushMetrics(dto.getMetrics(), headers, selectedResult);
     }
 
     @Override
@@ -199,7 +199,7 @@ public class HealingServiceImpl implements HealingService {
      * @param healing
      * @param sessionId
      */
-    private void createReportRecord(HealingResult result, Healing healing, String sessionId, MultipartFile screenshot) {
+    private void createReportRecord(HealingResult result, Healing healing, String sessionId, byte[] screenshot) {
         if (!StringUtils.isEmpty(sessionId)) {
             String screenshotDir = "/screenshots/" + sessionId;
             String screenshotPath = persistScreenshot(screenshot, screenshotDir);
@@ -209,29 +209,30 @@ public class HealingServiceImpl implements HealingService {
                 reportRepository.save(r);
             });
         }
-        reportRepository.flush();
     }
 
     /**
-     * @param file
+     * @param screenshotContent
      * @param filePath
      */
-    private String persistScreenshot(MultipartFile file, String filePath) {
+    private String persistScreenshot(byte[] screenshotContent, String filePath) {
         String rootDir = Paths.get("").toAbsolutePath().toString();
-        String baseDir = Paths.get(rootDir, filePath).toString();
+        String fileName = Paths.get(rootDir, filePath, Utils.buildScreenshotName()).toString();
         try {
-            FileHandler.createDir(new File(baseDir));
-            file.transferTo(Paths.get(baseDir, file.getOriginalFilename()));
+            File file = new File(fileName);
+            FileUtils.writeByteArrayToFile(file, screenshotContent);
         } catch (Exception ex) {
-            log.warn("Failed to save screenshot {} in {}", file.getOriginalFilename(), baseDir);
+            log.warn("Failed to save screenshot {}", fileName);
         }
-        return Paths.get(filePath, file.getOriginalFilename()).toString();
+        return fileName;
     }
 
     private void pushMetrics(String metrics, Map<String, String> headers, HealingResult selectedResult) {
         try {
-            amazonRestService.uploadMetrics(metrics, selectedResult,
-                    StringUtils.defaultIfEmpty(headers.get(HOST_PROJECT), EMPTY_PROJECT));
+            if (metrics != null) {
+                amazonRestService.uploadMetrics(metrics, selectedResult,
+                        StringUtils.defaultIfEmpty(headers.get(HOST_PROJECT), EMPTY_PROJECT));
+            }
         } catch (Exception ex) {
             log.warn("Error during push metrics: {}", ex.getMessage());
         }
