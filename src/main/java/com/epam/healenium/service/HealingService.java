@@ -1,7 +1,12 @@
 package com.epam.healenium.service;
 
-import com.epam.healenium.model.dto.*;
-import org.springframework.web.multipart.MultipartFile;
+import com.epam.healenium.model.dto.HealingDto;
+import com.epam.healenium.model.dto.HealingResultDto;
+import com.epam.healenium.model.dto.HealingResultRequestDto;
+import com.epam.healenium.model.dto.LastHealingDataDto;
+import com.epam.healenium.model.dto.RecordDto;
+import com.epam.healenium.model.dto.RequestDto;
+import com.epam.healenium.model.dto.SelectorRequestDto;
 
 import java.util.Map;
 import java.util.Set;
@@ -10,28 +15,26 @@ public interface HealingService {
 
     /**
      * Healing attempt of given target selector in presented page source
+     *
      * @param dto
-     * @param screenshot
      * @param headers
-     * @param metrics
      */
-    void saveHealing(HealingRequestDto dto, MultipartFile screenshot, Map<String, String> headers, String metrics);
+    void saveHealing(HealingResultRequestDto dto, Map<String, String> headers);
 
     /**
      * Store selector
+     *
      * @param request
      */
     void saveSelector(SelectorRequestDto request);
 
     /**
-     *
      * @param dto
      * @return
      */
     LastHealingDataDto getSelectorPath(RequestDto dto);
 
     /**
-     *
      * @param dto
      * @return
      */
@@ -39,6 +42,7 @@ public interface HealingService {
 
     /**
      * Search for stored healing results
+     *
      * @param dto
      * @return
      */
@@ -46,6 +50,7 @@ public interface HealingService {
 
     /**
      * Store successHealing
+     *
      * @param dto
      */
     void saveSuccessHealing(RecordDto.ReportRecord dto);

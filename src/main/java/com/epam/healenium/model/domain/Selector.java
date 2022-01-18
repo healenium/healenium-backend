@@ -40,8 +40,8 @@ public class Selector {
     @Column(name = "uid")
     private String uid;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "url")
+    private String url;
 
     @Column(name = "class_name")
     private String className;

@@ -4,6 +4,7 @@ import com.epam.healenium.initializer.TestContainersInitializer;
 import com.epam.healenium.model.Locator;
 import com.epam.healenium.model.dto.HealingRequestDto;
 import com.epam.healenium.model.dto.HealingResultDto;
+import com.epam.healenium.model.dto.HealingResultRequestDto;
 import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
 import com.epam.healenium.model.wrapper.NodePathWrapper;
@@ -81,10 +82,11 @@ public class HealingTest extends TestContainersInitializer {
         Assertions.assertEquals(1, selectorRepository.count());
 
         // proceed healing
-        HealingRequestDto healingRequest = buildHealingRequest();
+        HealingResultRequestDto healingRequest = new HealingResultRequestDto()
+                .setRequestDto(buildHealingRequest());
         Map<String, String> headers = getHeaders();
         MultipartFile screenshot = buildMultipart();
-        healingService.saveHealing(healingRequest, screenshot, headers, null);
+        healingService.saveHealing(healingRequest, headers);
         Assertions.assertEquals(1, healingRepository.count());
         Assertions.assertEquals(1, healingResultRepository.count());
 
@@ -158,6 +160,7 @@ public class HealingTest extends TestContainersInitializer {
         dto.setLocator("//div[@title='inner']");
         dto.setClassName("com.epam.healenium.SomeTest");
         dto.setMethodName("testMethod()");
+        dto.setUrl("https://test-url");
         return dto;
     }
 
@@ -176,6 +179,7 @@ public class HealingTest extends TestContainersInitializer {
         dto.setType("xpath");
         dto.setClassName("com.epam.healenium.SomeTest");
         dto.setMethodName("testMethod()");
+        dto.setUrl("https://test-url");
         dto.setPageContent(new String(StreamUtils.copyToByteArray(this.getClass().getResourceAsStream("/index.html"))));
         dto.setResults(Collections.singletonList(healingResultDto));
         dto.setUsedResult(healingResultDto);
@@ -195,6 +199,7 @@ public class HealingTest extends TestContainersInitializer {
         dto.setType("xpath");
         dto.setClassName("com.epam.healenium.SomeTest");
         dto.setMethodName("testMethod()");
+        dto.setUrl("https://test-url");
         dto.setNodePath(getLastValidPath());
         return dto;
     }

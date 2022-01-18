@@ -1,6 +1,12 @@
 package com.epam.healenium.controller;
 
-import com.epam.healenium.model.dto.*;
+import com.epam.healenium.model.dto.HealingDto;
+import com.epam.healenium.model.dto.HealingResultDto;
+import com.epam.healenium.model.dto.HealingResultRequestDto;
+import com.epam.healenium.model.dto.LastHealingDataDto;
+import com.epam.healenium.model.dto.RecordDto;
+import com.epam.healenium.model.dto.RequestDto;
+import com.epam.healenium.model.dto.SelectorRequestDto;
 import com.epam.healenium.service.HealingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,11 +16,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,14 +62,12 @@ public class HealingController {
      * @return
      */
     @PostMapping("/healing")
-    public void save(@Valid @RequestParam("dto") HealingRequestDto dto,
-                     @RequestParam("screenshot") MultipartFile screenshot,
-                     @RequestParam("metrics") String metrics,
+    public void save(@Valid @RequestBody List<HealingResultRequestDto> dto,
                      @RequestHeader Map<String, String> headers) {
         if (StringUtils.isEmpty(headers.get(SESSION_KEY))) {
             log.warn("Session key is not present. Current issue would not be presented in any reports, but still available in replacement!");
         }
-        healingService.saveHealing(dto, screenshot, headers, metrics);
+        dto.forEach(requestDto -> healingService.saveHealing(requestDto, headers));
     }
 
     /**

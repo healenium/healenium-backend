@@ -15,10 +15,10 @@ public interface SelectorMapper {
 
     default Selector dtoToDocument(SelectorRequestDto dto) {
         Selector element = new Selector();
-        element.setUid(Utils.buildKey(dto.getClassName(), dto.getLocator()));
+        element.setUid(Utils.buildKey(dto.getClassName(), dto.getLocator(), dto.getUrl()));
         element.setClassName(dto.getClassName());
         element.setMethodName(dto.getMethodName());
-        element.setName(dto.getClassName() + "." + dto.getMethodName() + "()");
+        element.setUrl(dto.getUrl());
         element.setLocator(new Locator(dto.getLocator(), dto.getType()));
         element.setNodePathWrapper(new NodePathWrapper(dto.getNodePath()));
         element.setCreatedDate(LocalDateTime.now());

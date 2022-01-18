@@ -6,7 +6,6 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,8 +22,9 @@ public class ImageController {
     byte[] getImageWithMediaType(@PathVariable String uid, @PathVariable String name) throws IOException {
         String rootDir = Paths.get("").toAbsolutePath().toString();
         String path = Paths.get(rootDir, "/screenshots/" + uid + "/" + name).toString();
-        InputStream inputStream = new FileInputStream(new File(path));
-        return IOUtils.toByteArray(inputStream);
+        try (InputStream inputStream = new FileInputStream(path)) {
+            return IOUtils.toByteArray(inputStream);
+        }
     }
 
 }
