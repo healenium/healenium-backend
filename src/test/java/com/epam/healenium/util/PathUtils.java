@@ -30,7 +30,7 @@ public class PathUtils {
         ResourceReader.readResource("itemsWithAttributes.js", s -> s.collect(Collectors.joining()));
 
     public List<Node> getNodePath(WebDriver webDriver, WebElement webElement) {
-        log.debug("* getNodePath start: " + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
+        log.debug("* getNodePath start: {}", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
         JavascriptExecutor executor = (JavascriptExecutor) webDriver;
         String data = (String) executor.executeScript(SCRIPT, webElement);
         List<Node> path = new LinkedList<>();
@@ -47,7 +47,7 @@ public class PathUtils {
         } catch (Exception ex) {
             log.error("Failed to get element node path!", ex);
         }
-        log.debug("* getNodePath finish: " + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
+        log.debug("* getNodePath finish: {}", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
         return path;
     }
 
