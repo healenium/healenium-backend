@@ -17,11 +17,12 @@ services:
       - healenium
 
   healenium:
-    image: healenium/hlm-backend:latest
+    image: healenium/hlm-backend:3.2.0
     ports:
       - "7878:7878"
     links:
       - db
+    restart: always
     environment:
       - SPRING_CONTAINER_NAME=healenium
       - SPRING_POSTGRES_DB=healenium
@@ -30,6 +31,12 @@ services:
       - SPRING_POSTGRES_URL=jdbc:postgresql://db:5432/healenium?currentSchema=healenium
     networks:
       - healenium
+
+  selector-imitator:
+    image: healenium/hlm-selector-imitator:1
+    restart: on-failure
+    ports:
+      - "8000:8000"
 
 networks:
   healenium:
