@@ -9,6 +9,6 @@ public class Constants {
     public static final String YYYY_MM_DD = "yyyy_MM_dd";
     public static final String EMPTY_PROJECT = "empty_project";
 
-    public static final String PROXY_CLASS_PATH = "com.epam.healenium";
+    public static final String PROXY_CLASS_PATH = "HealeniumFindElementPostRequest";
 
 }

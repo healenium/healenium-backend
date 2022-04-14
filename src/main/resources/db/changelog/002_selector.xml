@@ -9,7 +9,7 @@
             <column name="UID" type="VARCHAR(64)">
                 <constraints nullable="false"/>
             </column>
-            <column name="URL" type="VARCHAR(264)">
+            <column name="URL" type="VARCHAR">
                 <constraints nullable="false"/>
             </column>
             <column name="CLASS_NAME" type="VARCHAR(264)">
