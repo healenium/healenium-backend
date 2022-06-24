@@ -26,21 +26,21 @@ services:
     depends_on:
       - db
     environment:
-      - SPRING_CONTAINER_NAME=healenium
       - SPRING_POSTGRES_DB=healenium
+      - SPRING_POSTGRES_SCHEMA=healenium
       - SPRING_POSTGRES_USER=healenium_user
       - SPRING_POSTGRES_PASSWORD=YDk2nmNs4s9aCP6K
-      - SPRING_POSTGRES_URL=jdbc:postgresql://db:5432/healenium?currentSchema=healenium
-      - SPRING_POSTGRES_DB_PORT=5432
-      - SPRING_SERVER_PORT=7878
     networks:
       - healenium
 
   selector-imitator:
-    image: healenium/hlm-selector-imitator:1
+    image: healenium/hlm-selector-imitator:1.1
+    container_name: selector-imitator
     restart: on-failure
     ports:
       - "8000:8000"
+    networks:
+      - healenium
 
 networks:
   healenium:

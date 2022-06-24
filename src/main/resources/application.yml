@@ -24,12 +24,13 @@ spring:
     database: ${SPRING_POSTGRES_DB:healenium}
     username: ${SPRING_POSTGRES_USER:healenium_user}
     password: ${SPRING_POSTGRES_PASSWORD:YDk2nmNs4s9aCP6K}
-    url: jdbc:postgresql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.database}?autoReconnect=true
+    url: jdbc:postgresql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.database}?${SPRING_POSTGRES_SCHEMA:healenium}&autoReconnect=true
     hikari:
       maximumPoolSize: 6
       minimumIdle: 4
       driverClassName: org.postgresql.Driver
-      jdbcUrl: ${SPRING_POSTGRES_URL:${spring.datasource.url}}
+      jdbcUrl: ${spring.datasource.url:${SPRING_POSTGRES_URL}}
+      schema: ${SPRING_POSTGRES_SCHEMA:healenium}
     jpa:
       database-platform: org.hibernate.dialect.PostgreSQLDialect
       packages_to_scan: com.epam.healenium.model
@@ -46,6 +47,7 @@ spring:
   liquibase:
     change-log: classpath:/db/changelog/changelog-main.xml
     enabled: true
+    liquibase-schema:
 
 app:
   host: ${SPRING_HOST_NAME:localhost}

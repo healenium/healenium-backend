@@ -48,7 +48,8 @@ import java.util.stream.Collectors;
 
 import static com.epam.healenium.constants.Constants.EMPTY_PROJECT;
 import static com.epam.healenium.constants.Constants.HOST_PROJECT;
-import static com.epam.healenium.constants.Constants.SESSION_KEY;
+import static com.epam.healenium.constants.Constants.SESSION_KEY_V1;
+import static com.epam.healenium.constants.Constants.SESSION_KEY_V2;
 import static com.epam.healenium.constants.Constants.SUCCESSFUL_HEALING_BUCKET;
 import static com.epam.healenium.constants.Constants.UNSUCCESSFUL_HEALING_BUCKET;
 
@@ -102,7 +103,7 @@ public class HealingServiceImpl implements HealingService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Internal exception! Somehow we lost selected healing result on save"));
         // add report record
-        createReportRecord(selectedResult, healing, headers.get(SESSION_KEY), dto.getRequestDto().getScreenshot());
+        createReportRecord(selectedResult, healing, getSessionKey(headers), dto.getRequestDto().getScreenshot());
         pushMetrics(dto.getMetrics(), headers, selectedResult);
     }
 
@@ -236,5 +237,9 @@ public class HealingServiceImpl implements HealingService {
         } catch (Exception ex) {
             log.warn("Error during push metrics: {}", ex.getMessage());
         }
+    }
+
+    private String getSessionKey(Map<String, String> headers) {
+        return !headers.get(SESSION_KEY_V1).isEmpty() ? headers.get(SESSION_KEY_V1) : headers.get(SESSION_KEY_V2);
     }
 }

@@ -23,7 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.epam.healenium.constants.Constants.SESSION_KEY;
+import static com.epam.healenium.constants.Constants.SESSION_KEY_V1;
+import static com.epam.healenium.constants.Constants.SESSION_KEY_V2;
 
 @Slf4j
 @RestController
@@ -64,7 +65,7 @@ public class HealingController {
     @PostMapping("/healing")
     public void save(@Valid @RequestBody List<HealingResultRequestDto> dto,
                      @RequestHeader Map<String, String> headers) {
-        if (StringUtils.isEmpty(headers.get(SESSION_KEY))) {
+        if (StringUtils.isEmpty(headers.get(SESSION_KEY_V1)) && StringUtils.isEmpty(headers.get(SESSION_KEY_V2))) {
             log.warn("Session key is not present. Current issue would not be presented in any reports, but still available in replacement!");
         }
         dto.forEach(requestDto -> healingService.saveHealing(requestDto, headers));
