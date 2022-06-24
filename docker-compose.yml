@@ -2,7 +2,7 @@ version: "3.3"
 
 services:
 
-  db:
+  hlm-postgres:
     image: postgres:11-alpine
     ports:
       - "5432:5432"
@@ -22,14 +22,13 @@ services:
     ports:
       - "7878:7878"
     links:
-      - db
-    depends_on:
-      - db
+      - hlm-postgres
     environment:
       - SPRING_POSTGRES_DB=healenium
       - SPRING_POSTGRES_SCHEMA=healenium
       - SPRING_POSTGRES_USER=healenium_user
       - SPRING_POSTGRES_PASSWORD=YDk2nmNs4s9aCP6K
+      - SPRING_POSTGRES_DB_HOST=hlm-postgres
     networks:
       - healenium
 
