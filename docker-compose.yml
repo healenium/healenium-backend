@@ -4,6 +4,7 @@ services:
 
   postgres-db:
     image: postgres:11-alpine
+    container_name: postgres-db
     ports:
       - "5432:5432"
     volumes:
