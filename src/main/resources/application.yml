@@ -5,6 +5,10 @@ server:
     max-swallow-size: -1
 
 spring:
+  banner:
+    image:
+      location:
+        /images/banner.png
   servlet.multipart:
     max-file-size: -1
     max-request-size: -1
