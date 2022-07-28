@@ -2,8 +2,9 @@ version: "3.3"
 
 services:
 
-  hlm-postgres:
+  postgres-db:
     image: postgres:11-alpine
+    container_name: postgres-db
     ports:
       - "5432:5432"
     volumes:
@@ -22,13 +23,13 @@ services:
     ports:
       - "7878:7878"
     links:
-      - hlm-postgres
+      - postgres-db
     environment:
       - SPRING_POSTGRES_DB=healenium
       - SPRING_POSTGRES_SCHEMA=healenium
       - SPRING_POSTGRES_USER=healenium_user
       - SPRING_POSTGRES_PASSWORD=YDk2nmNs4s9aCP6K
-      - SPRING_POSTGRES_DB_HOST=hlm-postgres
+      - SPRING_POSTGRES_DB_HOST=postgres-db
     networks:
       - healenium
 
