@@ -1,40 +1,23 @@
 package com.epam.healenium.initializer;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
-@Slf4j
-@ActiveProfiles("test")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ContextConfiguration(initializers = TestContainersInitializer.Initializer.class)
-@Testcontainers
 public abstract class TestContainersInitializer {
-
-    private static PostgreSQLContainer<?> postgresContainer;
+    private static final PostgreSQLContainer<?> POSTGRES_SQL_CONTAINER;
 
     static {
-        postgresContainer = new PostgreSQLContainer<>()
-                .withDatabaseName("healenium")
-                .withPassword("YDk2nmNs4s9aCP6K")
-                .withUsername("healenium_user");
-        postgresContainer.start();
+        POSTGRES_SQL_CONTAINER = new PostgreSQLContainer<>(DockerImageName.parse("postgres:14.2-alpine"))
+                .withInitScript("init.sql");
+        POSTGRES_SQL_CONTAINER.start();
     }
 
-    static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-
-        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-            TestPropertyValues.of(
-                    "spring.datasource.url=" + postgresContainer.getJdbcUrl(),
-                    "spring.datasource.username=" + postgresContainer.getUsername(),
-                    "spring.datasource.password=" + postgresContainer.getPassword()
-            ).applyTo(configurableApplicationContext.getEnvironment());
-        }
+    @DynamicPropertySource
+    static void properties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", POSTGRES_SQL_CONTAINER::getJdbcUrl);
+        registry.add("spring.datasource.username", POSTGRES_SQL_CONTAINER::getUsername);
+        registry.add("spring.datasource.password", POSTGRES_SQL_CONTAINER::getPassword);
     }
 }
