@@ -46,7 +46,8 @@ public class ReportServiceImpl implements ReportService {
             result.setTime(report.getCreatedDate().format(DateTimeFormatter.ISO_DATE_TIME));
             report.getRecordWrapper().getRecords().forEach(it -> {
                 ReportRecord reportRecord = new ReportRecord();
-                reportRecord.setDeclaringClass(it.getClassName().contains(Constants.PROXY_CLASS_PATH)
+                reportRecord.setDeclaringClass(it.getClassName().contains(Constants.SINGLE_ELEMENT_PROXY_CLASS_PATH)
+                        || it.getClassName().contains(Constants.MULTIPLE_ELEMENTS_PROXY_CLASS_PATH)
                         ? it.getFailedLocator().getValue()
                         : it.getClassName() + "." + it.getMethodName() + "()");
                 reportRecord.setScreenShotPath(it.getScreenShotPath());

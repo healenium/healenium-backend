@@ -1,5 +1,6 @@
 package com.epam.healenium.util;
 
+import jdk.internal.joptsimple.internal.Strings;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.DigestUtils;
@@ -26,6 +27,11 @@ public class Utils {
         return DigestUtils.md5DigestAsHex(rawKey.trim().getBytes(StandardCharsets.UTF_8));
     }
 
+    public String buildKey(String className, String locator, String url, boolean urlForKey, boolean pathForKey) {
+        String addressForKey = getAddressForKey(url, urlForKey, pathForKey);
+        return buildKey(className, locator, addressForKey);
+    }
+
     /**
      * Builds ID for healing record
      *
@@ -46,5 +52,25 @@ public class Utils {
     public String buildScreenshotName() {
         return "screenshot_" + LocalDateTime.now().format(DateTimeFormatter
                 .ofPattern("dd-MMM-yyyy-hh-mm-ss.SSS").withLocale(Locale.US)) + ".png";
+    }
+
+    public String getAddressForKey(String url, boolean urlForKey, boolean pathForKey) {
+        try {
+            if (urlForKey && pathForKey) {
+                return url;
+            }
+            if (urlForKey && !pathForKey) {
+                return url.substring(0, url.indexOf("/") + 1);
+            }
+            if (!urlForKey && pathForKey) {
+                return url.substring(url.indexOf("/"));
+            }
+            if (!urlForKey && !pathForKey) {
+                return Strings.EMPTY;
+            }
+        } catch (Exception e) {
+            log.warn("Error during parse url. Message: {}", e.getMessage());
+        }
+        return Strings.EMPTY;
     }
 }

@@ -1,0 +1,241 @@
+<!--
+
+    Healenium-web Copyright (C) 2019 EPAM
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+           http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>SHA</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+
+        .content-wrapper {
+            max-width: 80%;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            margin: 0 auto;
+        }
+
+        .header {
+            width: 100%;
+            height: 60px;
+            background-color: #f8f8f8;
+        }
+
+        .logo-title {
+            margin-left: 10px;
+            font-size: 14px;
+            font-family: Roboto, sans-serif;
+            font-weight: 600;
+            color: #000000;
+        }
+
+        .main-area {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .report-info {
+            margin: 30px 0;
+            font-size: 24px;
+            font-family: Roboto, sans-serif;
+            font-weight: 600;
+            color: #000000;
+        }
+
+        .table-column {
+            flex: 2 0 10%;
+            width: 30%;
+        }
+
+
+        .elements-table-header {
+            display: flex;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f2f2f4;
+            font-size: 16px;
+            font-family: Roboto, sans-serif;
+            font-weight: 600;
+            color: #9b9b9b;
+        }
+
+        .elements-table-row.Accepted .row-status {
+            color: #5cb85c;
+        }
+
+        .elements-table-row.Denied .row-status {
+            color: #d9534f;
+        }
+        .elements-table-row svg {
+            transform: rotate(90deg);
+        }
+        .elements-table-row.content-hidden .row-content {
+            display: none;
+        }
+        .elements-table-row.content-hidden svg {
+            transform: none;
+        }
+
+        .row-caption-text {
+            max-width: 90%;
+            overflow: hidden;
+            font-size: 13px;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: bold;
+            text-overflow: ellipsis;
+            word-wrap: break-word;
+        }
+
+        .row-content {
+            display: flex;
+            margin-top: 25px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f2f2f4;
+        }
+        .row-content.hidden {
+            display: none;
+        }
+        .row-content .element-column {
+            margin: 10px 0 0 30px;
+        }
+
+        @keyframes zoom {
+            from {transform:scale(0)}
+            to {transform:scale(1)}
+        }
+
+        .header-float {
+            float: left;
+        }
+
+        .report-description {
+            margin: 30px 0;
+            font-size: 16px;
+            font-family: Roboto, sans-serif;
+            font-weight: 600;
+            color: #9b9b9b;
+        }
+
+        input[type="checkbox"] {
+            width: 80px;
+            height: 35px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background: #E67574;
+            outline: none;
+            border-radius: 25px;
+            box-shadow: inset 0 0 3px rgba(0,0,0, .2);
+            transition: 0.5s;
+            position: relative;
+        }
+
+        input:checked[type="checkbox"] {
+            background: #6ECBA0;
+        }
+
+        input[type="checkbox"]::before {
+            content: '';
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            top: 0;
+            left: 0;
+            background: #fff;
+            transform: scale(1.1);
+            box-shadow: 0 1px 4px rgba(0,0,0, .2);
+            transition: 0.5s;
+        }
+
+        input:checked[type="checkbox"]::before {
+            left: 50px;
+        }
+
+        @media only screen and (max-width: 700px){
+            .modal-content {
+                width: 100%;
+            }
+        }
+
+
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="content-wrapper">
+        <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+                <g fill="none" fill-rule="evenodd" transform="rotate(45 10 10)">
+                    <path fill="#F8F8F8" stroke="#000" stroke-width="2"
+                          d="M0 10a5 5 0 0 1 5-5h10a5 5 0 0 1 0 10H5a5 5 0 0 1-5-5z"></path>
+                    <path fill="#F8F8F8" stroke="#000" stroke-width="2"
+                          d="M10 0a5 5 0 0 1 5 5v10a5 5 0 0 1-10 0V5a5 5 0 0 1 5-5z"></path>
+                    <rect width="4" height="6" x="8" y="7" fill="#000" rx="2"></rect>
+                </g>
+            </svg>
+        </div>
+        <span class="logo-title">SHA</span>
+    </div>
+</header>
+<main class="content-wrapper">
+    <div class="main-area">
+        <div>
+            <div class="header-float">
+                <h2 class="report-info">
+                    <span class="report-name">Stored Selectors</span>
+                </h2>
+                <div class="report-description">
+                    <span class="report-name">Healenium saves a successful locator in the storage to use it as a baseline for the next test executions</span>
+                </div>
+            </div>
+        </div>
+        <div class="report-content">
+            <div class="elements-table-header">
+                <span class="table-column">Locator</span>
+                <span class="table-column">URL</span>
+                <span class="table-column">Class name</span>
+            </div>
+            <div data-elements-table>
+                    <div class="row-content" th:each="elem,iter : ${dto}">
+                        <div class="table-column">
+                            <span class="row-caption-text" th:text="${elem.locator}"/>
+                        </div>
+                        <div class="table-column">
+                            <span class="row-caption-text" th:text="${elem.url}"/>
+                        </div>
+                        <div class="table-column">
+                            <span class="row-caption-text" th:text="${elem.className}"/>
+                        </div>
+                    </div>
+
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+
+
+</script>
+</html>

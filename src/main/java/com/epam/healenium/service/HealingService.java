@@ -8,6 +8,7 @@ import com.epam.healenium.model.dto.RecordDto;
 import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,4 +55,6 @@ public interface HealingService {
      * @param dto
      */
     void saveSuccessHealing(RecordDto.ReportRecord dto);
+
+    List<RequestDto> getAllSelectors();
 }
