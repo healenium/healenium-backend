@@ -28,6 +28,7 @@ import jdk.internal.joptsimple.internal.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -69,15 +70,21 @@ public class HealingServiceImpl implements HealingService {
 
     private final AmazonRestService amazonRestService;
 
+
+    @Value("${app.selector.key.url-for-key}")
+    private boolean urlForKey;
+    @Value("${app.selector.key.path-for-key}")
+    private boolean pathForKey;
+
     @Override
     public void saveSelector(SelectorRequestDto request) {
-        final Selector selector = selectorMapper.dtoToDocument(request);
+        final Selector selector = selectorMapper.dtoToDocument(request, urlForKey, pathForKey);
         selectorRepository.save(selector);
     }
 
     @Override
     public LastHealingDataDto getSelectorPath(RequestDto dto) {
-        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator(), dto.getUrl());
+        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator(), dto.getUrl(), urlForKey, pathForKey);
         List<Healing> lastHealing = healingRepository.findLastBySelectorId(selectorId, PageRequest.of(0, 1));
         List<List<Node>> paths = selectorRepository.findById(selectorId)
                 .map(t -> t.getNodePathWrapper().getNodePath())
@@ -134,7 +141,7 @@ public class HealingServiceImpl implements HealingService {
 
     @Override
     public Set<HealingResultDto> getHealingResults(RequestDto dto) {
-        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator(), dto.getUrl());
+        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator(), dto.getUrl(), urlForKey, pathForKey);
         return healingRepository.findBySelectorId(selectorId).stream()
                 .flatMap(it -> healingMapper.modelToResultDto(it.getResults()).stream())
                 .collect(Collectors.toSet());
@@ -159,9 +166,15 @@ public class HealingServiceImpl implements HealingService {
         }
     }
 
+    @Override
+    public List<RequestDto> getAllSelectors() {
+        List<Selector> selectors = selectorRepository.findAll();
+        return selectorMapper.toSelectorDto(selectors);
+    }
+
     private Healing getHealing(HealingRequestDto dto) {
         // build selector key
-        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator(), dto.getUrl());
+        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator(), dto.getUrl(), urlForKey, pathForKey);
         // build healing key
         String healingId = Utils.buildHealingKey(selectorId, dto.getPageContent());
         return healingRepository.findById(healingId).orElseGet(() -> {

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -26,7 +27,7 @@ import java.util.Set;
 import static com.epam.healenium.constants.Constants.SESSION_KEY_V1;
 import static com.epam.healenium.constants.Constants.SESSION_KEY_V2;
 
-@Slf4j
+@Slf4j()
 @RestController
 @RequestMapping("/healenium")
 @RequiredArgsConstructor
@@ -41,6 +42,7 @@ public class HealingController {
      */
     @PostMapping()
     public void save(@Valid @RequestBody SelectorRequestDto request) {
+        log.info("Save locator: {}({})", request.getType(), request.getLocator());
         healingService.saveSelector(request);
     }
 
@@ -96,5 +98,13 @@ public class HealingController {
     @PostMapping("/healing/success")
     public void successHealing(@Valid @RequestBody RecordDto.ReportRecord dto) {
         healingService.saveSuccessHealing(dto);
+    }
+
+    @GetMapping("/selectors")
+    public ModelAndView get() {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("selector");
+        modelAndView.addObject("dto", healingService.getAllSelectors());
+        return modelAndView;
     }
 }

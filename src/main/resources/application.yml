@@ -60,6 +60,10 @@ app:
   url:
     page-source: http://${SPRING_CONTAINER_NAME:localhost}:${app.port}/pages
     report: healenium/report
+  selector:
+    key:
+      url-for-key: ${KEY_SELECTOR_URL:true}
+      path-for-key: ${KEY_SELECTOR_PATH:true}
 
 cloud:
   aws:

@@ -14,6 +14,7 @@ import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.repository.SelectorRepository;
 import com.epam.healenium.service.HealingService;
 import com.epam.healenium.treecomparing.Node;
+import com.epam.healenium.util.Utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.RestAssured;
 import io.restassured.config.ObjectMapperConfig;
@@ -62,6 +63,7 @@ public class HealingTest extends TestContainersInitializer {
     private final ReportRepository reportRepository;
 
     private final ObjectMapper objectMapper;
+    private Utils utils;
 
     @BeforeAll
     static void beforeAll(@LocalServerPort int localPort, @Autowired ObjectMapper mapper) {
@@ -153,6 +155,10 @@ public class HealingTest extends TestContainersInitializer {
         healingResultRepository.deleteAll();
         healingRepository.deleteAll();
         selectorRepository.deleteAll();
+    }
+
+    public void sdfsdf() {
+
     }
 
     private RequestDto buildRequest() {
