@@ -111,7 +111,7 @@ public class HealingServiceImpl implements HealingService {
                 .orElseThrow(() -> new IllegalArgumentException("Internal exception! Somehow we lost selected healing result on save"));
         // add report record
         createReportRecord(selectedResult, healing, getSessionKey(headers), dto.getRequestDto().getScreenshot());
-        pushMetrics(dto.getMetrics(), headers, selectedResult);
+        pushMetrics(dto.getMetrics(), headers, selectedResult, dto.getRequestDto().getUrl());
     }
 
     @Override
@@ -241,11 +241,11 @@ public class HealingServiceImpl implements HealingService {
         return fileName;
     }
 
-    private void pushMetrics(String metrics, Map<String, String> headers, HealingResult selectedResult) {
+    private void pushMetrics(String metrics, Map<String, String> headers, HealingResult selectedResult, String url) {
         try {
             if (metrics != null) {
                 amazonRestService.uploadMetrics(metrics, selectedResult,
-                        StringUtils.defaultIfEmpty(headers.get(HOST_PROJECT), EMPTY_PROJECT));
+                        StringUtils.defaultIfEmpty(headers.get(HOST_PROJECT), EMPTY_PROJECT), url);
             }
         } catch (Exception ex) {
             log.warn("Error during push metrics: {}", ex.getMessage());
