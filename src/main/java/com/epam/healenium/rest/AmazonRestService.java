@@ -18,7 +18,7 @@ public class AmazonRestService {
 
     private static final String AWS_LAMBDA_API_URL = "https://b72wq5tyt0.execute-api.eu-central-1.amazonaws.com/healenium";
 
-    public void uploadMetrics(String metrics, HealingResult selectedResult, String hostProject) {
+    public void uploadMetrics(String metrics, HealingResult selectedResult, String hostProject, String url) {
         WebClient.builder()
                 .baseUrl(AWS_LAMBDA_API_URL + "/upload")
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -28,6 +28,7 @@ public class AmazonRestService {
                         .queryParam("project", hostProject)
                         .queryParam("result", selectedResult.getId().toString())
                         .queryParam("healing", selectedResult.getHealing().getUid())
+                        .queryParam("url", url)
                         .build())
                 .bodyValue(metrics)
                 .exchange()
