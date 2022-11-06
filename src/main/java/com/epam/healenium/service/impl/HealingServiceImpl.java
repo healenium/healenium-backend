@@ -75,6 +75,8 @@ public class HealingServiceImpl implements HealingService {
     private boolean urlForKey;
     @Value("${app.selector.key.path-for-key}")
     private boolean pathForKey;
+    @Value("${app.metrics.allow}")
+    private boolean allowCollectMetrics;
 
     @Override
     public void saveSelector(SelectorRequestDto request) {
@@ -111,7 +113,9 @@ public class HealingServiceImpl implements HealingService {
                 .orElseThrow(() -> new IllegalArgumentException("Internal exception! Somehow we lost selected healing result on save"));
         // add report record
         createReportRecord(selectedResult, healing, getSessionKey(headers), dto.getRequestDto().getScreenshot());
-        pushMetrics(dto.getMetrics(), headers, selectedResult, dto.getRequestDto().getUrl());
+        if (allowCollectMetrics) {
+            pushMetrics(dto.getMetrics(), headers, selectedResult, dto.getRequestDto().getUrl());
+        }
     }
 
     @Override
@@ -154,14 +158,8 @@ public class HealingServiceImpl implements HealingService {
             HealingResult healingResult = healingResultOptional.get();
             healingResult.setSuccessHealing(dto.isSuccessHealing());
             resultRepository.save(healingResult);
-            try {
-                if (!dto.isSuccessHealing()) {
-                    amazonRestService.moveMetrics(SUCCESSFUL_HEALING_BUCKET, healingResult);
-                } else {
-                    amazonRestService.moveMetrics(UNSUCCESSFUL_HEALING_BUCKET, healingResult);
-                }
-            } catch (Exception ex) {
-                log.warn("Error during move metrics: {}", ex.getMessage());
+            if (allowCollectMetrics) {
+                moveMetrics(dto, healingResult);
             }
         }
     }
@@ -249,6 +247,18 @@ public class HealingServiceImpl implements HealingService {
             }
         } catch (Exception ex) {
             log.warn("Error during push metrics: {}", ex.getMessage());
+        }
+    }
+
+    private void moveMetrics(RecordDto.ReportRecord dto, HealingResult healingResult) {
+        try {
+            if (!dto.isSuccessHealing()) {
+                amazonRestService.moveMetrics(SUCCESSFUL_HEALING_BUCKET, healingResult);
+            } else {
+                amazonRestService.moveMetrics(UNSUCCESSFUL_HEALING_BUCKET, healingResult);
+            }
+        } catch (Exception ex) {
+            log.warn("Error during move metrics: {}", ex.getMessage());
         }
     }
 

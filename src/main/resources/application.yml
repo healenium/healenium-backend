@@ -64,6 +64,8 @@ app:
     key:
       url-for-key: ${KEY_SELECTOR_URL:true}
       path-for-key: ${KEY_SELECTOR_PATH:true}
+  metrics:
+    allow: ${COLLECT_METRICS:true}
 
 cloud:
   aws:
