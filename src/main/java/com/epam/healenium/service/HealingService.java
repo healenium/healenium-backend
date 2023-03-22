@@ -1,14 +1,11 @@
 package com.epam.healenium.service;
 
 import com.epam.healenium.model.dto.HealingDto;
+import com.epam.healenium.model.dto.HealingRequestDto;
 import com.epam.healenium.model.dto.HealingResultDto;
-import com.epam.healenium.model.dto.HealingResultRequestDto;
-import com.epam.healenium.model.dto.LastHealingDataDto;
 import com.epam.healenium.model.dto.RecordDto;
 import com.epam.healenium.model.dto.RequestDto;
-import com.epam.healenium.model.dto.SelectorRequestDto;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,20 +17,7 @@ public interface HealingService {
      * @param dto
      * @param headers
      */
-    void saveHealing(HealingResultRequestDto dto, Map<String, String> headers);
-
-    /**
-     * Store selector
-     *
-     * @param request
-     */
-    void saveSelector(SelectorRequestDto request);
-
-    /**
-     * @param dto
-     * @return
-     */
-    LastHealingDataDto getSelectorPath(RequestDto dto);
+    void saveHealing(HealingRequestDto dto, Map<String, String> headers);
 
     /**
      * @param dto
@@ -56,5 +40,4 @@ public interface HealingService {
      */
     void saveSuccessHealing(RecordDto.ReportRecord dto);
 
-    List<RequestDto> getAllSelectors();
 }

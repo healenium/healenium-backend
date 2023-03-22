@@ -18,13 +18,17 @@ import java.nio.file.Paths;
 public class ImageController {
 
     @GetMapping(value = "/{uid}/{name}", produces = MediaType.IMAGE_PNG_VALUE)
-    public @ResponseBody
-    byte[] getImageWithMediaType(@PathVariable String uid, @PathVariable String name) throws IOException {
-        String rootDir = Paths.get("").toAbsolutePath().toString();
-        String path = Paths.get(rootDir, "/screenshots/" + uid + "/" + name).toString();
-        try (InputStream inputStream = new FileInputStream(path)) {
-            return IOUtils.toByteArray(inputStream);
+    public @ResponseBody byte[] getImageWithMediaType(@PathVariable String uid, @PathVariable String name) throws IOException {
+        try {
+            String rootDir = Paths.get("").toAbsolutePath().toString();
+            String path = Paths.get(rootDir, "/screenshots/" + uid + "/" + name).toString();
+            try (InputStream inputStream = new FileInputStream(path)) {
+                return IOUtils.toByteArray(inputStream);
+            }
+        } catch (Exception e) {
+            log.warn("[Image] Error during Get Image for report: {}", e.getMessage());
         }
+        return null;
     }
 
 }

@@ -1,7 +1,6 @@
 server:
   port: ${SPRING_SERVER_PORT:7878}
   tomcat:
-    max-http-post-size: -1
     max-swallow-size: -1
 
 spring:
@@ -62,8 +61,8 @@ app:
     report: healenium/report
   selector:
     key:
-      url-for-key: ${KEY_SELECTOR_URL:true}
-      path-for-key: ${KEY_SELECTOR_PATH:true}
+      url-for-key: ${KEY_SELECTOR_URL:false}
+      path-for-key: ${KEY_SELECTOR_PATH:false}
   metrics:
     allow: ${COLLECT_METRICS:true}
 
@@ -79,5 +78,6 @@ logging:
     ROOT: ${SPRING_LOG_LEVEL:INFO}
     org.springframework: INFO
     org.mongodb.driver.connection: WARN
+    healenium: ${HLM_LOG_LEVEL:debug}
   pattern:
     console: '%d{yyyy-MM-dd HH:mm:ss.SSS,Europe/Moscow} %clr(%5p) %clr(${PID:- }){magenta} %clr(-){faint} %clr([%11.11t]){faint} %clr(%-32.32logger{30}){cyan} %clr(:){faint} %replace(%m){''[\n\r]'',''\\n ''} %replace(%ex){''[\r\n]'', ''\\n ''}%nopex%n'
