@@ -15,5 +15,10 @@ public class HealingRequestDto extends RequestDto {
     private String pageContent;
     private List<HealingResultDto> results;
     private HealingResultDto usedResult;
+    @ToString.Exclude
+    private byte[] screenshot;
+    @ToString.Exclude
+    private String metrics;
+    private List<String> elementIds;
 
 }

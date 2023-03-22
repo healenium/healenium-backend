@@ -2,43 +2,33 @@ package com.epam.healenium.service.impl;
 
 import com.epam.healenium.exception.MissingSelectorException;
 import com.epam.healenium.mapper.HealingMapper;
-import com.epam.healenium.mapper.SelectorMapper;
 import com.epam.healenium.model.domain.Healing;
 import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.domain.Selector;
 import com.epam.healenium.model.dto.HealingDto;
 import com.epam.healenium.model.dto.HealingRequestDto;
 import com.epam.healenium.model.dto.HealingResultDto;
-import com.epam.healenium.model.dto.HealingResultRequestDto;
-import com.epam.healenium.model.dto.LastHealingDataDto;
 import com.epam.healenium.model.dto.RecordDto;
 import com.epam.healenium.model.dto.RequestDto;
-import com.epam.healenium.model.dto.SelectorRequestDto;
 import com.epam.healenium.repository.HealingRepository;
 import com.epam.healenium.repository.HealingResultRepository;
-import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.repository.SelectorRepository;
 import com.epam.healenium.rest.AmazonRestService;
 import com.epam.healenium.service.HealingService;
+import com.epam.healenium.service.ReportService;
+import com.epam.healenium.service.SelectorService;
 import com.epam.healenium.specification.HealingSpecBuilder;
-import com.epam.healenium.treecomparing.Node;
 import com.epam.healenium.util.StreamUtils;
 import com.epam.healenium.util.Utils;
-import jdk.internal.joptsimple.internal.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 import javax.transaction.Transactional;
-import java.io.File;
-import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -54,64 +44,47 @@ import static com.epam.healenium.constants.Constants.SESSION_KEY_V2;
 import static com.epam.healenium.constants.Constants.SUCCESSFUL_HEALING_BUCKET;
 import static com.epam.healenium.constants.Constants.UNSUCCESSFUL_HEALING_BUCKET;
 
-@Slf4j
+@Slf4j(topic = "healenium")
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class HealingServiceImpl implements HealingService {
 
-    private final HealingRepository healingRepository;
-    private final SelectorRepository selectorRepository;
-    private final HealingResultRepository resultRepository;
-    private final ReportRepository reportRepository;
-
-    private final SelectorMapper selectorMapper;
-    private final HealingMapper healingMapper;
-
-    private final AmazonRestService amazonRestService;
-
-
     @Value("${app.selector.key.url-for-key}")
     private boolean urlForKey;
     @Value("${app.selector.key.path-for-key}")
     private boolean pathForKey;
+    @Value("${app.metrics.allow}")
+    private boolean allowCollectMetrics;
+
+    private final HealingRepository healingRepository;
+    private final SelectorRepository selectorRepository;
+    private final SelectorService selectorService;
+    private final HealingResultRepository resultRepository;
+    private final ReportService reportService;
+    private final HealingMapper healingMapper;
+    private final AmazonRestService amazonRestService;
 
     @Override
-    public void saveSelector(SelectorRequestDto request) {
-        final Selector selector = selectorMapper.dtoToDocument(request, urlForKey, pathForKey);
-        selectorRepository.save(selector);
-    }
-
-    @Override
-    public LastHealingDataDto getSelectorPath(RequestDto dto) {
-        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator(), dto.getUrl(), urlForKey, pathForKey);
-        List<Healing> lastHealing = healingRepository.findLastBySelectorId(selectorId, PageRequest.of(0, 1));
-        List<List<Node>> paths = selectorRepository.findById(selectorId)
-                .map(t -> t.getNodePathWrapper().getNodePath())
-                .orElse(Collections.emptyList());
-        return new LastHealingDataDto()
-                .setPaths(paths)
-                .setPageContent(lastHealing.isEmpty() ? Strings.EMPTY : lastHealing.get(0).getPageContent());
-    }
-
-    @Override
-    public void saveHealing(HealingResultRequestDto dto, Map<String, String> headers) {
+    public void saveHealing(HealingRequestDto dto, Map<String, String> headers) {
         // obtain healing
-        Healing healing = getHealing(dto.getRequestDto());
+        Healing healing = getHealing(dto);
         // collect healing results
-        Collection<HealingResult> healingResults = buildHealingResults(dto.getRequestDto().getResults(), healing);
+        Collection<HealingResult> healingResults = buildHealingResults(dto.getResults(), healing);
         HealingResult selectedResult = healingResults.stream()
                 .filter(it -> {
                     String firstLocator, secondLocator;
                     firstLocator = it.getLocator().getValue();
-                    secondLocator = dto.getRequestDto().getUsedResult().getLocator().getValue();
+                    secondLocator = dto.getUsedResult().getLocator().getValue();
                     return firstLocator.equals(secondLocator);
                 })
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Internal exception! Somehow we lost selected healing result on save"));
+                .orElseThrow(() -> new IllegalArgumentException("[Save Healing] Internal exception! Somehow we lost selected healing result on save"));
         // add report record
-        createReportRecord(selectedResult, healing, getSessionKey(headers), dto.getRequestDto().getScreenshot());
-        pushMetrics(dto.getMetrics(), headers, selectedResult);
+        reportService.createReportRecord(selectedResult, healing, getSessionKey(headers), dto.getScreenshot());
+        if (allowCollectMetrics) {
+            pushMetrics(dto.getMetrics(), headers, selectedResult, dto.getUrl());
+        }
     }
 
     @Override
@@ -141,7 +114,8 @@ public class HealingServiceImpl implements HealingService {
 
     @Override
     public Set<HealingResultDto> getHealingResults(RequestDto dto) {
-        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator(), dto.getUrl(), urlForKey, pathForKey);
+        String selectorId = selectorService.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), urlForKey, pathForKey);
+        log.debug("[Get Healing Result] Selector ID: {}", selectorId);
         return healingRepository.findBySelectorId(selectorId).stream()
                 .flatMap(it -> healingMapper.modelToResultDto(it.getResults()).stream())
                 .collect(Collectors.toSet());
@@ -154,27 +128,15 @@ public class HealingServiceImpl implements HealingService {
             HealingResult healingResult = healingResultOptional.get();
             healingResult.setSuccessHealing(dto.isSuccessHealing());
             resultRepository.save(healingResult);
-            try {
-                if (!dto.isSuccessHealing()) {
-                    amazonRestService.moveMetrics(SUCCESSFUL_HEALING_BUCKET, healingResult);
-                } else {
-                    amazonRestService.moveMetrics(UNSUCCESSFUL_HEALING_BUCKET, healingResult);
-                }
-            } catch (Exception ex) {
-                log.warn("Error during move metrics: {}", ex.getMessage());
+            if (allowCollectMetrics) {
+                moveMetrics(dto, healingResult);
             }
         }
     }
 
-    @Override
-    public List<RequestDto> getAllSelectors() {
-        List<Selector> selectors = selectorRepository.findAll();
-        return selectorMapper.toSelectorDto(selectors);
-    }
-
     private Healing getHealing(HealingRequestDto dto) {
         // build selector key
-        String selectorId = Utils.buildKey(dto.getClassName(), dto.getLocator(), dto.getUrl(), urlForKey, pathForKey);
+        String selectorId = selectorService.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), urlForKey, pathForKey);
         // build healing key
         String healingId = Utils.buildHealingKey(selectorId, dto.getPageContent());
         return healingRepository.findById(healingId).orElseGet(() -> {
@@ -206,49 +168,29 @@ public class HealingServiceImpl implements HealingService {
         List<HealingResult> results = resultRepository.saveAll(healingResults);
     }
 
-    /**
-     * Create record in report about healing
-     *
-     * @param result
-     * @param healing
-     * @param sessionId
-     */
-    private void createReportRecord(HealingResult result, Healing healing, String sessionId, byte[] screenshot) {
-        if (!StringUtils.isEmpty(sessionId)) {
-            String screenshotDir = "/screenshots/" + sessionId;
-            String screenshotPath = persistScreenshot(screenshot, screenshotDir);
-            // if healing performs during test phase, add report record
-            reportRepository.findById(sessionId).ifPresent(r -> {
-                r.getRecordWrapper().addRecord(healing, result, screenshotPath);
-                reportRepository.save(r);
-            });
-        }
-    }
-
-    /**
-     * @param screenshotContent
-     * @param filePath
-     */
-    private String persistScreenshot(byte[] screenshotContent, String filePath) {
-        String rootDir = Paths.get("").toAbsolutePath().toString();
-        String fileName = Paths.get(rootDir, filePath, Utils.buildScreenshotName()).toString();
-        try {
-            File file = new File(fileName);
-            FileUtils.writeByteArrayToFile(file, screenshotContent);
-        } catch (Exception ex) {
-            log.warn("Failed to save screenshot {}", fileName);
-        }
-        return fileName;
-    }
-
-    private void pushMetrics(String metrics, Map<String, String> headers, HealingResult selectedResult) {
+    private void pushMetrics(String metrics, Map<String, String> headers, HealingResult selectedResult, String url) {
         try {
             if (metrics != null) {
+                log.debug("[Save Healing] Push Metrics: {}", selectedResult);
                 amazonRestService.uploadMetrics(metrics, selectedResult,
-                        StringUtils.defaultIfEmpty(headers.get(HOST_PROJECT), EMPTY_PROJECT));
+                        StringUtils.defaultIfEmpty(headers.get(HOST_PROJECT), EMPTY_PROJECT), url);
             }
         } catch (Exception ex) {
-            log.warn("Error during push metrics: {}", ex.getMessage());
+            log.warn("[Save Healing] Error during push metrics: {}", ex.getMessage());
+        }
+    }
+
+    private void moveMetrics(RecordDto.ReportRecord dto, HealingResult healingResult) {
+        try {
+            if (!dto.isSuccessHealing()) {
+                log.debug("[Set Healing Status] Set 'Unsuccessful' status");
+                amazonRestService.moveMetrics(SUCCESSFUL_HEALING_BUCKET, healingResult);
+            } else {
+                log.debug("[Set Healing Status] Set 'Successful' status");
+                amazonRestService.moveMetrics(UNSUCCESSFUL_HEALING_BUCKET, healingResult);
+            }
+        } catch (Exception ex) {
+            log.warn("[Set Healing Status] Error during move metrics: {}", ex.getMessage());
         }
     }
 

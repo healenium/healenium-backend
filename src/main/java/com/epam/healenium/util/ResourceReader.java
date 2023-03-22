@@ -22,8 +22,8 @@ import java.util.stream.Stream;
 
 public class ResourceReader {
 
-    public static <T> T readResource(String classpath, Function<Stream<String>, T> function) {
-        ClassLoader classLoader = ResourceReader.class.getClassLoader();
+    public static  <T> T readResource(String classpath, Function<Stream<String>, T> function) {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         try (InputStream stream = classLoader.getResourceAsStream(classpath)) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(stream)));
             return function.apply(reader.lines());
