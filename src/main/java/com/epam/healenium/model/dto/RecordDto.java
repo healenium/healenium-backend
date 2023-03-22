@@ -10,9 +10,11 @@ import java.util.List;
 @Accessors(chain = true)
 public class RecordDto {
 
-    private String name = "Healing Report";
+    private String id;
+    private String name;
     private String time;
     private List<ReportRecord> data = new ArrayList<>();
+    private List<ReportLinkDto> reportLinks = new ArrayList();
 
     @Data
     public static class ReportRecord {

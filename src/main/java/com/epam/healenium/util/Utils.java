@@ -1,8 +1,11 @@
 package com.epam.healenium.util;
 
+import com.epam.healenium.model.domain.Selector;
+import com.epam.healenium.model.dto.RequestDto;
 import jdk.internal.joptsimple.internal.Strings;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.DigestUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -10,26 +13,23 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-@Slf4j
+@Slf4j(topic = "healenium")
 @UtilityClass
 public class Utils {
 
     /**
      * Builds ID for element that represent selector meta
      *
-     * @param className the fully qualified name of the class
      * @param locator   the selector value
      * @param url
      * @return hashed key of locator
      */
-    public String buildKey(String className, String locator, String url) {
-        String rawKey = className.concat(url) + locator.hashCode();
+    public String buildKey(String locator, String command, String url) {
+        String rawKey = new StringBuilder(url)
+                .append(command)
+                .append(locator.hashCode())
+                .toString();
         return DigestUtils.md5DigestAsHex(rawKey.trim().getBytes(StandardCharsets.UTF_8));
-    }
-
-    public String buildKey(String className, String locator, String url, boolean urlForKey, boolean pathForKey) {
-        String addressForKey = getAddressForKey(url, urlForKey, pathForKey);
-        return buildKey(className, locator, addressForKey);
     }
 
     /**
@@ -56,6 +56,9 @@ public class Utils {
 
     public String getAddressForKey(String url, boolean urlForKey, boolean pathForKey) {
         try {
+            if (!urlForKey && !pathForKey) {
+                return Strings.EMPTY;
+            }
             if (urlForKey && pathForKey) {
                 return url;
             }
@@ -65,12 +68,10 @@ public class Utils {
             if (!urlForKey && pathForKey) {
                 return url.substring(url.indexOf("/"));
             }
-            if (!urlForKey && !pathForKey) {
-                return Strings.EMPTY;
-            }
         } catch (Exception e) {
             log.warn("Error during parse url. Message: {}", e.getMessage());
         }
         return Strings.EMPTY;
     }
+
 }

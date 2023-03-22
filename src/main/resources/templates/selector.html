@@ -17,22 +17,28 @@
 <head>
     <meta charset="UTF-8">
     <title>SHA</title>
-    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300&display=swap" rel="stylesheet">
     <style>
         * {
-            margin: 0;
             padding: 0;
             border: none;
+            margin: 0;
+            font-family: "Open Sans";
         }
 
         .content-wrapper {
-            max-width: 80%;
+            /*max-width: 80%;*/
             width: 100%;
             height: 100%;
             display: flex;
             align-items: center;
             margin: 0 auto;
+        }
+
+        .content-wrapper-main {
+            background-color: #f8f8f8;
         }
 
         .header {
@@ -44,8 +50,7 @@
         .logo-title {
             margin-left: 10px;
             font-size: 14px;
-            font-family: Roboto, sans-serif;
-            font-weight: 600;
+            font-weight: 400;
             color: #000000;
         }
 
@@ -56,27 +61,28 @@
         }
 
         .report-info {
-            margin: 30px 0;
+            margin: 10px 50px;
             font-size: 24px;
-            font-family: Roboto, sans-serif;
-            font-weight: 600;
+            font-weight: 400;
             color: #000000;
         }
 
         .table-column {
-            flex: 2 0 10%;
-            width: 30%;
+            /*padding-right: 30px;*/
+            /*display: table-cell;*/
+            font-size: 13px;
+            vertical-align: middle;
         }
 
-
         .elements-table-header {
-            display: flex;
             padding-bottom: 8px;
-            border-bottom: 1px solid #f2f2f4;
-            font-size: 16px;
-            font-family: Roboto, sans-serif;
-            font-weight: 600;
-            color: #9b9b9b;
+            /*border-bottom: 1px solid #f2f2f4;*/
+            font-weight: 400;
+            margin: 5px 50px;
+            /*display: table-row;*/
+            font-size: 14px;
+            color: #777;
+            display: flex;
         }
 
         .elements-table-row.Accepted .row-status {
@@ -86,12 +92,15 @@
         .elements-table-row.Denied .row-status {
             color: #d9534f;
         }
+
         .elements-table-row svg {
             transform: rotate(90deg);
         }
+
         .elements-table-row.content-hidden .row-content {
             display: none;
         }
+
         .elements-table-row.content-hidden svg {
             transform: none;
         }
@@ -99,9 +108,8 @@
         .row-caption-text {
             max-width: 90%;
             overflow: hidden;
-            font-size: 13px;
-            font-family: 'Roboto Mono', monospace;
-            font-weight: bold;
+            font-size: 14px;
+            font-weight: 600;
             text-overflow: ellipsis;
             word-wrap: break-word;
         }
@@ -110,18 +118,28 @@
             display: flex;
             margin: 15px 0;
             padding-bottom: 10px;
-            border-bottom: 1px solid #f2f2f4;
+            /*border-bottom: 1px solid #f2f2f4;*/
         }
+
         .row-content.hidden {
             display: none;
         }
+
+        .display-none {
+            display: none;
+        }
+
         .row-content .element-column {
             margin: 10px 0 0 30px;
         }
 
         @keyframes zoom {
-            from {transform:scale(0)}
-            to {transform:scale(1)}
+            from {
+                transform: scale(0)
+            }
+            to {
+                transform: scale(1)
+            }
         }
 
         .header-float {
@@ -129,22 +147,21 @@
         }
 
         .report-description {
-            margin: 30px 0;
-            font-size: 16px;
-            font-family: Roboto, sans-serif;
-            font-weight: 600;
-            color: #9b9b9b;
+            margin: 10px 50px;
+            font-weight: 400;
+            font-size: 12px;
+            color: #777;
         }
 
         input[type="checkbox"] {
-            width: 80px;
-            height: 35px;
+            width: 40px;
+            height: 20px;
             -webkit-appearance: none;
             -moz-appearance: none;
             background: #E67574;
             outline: none;
             border-radius: 25px;
-            box-shadow: inset 0 0 3px rgba(0,0,0, .2);
+            box-shadow: inset 0 0 3px rgba(0, 0, 0, .4);
             transition: 0.5s;
             position: relative;
         }
@@ -156,22 +173,119 @@
         input[type="checkbox"]::before {
             content: '';
             position: absolute;
-            width: 35px;
-            height: 35px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             top: 0;
             left: 0;
             background: #fff;
             transform: scale(1.1);
-            box-shadow: 0 1px 4px rgba(0,0,0, .2);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .4);
             transition: 0.5s;
         }
 
         input:checked[type="checkbox"]::before {
-            left: 50px;
+            left: 20px;
         }
 
-        @media only screen and (max-width: 700px){
+        .text-transform {
+            text-transform: uppercase;
+        }
+
+        .locator-column {
+            /*max-width: 45%;*/
+            width: 45%;
+            padding-right: 5%;
+            /*padding-left: 50px;*/
+        }
+
+        .url-column {
+            width: 35%;
+            padding-right: 5%;
+        }
+
+        .healing-enable-column {
+            width: 10%;
+        }
+
+        .selector-menu-bar {
+            /*display: table;*/
+            width: 100%;
+            padding-top: 10px;
+            padding-left: 15px;
+            /*padding-bottom: 10px;*/
+            /*height: 30px;*/
+        }
+
+        .main-container {
+            padding-left: 1%;
+            padding-right: 2%;
+            overflow: auto;
+            font-weight: 400;
+        }
+
+        .selector-title-container {
+            background-color: #fff;
+            width: 100%;
+            padding-top: 10px;
+            padding-left: 15px;
+            padding-bottom: 5px;
+        }
+
+        .selector-value-table {
+            /*display: table;*/
+            margin-bottom: 5px;
+        }
+
+        .selector-value-row {
+            font-weight: 400;
+            margin: 5px 50px;
+            /*display: table-row;*/
+            font-size: 14px;
+            /*height: 50px;*/
+        }
+
+        .selector-location-value {
+            margin-top: 15px;
+            margin-left: 20px;
+            color: #777;
+        }
+
+        .selector-location-field {
+            margin-top: 10px;
+            margin-bottom: 0px;
+            overflow-wrap: anywhere;
+        }
+
+        .confirmation-column {
+            flex: 1 0 5%;
+        }
+
+        .url-link {
+            color: #1a74b0;
+            text-decoration: auto;
+        }
+
+        .tabs-container {
+            margin: 0 8% 0 auto;
+            font-size: 14px;
+        }
+
+        .tabs-inactive-link {
+            margin: 0 10px;
+            text-decoration: auto;
+            color: #000000;
+        }
+
+        .tabs-active-link {
+            margin: 0 10px;
+            display: inline;
+            border-bottom: 2px solid #1a74b0;
+            color: #1a74b0;
+            text-decoration: auto;
+        }
+
+        @media only screen and (max-width: 700px) {
             .modal-content {
                 width: 100%;
             }
@@ -182,7 +296,7 @@
 </head>
 <body>
 <header class="header">
-    <div class="content-wrapper">
+    <div class="content-wrapper" style="padding-left: 2%;">
         <div class="logo">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
                 <g fill="none" fill-rule="evenodd" transform="rotate(45 10 10)">
@@ -194,47 +308,92 @@
                 </g>
             </svg>
         </div>
-        <span class="logo-title">SHA</span>
+        <span class="logo-title">Self-Healing Automation</span>
+        <div class="tabs-container">
+            <a class="tabs-inactive-link" href="/healenium/report/">Reports</a>
+            <a class="tabs-active-link" href="/healenium/selectors2/">Selectors</a>
+        </div>
     </div>
 </header>
-<main class="content-wrapper">
-    <div class="main-area">
-        <div>
-            <div class="header-float">
-                <h2 class="report-info">
-                    <span class="report-name">Stored Selectors</span>
-                </h2>
-                <div class="report-description">
-                    <span class="report-name">Healenium saves a successful locator in the storage to use it as a baseline for the next test executions</span>
+<main class="content-wrapper-main">
+    <div class="main-container">
+        <div class="selector-title-container">
+            <h2 class="report-info">Selectors</h2>
+            <div class="report-description">
+                <p>Healenium saves a successful locator in the storage to use it as a baseline for the next test
+                    executions</p>
+            </div>
+        </div>
+        <div class="selector-menu-bar">
+            <div class="elements-table-header">
+                <p class="table-column text-transform locator-column">Locator</p>
+                <p class="table-column text-transform url-column">URL</p>
+                <p class="table-column text-transform healing-enable-column">Healing enable</p>
+            </div>
+        </div>
+        <div data-elements-table>
+            <div class="selector-title-container selector-value-table" th:each="elem,iter : ${dto}">
+                <div class="row-content selector-value-row">
+                    <div class="table-column locator-column">
+                        <span class="row-caption-text" th:text="${elem.locator}"/>
+                        <div class="selector-location-value">
+                            <div th:classappend="${elem.className}?: display-none">
+                                <p class="selector-location-field">class: <span th:text="${elem.className}"/></p>
+                                <p class="selector-location-field">method: <span th:text="${elem.methodName}"/></p>
+                            </div>
+                            <p class="selector-location-field">type: <span th:text="${elem.command}"/></p>
+                        </div>
+                    </div>
+                    <div class="table-column url-column">
+                        <a class="row-caption-text url-link" target="_blank" th:href="${elem.url}"
+                           th:text="${elem.url}"/>
+                    </div>
+                    <div class="confirmation-column table-column healing-enable-column">
+                        <span>
+                            <input type="checkbox" onclick="enableHealing(this);"
+                                   th:attr="checked=${elem.enableHealing}"
+                                   th:id="${elem.id}"
+                                   th:enableHealing="${elem.enableHealing}"
+                                   th:data-row-index="${iter.index}">
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="report-content">
-            <div class="elements-table-header">
-                <span class="table-column">Locator</span>
-                <span class="table-column">URL</span>
-                <span class="table-column">Class name</span>
-            </div>
-            <div data-elements-table>
-                    <div class="row-content" th:each="elem,iter : ${dto}">
-                        <div class="table-column">
-                            <span class="row-caption-text" th:text="${elem.locator}"/>
-                        </div>
-                        <div class="table-column">
-                            <span class="row-caption-text" th:text="${elem.url}"/>
-                        </div>
-                        <div class="table-column">
-                            <span class="row-caption-text" th:text="${elem.className}"/>
-                        </div>
-                    </div>
-
-            </div>
-        </div>
     </div>
+
 </main>
+
 </body>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
+
+    function enableHealing(targetElement) {
+        var dto = {
+            "enableHealing": targetElement.checked,
+            "id": targetElement.getAttribute("id")
+        }
+        targetElement.setAttribute("enableHealing", targetElement.checked);
+
+        $.ajax({
+            type: "POST",
+            contentType: "application/json",
+            url: "/healenium/selector/status",
+            data: JSON.stringify(dto),
+            dataType: 'json',
+            cache: false,
+            timeout: 600000,
+            success: function (html) {
+                console.log("success")
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                if (200 != jqXHR.status) {
+                    console.log(jqXHR.status + ' ' + jqXHR.responseText)
+                    alert("Couldn't execute accordance");
+                }
+            }
+        });
+    }
 
 
 </script>

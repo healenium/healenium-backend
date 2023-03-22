@@ -55,6 +55,9 @@ public class Selector {
     @ColumnTransformer(read = "locator::json")
     private Locator locator;
 
+    @Column(name = "command")
+    private String command;
+
     @Column(name = "node_path")
     @ToString.Exclude
     @Convert(converter = NodeConverter.class)
@@ -63,5 +66,8 @@ public class Selector {
     @Column(name = "create_date")
     @CreationTimestamp
     private LocalDateTime createdDate;
+
+    @Column(name = "enable_healing")
+    private Boolean enableHealing;
 
 }

@@ -8,6 +8,7 @@ import com.epam.healenium.repository.HealingRepository;
 import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.SelectorRepository;
 import com.epam.healenium.service.HealingService;
+import com.epam.healenium.service.SelectorService;
 import com.epam.healenium.treecomparing.Node;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.RestAssured;
@@ -36,6 +37,8 @@ public class TestSaveLocators extends TestContainersInitializer {
 
     @SpyBean
     private HealingService healingService;
+    @SpyBean
+    private SelectorService selectorService;
 
     private final SelectorRepository selectorRepository;
     private final HealingRepository healingRepository;
@@ -66,13 +69,13 @@ public class TestSaveLocators extends TestContainersInitializer {
 
     @Test
     public void testSelectorRequestSaved() {
-        healingService.saveSelector(selectorRequest);
+        selectorService.saveSelector(selectorRequest);
         Assertions.assertEquals(1, selectorRepository.count());
     }
 
     @Test
     public void testSaveLocatorHealing() throws IOException {
-        healingService.saveSelector(selectorRequest);
+        selectorService.saveSelector(selectorRequest);
 
         HealingResultDto healingResultDto = new HealingResultDto();
         healingResultDto.setLocator(new Locator("//div[@title='inner2']", "xpath"));
@@ -89,15 +92,13 @@ public class TestSaveLocators extends TestContainersInitializer {
         dto.setResults(Collections.singletonList(healingResultDto));
         dto.setUsedResult(healingResultDto);
 
-        HealingResultRequestDto healingRequest = new HealingResultRequestDto()
-                .setRequestDto(dto);
 
         Map<String, String> headers = new HashMap<>();
         headers.put("sessionkey", UUID.randomUUID().toString());
         headers.put("hostproject", getClass().getName());
         headers.put("instance", RestAssured.DEFAULT_URI);
 
-        healingService.saveHealing(healingRequest, headers);
+        healingService.saveHealing(dto, headers);
         Assertions.assertEquals(1, healingRepository.count());
         Assertions.assertEquals(1, healingResultRepository.count());
     }
