@@ -1,0 +1,18 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   logicalFilePath="changelog/006_command_and_healingenable_column.xml"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet author="nkobzev" id="13">
+        <addColumn tableName="SELECTOR">
+            <column name="COMMAND" type="VARCHAR(264)">
+<!--                <constraints nullable="false"/>-->
+            </column>
+            <column name="ENABLE_HEALING" type="BOOLEAN">
+<!--                <constraints nullable="false"/>-->
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

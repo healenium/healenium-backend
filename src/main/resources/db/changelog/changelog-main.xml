@@ -16,5 +16,6 @@
 	<include file="003_healing.xml" relativeToChangelogFile="true"/>
 	<include file="004_healingResult.xml" relativeToChangelogFile="true"/>
 	<include file="005_report.xml" relativeToChangelogFile="true"/>
+	<include file="006_command_and_healingenable_column.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
