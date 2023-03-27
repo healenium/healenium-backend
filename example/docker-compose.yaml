@@ -34,7 +34,7 @@ services:
       - KEY_SELECTOR_URL=false
       - KEY_SELECTOR_PATH=false
       - COLLECT_METRICS=false
-      - HLM_LOG_LEVEL=debug
+      - HLM_LOG_LEVEL=info
     volumes:
       - ./screenshots/:/screenshots
     networks:
