@@ -341,7 +341,14 @@
                                 <p class="selector-location-field">class: <span th:text="${elem.className}"/></p>
                                 <p class="selector-location-field">method: <span th:text="${elem.methodName}"/></p>
                             </div>
-                            <p class="selector-location-field">type: <span th:text="${elem.command}"/></p>
+                            <div style="display: flex;">
+                                <svg th:if="${elem.urlKey}" style="margin-top: 10px; margin-right: 10px;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                     version="1.1" id="Layer_1" x="0px" y="0px" width="14px" height="19px"
+                                     viewBox="0 0 15 15" enable-background="new 0 0 15 15" xml:space="preserve">  <image
+                                        id="image0" width="15" height="15" x="0" y="0"
+                                        href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAAAAAAevcqWAAAABGdBTUEAALGPC/xhBQAAACBjSFJN AAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAHdElN RQfnAx4VEyqQSjI5AAAA2klEQVQI1zWOz0sCQQBGv3EGAhlnV0KR0BTxENFFkAVjdU8KHsQ/1ku4 Xtxdo9+3DgmLaHhQBKcJKcppO0x9t8d7h48kMNNPt9K6rLN/nIYQygcx/jsKM53Ky5VIGb1a5voX /ExI08uvpp0HFspmAPTDzRstdQvxKHEYoKPg6Hy/mH8MldcgiY4C7lnHWxWoVpuSw3TCB+txmcef bpuCPYa8X02fvmrLdSjA7tCpodDbIZ8FACZFBYj9tJcFAKTE+2z/PNwUT8wxcu//CJW0XGqY1XEt bafxh/gFh8NMGvxJHaIAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjMtMDMtMzBUMjE6MTk6NDIrMDA6 MDDXnuBuAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIzLTAzLTMwVDIxOjE5OjQyKzAwOjAwpsNY0gAA ACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyMy0wMy0zMFQyMToxOTo0MiswMDowMPHWeQ0AAAAASUVO RK5CYII="/></svg>
+                                <p class="selector-location-field">type: <span th:text="${elem.command}"/></p>
+                            </div>
                         </div>
                     </div>
                     <div class="table-column url-column">

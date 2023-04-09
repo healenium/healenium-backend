@@ -1,11 +1,8 @@
 package com.epam.healenium.util;
 
-import com.epam.healenium.model.domain.Selector;
-import com.epam.healenium.model.dto.RequestDto;
 import jdk.internal.joptsimple.internal.Strings;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.DigestUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -20,7 +17,7 @@ public class Utils {
     /**
      * Builds ID for element that represent selector meta
      *
-     * @param locator   the selector value
+     * @param locator the selector value
      * @param url
      * @return hashed key of locator
      */
@@ -54,20 +51,9 @@ public class Utils {
                 .ofPattern("dd-MMM-yyyy-hh-mm-ss.SSS").withLocale(Locale.US)) + ".png";
     }
 
-    public String getAddressForKey(String url, boolean urlForKey, boolean pathForKey) {
+    public String getAddressForKey(String url, boolean urlForKey) {
         try {
-            if (!urlForKey && !pathForKey) {
-                return Strings.EMPTY;
-            }
-            if (urlForKey && pathForKey) {
-                return url;
-            }
-            if (urlForKey && !pathForKey) {
-                return url.substring(0, url.indexOf("/") + 1);
-            }
-            if (!urlForKey && pathForKey) {
-                return url.substring(url.indexOf("/"));
-            }
+            return urlForKey ? url : Strings.EMPTY;
         } catch (Exception e) {
             log.warn("Error during parse url. Message: {}", e.getMessage());
         }

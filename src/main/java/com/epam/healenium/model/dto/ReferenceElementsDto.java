@@ -1,5 +1,6 @@
 package com.epam.healenium.model.dto;
 
+import com.epam.healenium.model.Locator;
 import com.epam.healenium.treecomparing.Node;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -12,5 +13,6 @@ public class ReferenceElementsDto {
 
     private String pageContent;
     private List<List<Node>> paths;
+    private List<Locator> unsuccessfulLocators;
 
 }

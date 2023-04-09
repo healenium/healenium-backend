@@ -52,8 +52,6 @@ public class HealingServiceImpl implements HealingService {
 
     @Value("${app.selector.key.url-for-key}")
     private boolean urlForKey;
-    @Value("${app.selector.key.path-for-key}")
-    private boolean pathForKey;
     @Value("${app.metrics.allow}")
     private boolean allowCollectMetrics;
 
@@ -114,7 +112,7 @@ public class HealingServiceImpl implements HealingService {
 
     @Override
     public Set<HealingResultDto> getHealingResults(RequestDto dto) {
-        String selectorId = selectorService.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), urlForKey, pathForKey);
+        String selectorId = selectorService.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), urlForKey);
         log.debug("[Get Healing Result] Selector ID: {}", selectorId);
         return healingRepository.findBySelectorId(selectorId).stream()
                 .flatMap(it -> healingMapper.modelToResultDto(it.getResults()).stream())
@@ -136,7 +134,7 @@ public class HealingServiceImpl implements HealingService {
 
     private Healing getHealing(HealingRequestDto dto) {
         // build selector key
-        String selectorId = selectorService.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), urlForKey, pathForKey);
+        String selectorId = selectorService.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), urlForKey);
         // build healing key
         String healingId = Utils.buildHealingKey(selectorId, dto.getPageContent());
         return healingRepository.findById(healingId).orElseGet(() -> {

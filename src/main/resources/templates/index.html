@@ -17,8 +17,8 @@
 <head>
     <meta charset="UTF-8">
     <title>SHA</title>
-<!--    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">-->
-<!--    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">-->
+    <!--    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">-->
+    <!--    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">-->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap" rel="stylesheet">
@@ -445,181 +445,20 @@
         </div>
         <a class="logo-title" href="/healenium/report/">Self-Healing Automation</a>
         <div class="tabs-container" >
-            <a class="tabs-active-link" href="/healenium/report/">Reports</a>
+            <a class="tabs-inactive-link" href="/healenium/report/">Reports</a>
             <a class="tabs-inactive-link" href="/healenium/selectors/">Selectors</a>
         </div>
     </div>
 </header>
 <main class="content-wrapper-main" style="display: block">
     <div class="main-container">
-        <div class="logo-container">
-            <p class="report-info" data-report-name th:text="${dto.name}"/>
-            <p class="report-description table-column healing-enable-column">Please,
-                provide
-                feedback on healing success to make algorithm stronger</p>
-        </div>
-        <div class="basic-container">
-            <div class="report-links-column">
-                <div class="selector-menu-bar">
-                    <div class="elements-table-header">
-                        <p class="table-column text-transform">Reports</p>
-                    </div>
-                </div>
-                <div class="menu-bar-container">
-                    <div class="menu-bar">
-                        <div report-link-list th:each="elem,iter : ${dto.reportLinks}">
-                            <div class="report-link-list-cl" th:classappend="${elem.extendClass}">
-                                <a class="row-caption-text report-link-list-a-cl"
-                                   th:classappend="${elem.extendClass}"
-                                   th:text="${elem.name}"
-                                   th:href="${elem.id}"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="main-column">
-                <div class="selector-menu-bar">
-                    <div class="elements-table-header">
-                        <p class="table-column text-transform locator-column">Element</p>
-                        <p class="table-column text-transform url-column">Screenshot</p>
-                        <p class="table-column text-transform healing-enable-column">Success Healing</p>
-                    </div>
-                </div>
-                <div data-elements-table>
-                    <div class="selector-title-container selector-value-table content-hidden" th:each="elem,iter : ${dto.data}">
-                        <div class="selector-value-row" th:attr="data-row-index=${iter.index}">
-                            <div class="table-column locator-column">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="8" height="10" viewBox="0 0 8 13">
-                                    <path fill="none" fill-rule="evenodd" stroke="#000" stroke-width="2"
-                                          d="M1 11.5l5-5-5-5"/>
-                                </svg>
-                                <span class="row-caption-text declaring-class"
-                                      th:text="${elem.declaringClass}"></span>
-                            </div>
-                        </div>
-
-                        <div class="row-content">
-                            <div class="table-column locator-column healing-details">
-                                <div class="element-field-holder"
-                                     th:text="'Failed Locator: ' + ${elem.failedLocatorType} + '(' + ${elem.failedLocatorValue} + ')'"/>
-                                <div class="element-field-holder"
-                                     th:text="'Healed Locator: ' + ${elem.healedLocatorType} + '(' + ${elem.healedLocatorValue} + ')'"/>
-                                <div class="element-field-holder"
-                                     th:text="'Score: ' + ${elem.score}"/>
-
-                            </div>
-                            <div class="table-column url-column">
-                                <div class="screenshot-column">
-                                    <img id="myImg" class="img-block" th:src="${elem.screenShotPath}"
-                                         onclick="zoomImage(this);">
-                                    <div id="myModal" class="modal">
-                                        <span class="close">&times;</span>
-                                        <img class="modal-content" id="img01">
-                                        <div id="caption"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="confirmation-column table-column healing-enable-column">
-                                <div>
-                                    <input type="checkbox" onclick="successHealing(this);"
-                                           th:attr="checked=${elem.successHealing}"
-                                           th:healingResultId="${elem.healingResultId}"
-                                           th:successHealing="${elem.successHealing}"
-                                           th:data-row-index="${iter.index}">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="selector-title-container selector-value-table" th:if="${#lists.isEmpty(dto.data)}">
-                        <div class="selector-value-row">
-                            <div class="table-column locator-column" style="text-align: center;">
-                                <span style="color: #777;">no healings</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="logo-container" style="display: block; padding-left: 1%;">
+            <p style="font-weight: 400;" th:text="${message}"/>
         </div>
     </div>
 
     <div id="footer" style="height: 10px;"/>
 </main>
 </body>
-<script>
 
-    function toggleElementContent(targetElement) {
-        const elementWithIndex = targetElement.hasAttribute('data-row-index') ? targetElement : targetElement.parentNode.parentNode;
-        const rowIndex = elementWithIndex.getAttribute('data-row-index');
-        if (rowIndex) {
-            elementWithIndex.parentNode.classList.toggle('content-hidden');
-        }
-    }
-
-    function rowClickHandler(event) {
-        console.log("rowClickHandler");
-        const targetElement = event.target;
-        console.log("targetElement");
-        toggleElementContent(targetElement);
-    }
-
-    function successHealing(targetElement) {
-        var dto = {
-            "successHealing": targetElement.checked,
-            "healingResultId": targetElement.getAttribute("healingResultId")
-        }
-        targetElement.setAttribute("successHealing", targetElement.checked);
-
-        $.ajax({
-            type: "POST",
-            contentType: "application/json",
-            url: "/healenium/healing/success",
-            data: JSON.stringify(dto),
-            dataType: 'json',
-            cache: false,
-            timeout: 600000,
-            success: function (html) {
-                console.log("success")
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                if (200 != jqXHR.status) {
-                    console.log(jqXHR.status + ' ' + jqXHR.responseText)
-                    alert("Couldn't execute accordance");
-                }
-            }
-        });
-    }
-
-    function zoomImage(event) {
-        const targetElement = event;
-        var modal = document.getElementById("myModal");
-        var img = targetElement;
-        var modalImg = document.getElementById("img01");
-        var captionText = document.getElementById("caption");
-
-        // When the user clicks on image open the modal
-        modal.style.display = "block";
-        modalImg.src = img.src;
-        captionText.innerHTML = img.alt;
-
-        // Get the <span> element that closes the modal
-        var span = document.getElementsByClassName("close")[0];
-
-        // When the user clicks on <span> (x), close the modal
-        span.onclick = function () {
-            modal.style.display = "none";
-        }
-    }
-
-    function renderElements() {
-        console.log("renderElements")
-        const elementsTable = document.querySelector('[data-elements-table]');
-        console.log("elementsTable: " + elementsTable)
-        elementsTable.addEventListener('click', rowClickHandler);
-    }
-
-    renderElements();
-
-
-</script>
 </html>

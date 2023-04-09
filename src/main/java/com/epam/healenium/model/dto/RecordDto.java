@@ -24,6 +24,7 @@ public class RecordDto {
         private String failedLocatorType;
         private String healedLocatorValue;
         private String healedLocatorType;
+        private String score;
         private boolean successHealing;
         private Integer healingResultId;
     }

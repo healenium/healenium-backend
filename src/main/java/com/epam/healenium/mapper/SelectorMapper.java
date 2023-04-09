@@ -7,6 +7,7 @@ import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
 import com.epam.healenium.model.wrapper.NodePathWrapper;
+import com.epam.healenium.util.Utils;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -48,6 +49,8 @@ public interface SelectorMapper {
                     : selectorEntity.getClassName());
             requestDto.setEnableHealing(selectorEntity.getEnableHealing());
             requestDto.setCommand("findElement".equals(selectorEntity.getCommand()) ? "single" : "multiple");
+            String selectorIdWithUrl = Utils.buildKey(selectorEntity.getLocator().getValue(), selectorEntity.getCommand(), selectorEntity.getUrl());
+            requestDto.setUrlKey(selectorEntity.getUid().equals(selectorIdWithUrl));
             requestDtoResult.add(requestDto);
         }
         return requestDtoResult;
