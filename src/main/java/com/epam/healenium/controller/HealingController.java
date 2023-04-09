@@ -171,4 +171,15 @@ public class HealingController {
         log.debug("[Set Selector Status] Request: {}", dto);
         selectorService.setSelectorStatus(dto);
     }
+
+    @GetMapping("/migrate")
+    public ModelAndView migrate() {
+        log.debug("[Migrate Selectors]");
+        selectorService.migrate();
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("index");
+        modelAndView.addObject("message", "The migration of selectors was successful.");
+        return modelAndView;
+    }
+
 }

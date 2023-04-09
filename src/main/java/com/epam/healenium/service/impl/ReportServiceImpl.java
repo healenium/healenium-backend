@@ -19,6 +19,7 @@ import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -115,6 +116,7 @@ public class ReportServiceImpl implements ReportService {
             reportRecord.setHealedLocatorType(it.getHealedLocator().getType());
             reportRecord.setHealedLocatorValue(it.getHealedLocator().getValue());
             Optional<HealingResult> healingResultOptional = resultRepository.findById(it.getHealingResultId());
+            reportRecord.setScore(new DecimalFormat("#.###").format(healingResultOptional.get().getScore()));
             reportRecord.setSuccessHealing(healingResultOptional.get().isSuccessHealing());
             reportRecord.setHealingResultId(it.getHealingResultId());
             result.getData().add(reportRecord);
