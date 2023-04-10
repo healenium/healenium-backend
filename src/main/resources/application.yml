@@ -81,3 +81,6 @@ logging:
     healenium: ${HLM_LOG_LEVEL:INFO}
   pattern:
     console: '%d{yyyy-MM-dd HH:mm:ss.SSS,Europe/Moscow} %clr(%5p) %clr(${PID:- }){magenta} %clr(-){faint} %clr([%11.11t]){faint} %clr(%-32.32logger{30}){cyan} %clr(:){faint} %replace(%m){''[\n\r]'',''\\n ''} %replace(%ex){''[\r\n]'', ''\\n ''}%nopex%n'
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS,Europe/Moscow} %clr(%5p) %clr(${PID:- }){magenta} %clr(-){faint} %clr([%11.11t]){faint} %clr(%-32.32logger{30}){cyan} %clr(:){faint} %replace(%m){''[\n\r]'',''\\n ''} %replace(%ex){''[\r\n]'', ''\\n ''}%nopex%n'
+  file:
+    name: ./logs/healenium-backend.log

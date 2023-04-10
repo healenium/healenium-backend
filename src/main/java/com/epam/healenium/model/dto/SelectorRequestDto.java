@@ -21,5 +21,6 @@ public class SelectorRequestDto extends RequestDto {
     private List<String> elementIds;
     private String sessionId;
     private boolean enableHealing;
+    private boolean urlKey;
 }
 

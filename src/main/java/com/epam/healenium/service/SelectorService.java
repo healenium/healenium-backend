@@ -1,5 +1,6 @@
 package com.epam.healenium.service;
 
+import com.epam.healenium.model.domain.Selector;
 import com.epam.healenium.model.dto.ConfigSelectorDto;
 import com.epam.healenium.model.dto.ReferenceElementsDto;
 import com.epam.healenium.model.dto.RequestDto;
@@ -22,5 +23,9 @@ public interface SelectorService {
 
     void setSelectorStatus(SelectorDto dto);
 
-    String getSelectorId(String locator, String url, String command, boolean urlForKey, boolean pathForKey);
+    String getSelectorId(String locator, String url, String command, boolean urlForKey);
+
+    void migrate();
+
+    void migrateSelectors(List<Selector> sourceSelectors);
 }
