@@ -22,6 +22,8 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -110,7 +112,7 @@ public class ReportServiceImpl implements ReportService {
                     || it.getClassName().contains(Constants.MULTIPLE_ELEMENTS_PROXY_CLASS_PATH)
                     ? it.getFailedLocator().getValue()
                     : it.getClassName() + "." + it.getMethodName() + "()");
-            reportRecord.setScreenShotPath(it.getScreenShotPath());
+            reportRecord.setScreenShotPath(transformPath(it.getScreenShotPath()));
             reportRecord.setFailedLocatorType(it.getFailedLocator().getType());
             reportRecord.setFailedLocatorValue(it.getFailedLocator().getValue());
             reportRecord.setHealedLocatorType(it.getHealedLocator().getType());
@@ -121,6 +123,14 @@ public class ReportServiceImpl implements ReportService {
             reportRecord.setHealingResultId(it.getHealingResultId());
             result.getData().add(reportRecord);
         });
+    }
+
+    private String transformPath(String sourcePath) {
+        List<String> dirs = Arrays.asList(sourcePath.split("/"));
+        Collections.reverse(dirs);
+        String name = dirs.get(0);
+        String uid = dirs.get(1);
+        return "/screenshots/".concat(uid).concat("/").concat(name);
     }
 
 
