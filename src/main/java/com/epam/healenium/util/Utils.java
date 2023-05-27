@@ -1,8 +1,8 @@
 package com.epam.healenium.util;
 
-import jdk.internal.joptsimple.internal.Strings;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.DigestUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -53,11 +53,11 @@ public class Utils {
 
     public String getAddressForKey(String url, boolean urlForKey) {
         try {
-            return urlForKey ? url : Strings.EMPTY;
+            return urlForKey ? url : StringUtils.EMPTY;
         } catch (Exception e) {
             log.warn("Error during parse url. Message: {}", e.getMessage());
         }
-        return Strings.EMPTY;
+        return StringUtils.EMPTY;
     }
 
 }
