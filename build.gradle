@@ -7,7 +7,7 @@ plugins {
 }
 
 group 'com.epam.healenium'
-version '3.3.3'
+version '3.3.4'
 
 sourceCompatibility = 1.8
 

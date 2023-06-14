@@ -126,11 +126,16 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private String transformPath(String sourcePath) {
-        List<String> dirs = Arrays.asList(sourcePath.split("/"));
-        Collections.reverse(dirs);
-        String name = dirs.get(0);
-        String uid = dirs.get(1);
-        return "/screenshots/".concat(uid).concat("/").concat(name);
+        try {
+            List<String> dirs = Arrays.asList(sourcePath.split("/"));
+            Collections.reverse(dirs);
+            String name = dirs.get(0);
+            String uid = dirs.get(1);
+            return "/screenshots/".concat(uid).concat("/").concat(name);
+        } catch (Exception e) {
+            log.warn("[Build Report] Error transform sourcePath: {}", sourcePath);
+            return sourcePath;
+        }
     }
 
 
