@@ -10,12 +10,9 @@ import com.epam.healenium.model.dto.ReferenceElementsDto;
 import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
-import com.epam.healenium.model.dto.SessionDto;
 import com.epam.healenium.node.NodeService;
 import com.epam.healenium.repository.HealingRepository;
 import com.epam.healenium.repository.SelectorRepository;
-import com.epam.healenium.restore.RestoreDriverFactory;
-import com.epam.healenium.restore.RestoreDriverService;
 import com.epam.healenium.service.SelectorService;
 import com.epam.healenium.treecomparing.Node;
 import com.epam.healenium.util.Utils;
@@ -50,7 +47,6 @@ public class SelectorServiceImpl implements SelectorService {
 
     private final SelectorRepository selectorRepository;
     private final SelectorMapper selectorMapper;
-    private final RestoreDriverFactory restoreDriverFactory;
     private final HealingRepository healingRepository;
 
     @Override
@@ -101,16 +97,6 @@ public class SelectorServiceImpl implements SelectorService {
                     s.setEnableHealing(dto.isEnableHealing());
                     selectorRepository.save(s);
                 });
-    }
-
-    @Override
-    public void restoreSession(SessionDto sessionDto) {
-        RestoreDriverService restoreService = restoreDriverFactory.getRestoreService(sessionDto.getSessionCapabilities());
-        SessionContext sessionContext = new SessionContext()
-                .setRemoteWebDriver(restoreService.restoreSession(sessionDto))
-                .setNodeService(restoreService.getNodeService());
-        sessionContextCache.put(sessionDto.getSessionId(), sessionContext);
-        log.debug("[Restore Session] Put Session to cache. Id: {}, SessionContext: {}", sessionDto.getSessionId(), sessionContext);
     }
 
     @Override
