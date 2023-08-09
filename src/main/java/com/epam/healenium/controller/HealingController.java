@@ -103,7 +103,6 @@ public class HealingController {
     @PostMapping("/session")
     public void session(@Valid @RequestBody SessionDto dto) {
         log.debug("[Restore Session] Request: {}", dto);
-        selectorService.restoreSession(dto);
     }
 
     /**

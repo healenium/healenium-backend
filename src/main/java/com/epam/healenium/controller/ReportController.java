@@ -1,5 +1,6 @@
 package com.epam.healenium.controller;
 
+import com.epam.healenium.model.dto.RecordDto;
 import com.epam.healenium.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,4 +58,13 @@ public class ReportController {
         return Paths.get(reportUrl, key).toString();
     }
 
+    @GetMapping("/data/{uid}")
+    public RecordDto getRecord(@PathVariable String uid) {
+        return reportService.generate(uid);
+    }
+
+    @GetMapping("/data")
+    public RecordDto getRecords() {
+        return reportService.generate();
+    }
 }

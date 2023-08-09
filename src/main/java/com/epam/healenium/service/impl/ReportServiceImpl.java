@@ -22,8 +22,6 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -127,11 +125,8 @@ public class ReportServiceImpl implements ReportService {
 
     private String transformPath(String sourcePath) {
         try {
-            List<String> dirs = Arrays.asList(sourcePath.split("/"));
-            Collections.reverse(dirs);
-            String name = dirs.get(0);
-            String uid = dirs.get(1);
-            return "/screenshots/".concat(uid).concat("/").concat(name);
+            int i = sourcePath.lastIndexOf("screenshots");
+            return sourcePath.substring(i - 1);
         } catch (Exception e) {
             log.warn("[Build Report] Error transform sourcePath: {}", sourcePath);
             return sourcePath;

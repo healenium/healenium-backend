@@ -13,8 +13,6 @@ import java.util.List;
 public interface SelectorService {
     void saveSelector(SelectorRequestDto request);
 
-    void restoreSession(SessionDto sessionDto);
-
     ReferenceElementsDto getReferenceElements(RequestDto dto);
 
     List<RequestDto> getAllSelectors();
