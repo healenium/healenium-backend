@@ -65,6 +65,8 @@ app:
       path-for-key: ${KEY_SELECTOR_PATH:false}
   metrics:
     allow: ${COLLECT_METRICS:true}
+  healing:
+    elements: ${FIND_ELEMENTS_AUTO_HEALING:false}
 
 cloud:
   aws:
