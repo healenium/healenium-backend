@@ -43,6 +43,9 @@ public class SelectorServiceImpl implements SelectorService {
     @Value("${app.selector.key.url-for-key}")
     private boolean urlForKey;
 
+    @Value("${app.healing.elements}")
+    private boolean findElementsAutoHealing;
+
     private PassiveExpiringMap<String, SessionContext> sessionContextCache = new PassiveExpiringMap<>(8, TimeUnit.HOURS);
 
     private final SelectorRepository selectorRepository;
@@ -57,7 +60,7 @@ public class SelectorServiceImpl implements SelectorService {
         }
         String id = getSelectorId(request.getLocator(), request.getUrl(), request.getCommand(), urlForKey);
         Optional<Selector> existSelector = selectorRepository.findById(id);
-        final Selector selector = selectorMapper.toSelector(request, id, existSelector);
+        final Selector selector = selectorMapper.toSelector(request, id, existSelector, findElementsAutoHealing);
         selectorRepository.save(selector);
         log.debug("[Save Elements] Selector: {}", selector);
     }
@@ -86,7 +89,8 @@ public class SelectorServiceImpl implements SelectorService {
         configSelectorDto
                 .setDisableHealingElementDto(selectorMapper.toSelectorDto(disableHealingElement))
                 .setEnableHealingElementsDto(selectorMapper.toSelectorDto(enableHealingElements))
-                .setUrlForKey(urlForKey);
+                .setUrlForKey(urlForKey)
+                .setFindElementsAutoHealing(findElementsAutoHealing);
         return configSelectorDto;
     }
 
