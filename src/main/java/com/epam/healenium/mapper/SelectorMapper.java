@@ -19,7 +19,7 @@ import java.util.Optional;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface SelectorMapper {
 
-    default Selector toSelector(SelectorRequestDto dto, String id, Optional<Selector> existSelector) {
+    default Selector toSelector(SelectorRequestDto dto, String id, Optional<Selector> existSelector, boolean findElementsAutoHealing) {
         Selector element = new Selector();
         element.setUid(id);
         element.setClassName(dto.getClassName());
@@ -31,7 +31,7 @@ public interface SelectorMapper {
         element.setCreatedDate(LocalDateTime.now());
         element.setEnableHealing(existSelector
                 .map(Selector::getEnableHealing)
-                .orElseGet(() -> "findElement".equals(dto.getCommand())));
+                .orElseGet(() -> findElementsAutoHealing || "findElement".equals(dto.getCommand())));
         return element;
     }
 
