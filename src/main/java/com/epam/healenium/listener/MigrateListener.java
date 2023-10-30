@@ -4,13 +4,13 @@ package com.epam.healenium.listener;
 import com.epam.healenium.model.domain.Selector;
 import com.epam.healenium.repository.SelectorRepository;
 import com.epam.healenium.service.SelectorService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.List;
 
 @Slf4j(topic = "healenium")

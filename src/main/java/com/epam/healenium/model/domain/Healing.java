@@ -1,11 +1,11 @@
 package com.epam.healenium.model.domain;
 
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Set;
 

@@ -1,37 +1,21 @@
 package com.epam.healenium.model.domain;
 
 import com.epam.healenium.model.Locator;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "healing_result")
-@TypeDefs({
-        @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-})
 public class HealingResult {
 
     @Id
@@ -40,7 +24,7 @@ public class HealingResult {
     private Integer id;
 
     @Column(name = "locator", columnDefinition = "jsonb")
-    @Type(type = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     @Basic(fetch = FetchType.LAZY)
     private Locator locator;
 

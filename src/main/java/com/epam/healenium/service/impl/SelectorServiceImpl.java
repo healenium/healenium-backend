@@ -16,6 +16,7 @@ import com.epam.healenium.repository.SelectorRepository;
 import com.epam.healenium.service.SelectorService;
 import com.epam.healenium.treecomparing.Node;
 import com.epam.healenium.util.Utils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
@@ -25,7 +26,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;

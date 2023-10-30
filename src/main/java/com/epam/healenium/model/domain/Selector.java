@@ -3,23 +3,14 @@ package com.epam.healenium.model.domain;
 import com.epam.healenium.converter.NodeConverter;
 import com.epam.healenium.model.Locator;
 import com.epam.healenium.model.wrapper.NodePathWrapper;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.ColumnTransformer;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 
 /**
@@ -31,9 +22,6 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "selector")
-@TypeDefs({
-        @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-})
 public class Selector {
 
     @Id
@@ -50,7 +38,7 @@ public class Selector {
     private String methodName;
 
     @Column(name = "locator", columnDefinition = "json")
-    @Type(type = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     @Basic(fetch = FetchType.LAZY)
     @ColumnTransformer(read = "locator::json")
     private Locator locator;
