@@ -20,6 +20,7 @@ import com.epam.healenium.service.SelectorService;
 import com.epam.healenium.specification.HealingSpecBuilder;
 import com.epam.healenium.util.StreamUtils;
 import com.epam.healenium.util.Utils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -27,7 +28,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.transaction.Transactional;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;

@@ -1,10 +1,11 @@
 package com.epam.healenium.util;
 
+import jakarta.persistence.criteria.*;
+import jakarta.persistence.metamodel.SetAttribute;
+import jakarta.persistence.metamodel.SingularAttribute;
 import lombok.experimental.UtilityClass;
 
-import javax.persistence.criteria.*;
-import javax.persistence.metamodel.SetAttribute;
-import javax.persistence.metamodel.SingularAttribute;
+
 
 @UtilityClass
 public class JpaTools {

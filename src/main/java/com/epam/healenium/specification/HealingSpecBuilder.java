@@ -6,11 +6,11 @@ import com.epam.healenium.model.domain.Selector;
 import com.epam.healenium.model.domain.Selector_;
 import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.util.JpaTools;
+import jakarta.persistence.criteria.Join;
 import lombok.experimental.UtilityClass;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.criteria.Join;
 
 
 @UtilityClass

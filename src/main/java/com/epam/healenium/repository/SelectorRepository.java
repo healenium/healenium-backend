@@ -9,8 +9,6 @@ import java.util.List;
 @Repository
 public interface SelectorRepository extends JpaRepository<Selector, String> {
 
-    List<Selector> findByLocator(String locatorValue);
-
     List<Selector> findByCommandAndEnableHealing(String command, boolean enableHealing);
 
     List<Selector> findByCommandNull();
