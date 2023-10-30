@@ -3,11 +3,12 @@ package com.epam.healenium.converter;
 import com.epam.healenium.model.wrapper.NodePathWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.AttributeConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.AttributeConverter;
+
 import java.io.IOException;
 
 @Component
