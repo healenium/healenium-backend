@@ -3,7 +3,7 @@ version: "3.9"
 services:
 
   postgres-db:
-    image: postgres:11-alpine
+    image: postgres:15.5-alpine
     container_name: postgres-db
     restart: always
     ports:
@@ -18,7 +18,7 @@ services:
       - healenium
 
   healenium:
-    image: healenium/hlm-backend:3.4.2
+    image: healenium/hlm-backend:3.4.4
     container_name: healenium
     restart: on-failure
     ports:
@@ -36,11 +36,12 @@ services:
       - HLM_LOG_LEVEL=info
     volumes:
       - ./screenshots/:/screenshots
+      - ./logs/:/logs
     networks:
       - healenium
 
   selector-imitator:
-    image: healenium/hlm-selector-imitator:1.1
+    image: healenium/hlm-selector-imitator:1.4
     container_name: selector-imitator
     restart: on-failure
     ports:
