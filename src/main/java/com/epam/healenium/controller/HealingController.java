@@ -59,7 +59,7 @@ public class HealingController {
      */
     @GetMapping()
     public ReferenceElementsDto getReferenceElements(RequestDto dto) {
-        log.info("[Get Reference] Request: {})", dto);
+        log.debug("[Get Reference] Request: {})", dto);
         ReferenceElementsDto referenceElements = selectorService.getReferenceElements(dto);
         log.debug("[Get Reference] Response: {})", referenceElements);
         return referenceElements;
