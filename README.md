@@ -31,4 +31,5 @@ docker ps
 ```
 ![img_1.png](img_1.png)
 ### BACKEND AECHITECTURE DIAGRAM
-![](https://i.imgur.com/AEiPXoq.png)
+
+![hlm-web13.png](..%2F..%2FDownloads%2Fhlm-web13.png)
