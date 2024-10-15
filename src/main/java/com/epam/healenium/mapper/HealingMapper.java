@@ -1,5 +1,6 @@
 package com.epam.healenium.mapper;
 
+import com.epam.healenium.model.Locator;
 import com.epam.healenium.model.domain.Healing;
 import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.dto.HealingDto;
@@ -25,10 +26,24 @@ public interface HealingMapper {
 
     default HealingResult resultDtoToModel(HealingResultDto dto) {
         HealingResult result = new HealingResult();
-        result.setLocator(dto.getLocator());
-        result.setScore(dto.getScore());
+        result.setLocator(getLocator(dto));
+        result.setScore(getScore(dto));
         result.setCreateDate(LocalDateTime.now());
         return result;
+    }
+
+    default Double getScore(HealingResultDto dto) {
+        if (dto.getScore() == null || dto.getScore() < 0 || dto.getScore() > 1) {
+            throw new RuntimeException("Invalid Score value: " + dto.getScore());
+        }
+        return dto.getScore();
+    }
+
+    default Locator getLocator(HealingResultDto dto) {
+        if (dto.getLocator() == null || !dto.getLocator().getType().contains("By")) {
+            throw new RuntimeException("Invalid Locator value: " + dto.getLocator());
+        }
+        return dto.getLocator();
     }
 
     @IterableMapping(elementTargetType = HealingResult.class)

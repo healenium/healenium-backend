@@ -1,20 +1,20 @@
 package com.epam.healenium.model.dto;
 
 import com.epam.healenium.treecomparing.Node;
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.io.Serializable;
 import java.util.List;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class SelectorRequestDto extends RequestDto {
+@EqualsAndHashCode
+public class SelectorRequestDto {
 
     private String id;
+    @Pattern(regexp = "^By.*", message = "The field must start with 'By'")
     private String type;
     @ToString.Exclude
     private List<List<Node>> nodePath;
@@ -22,5 +22,15 @@ public class SelectorRequestDto extends RequestDto {
     private String sessionId;
     private boolean enableHealing;
     private boolean urlKey;
+    @NotBlank
+    private String locator;
+    @NotBlank
+    private String className;
+    @NotBlank
+    private String methodName;
+    @Pattern(regexp = "^(findElement|findElements)$", message = "The command must be either 'findElement' or 'findElements'")
+    private String command;
+    @NotBlank
+    private String url;
 }
 

@@ -5,9 +5,7 @@ server:
 
 spring:
   banner:
-    image:
-      location:
-        /images/banner.png
+    location: /images/banner.txt
   servlet.multipart:
     max-file-size: -1
     max-request-size: -1
