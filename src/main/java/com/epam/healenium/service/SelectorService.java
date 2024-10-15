@@ -6,7 +6,6 @@ import com.epam.healenium.model.dto.ReferenceElementsDto;
 import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
-import com.epam.healenium.model.dto.SessionDto;
 
 import java.util.List;
 
@@ -15,7 +14,7 @@ public interface SelectorService {
 
     ReferenceElementsDto getReferenceElements(RequestDto dto);
 
-    List<RequestDto> getAllSelectors();
+    List<SelectorRequestDto> getAllSelectors();
 
     ConfigSelectorDto getConfigSelectors();
 

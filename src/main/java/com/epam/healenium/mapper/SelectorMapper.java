@@ -3,7 +3,6 @@ package com.epam.healenium.mapper;
 import com.epam.healenium.constants.Constants;
 import com.epam.healenium.model.Locator;
 import com.epam.healenium.model.domain.Selector;
-import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
 import com.epam.healenium.model.wrapper.NodePathWrapper;
@@ -35,8 +34,8 @@ public interface SelectorMapper {
         return element;
     }
 
-    default List<RequestDto> toRequestDto(List<Selector> selector) {
-        List<RequestDto> requestDtoResult = new ArrayList<>();
+    default List<SelectorRequestDto> toRequestDto(List<Selector> selector) {
+        List<SelectorRequestDto> requestDtoResult = new ArrayList<>();
         for (Selector selectorEntity : selector) {
             SelectorRequestDto requestDto = new SelectorRequestDto();
             requestDto.setId(selectorEntity.getUid());
