@@ -31,8 +31,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ReportServiceImpl implements ReportService {
 
-    private static final String SESSION_ID_REGEX = "^[a-fA-F0-9]+$";
-
     private final ReportRepository reportRepository;
     private final HealingResultRepository resultRepository;
 
@@ -145,7 +143,7 @@ public class ReportServiceImpl implements ReportService {
      */
     @Override
     public void createReportRecord(HealingResult result, Healing healing, String sessionId, byte[] screenshot) {
-        if (!StringUtils.isEmpty(sessionId) && sessionId.matches(SESSION_ID_REGEX)) {
+        if (!StringUtils.isEmpty(sessionId)) {
             String screenshotDir = "/screenshots/" + sessionId;
             String screenshotPath = persistScreenshot(screenshot, screenshotDir);
             log.debug("[Save Healing] Screenshot Path: {}", screenshotPath);
