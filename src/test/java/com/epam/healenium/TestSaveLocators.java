@@ -47,6 +47,7 @@ public class TestSaveLocators extends TestContainersInitializer {
     @Autowired
     private ObjectMapper objectMapper;
     private SelectorRequestDto selectorRequest;
+    private RequestDto requestDto;
 
     @BeforeEach
     public void setUp() {
@@ -58,6 +59,12 @@ public class TestSaveLocators extends TestContainersInitializer {
         selectorRequest.setMethodName("testMethod()");
         selectorRequest.setUrl("https://test-url");
         selectorRequest.setNodePath(getLastValidPath());
+
+        requestDto = new RequestDto();
+        requestDto.setLocator(selectorRequest.getLocator());
+        requestDto.setClassName(selectorRequest.getClassName());
+        requestDto.setMethodName(selectorRequest.getMethodName());
+        requestDto.setUrl(selectorRequest.getUrl());
     }
 
     @AfterEach
@@ -105,7 +112,7 @@ public class TestSaveLocators extends TestContainersInitializer {
 
     @Test
     public void testHealingResultFromEmptyDb() {
-        Set<HealingResultDto> resultDtos = healingService.getHealingResults(selectorRequest);
+        Set<HealingResultDto> resultDtos = healingService.getHealingResults(requestDto);
         Assertions.assertNotEquals(1, resultDtos.size(), "Incorrect amount of healing results were found");
     }
 
