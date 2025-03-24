@@ -19,15 +19,15 @@ public class HealingSpecBuilder {
     public Specification<Healing> buildSpec(RequestDto filter){
         Specification<Healing> spec = Specification.where(null);
 
-        if(!StringUtils.isEmpty(filter.getLocator())){
+        if(StringUtils.hasText(filter.getLocator())){
             spec = spec.and(HealingSpecifications.hasLocator(filter.getLocator()));
         }
 
-        if(!StringUtils.isEmpty(filter.getMethodName())){
+        if(StringUtils.hasText(filter.getMethodName())){
             spec = spec.and(HealingSpecifications.hasMethod(filter.getMethodName()));
         }
 
-        if(!StringUtils.isEmpty(filter.getClassName())){
+        if(StringUtils.hasText(filter.getClassName())){
             spec = spec.and(HealingSpecifications.hasClass(filter.getClassName()));
         }
         return spec;
