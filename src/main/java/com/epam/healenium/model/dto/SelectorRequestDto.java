@@ -14,7 +14,6 @@ import java.util.List;
 public class SelectorRequestDto {
 
     private String id;
-    @Pattern(regexp = "^By.*", message = "The field must start with 'By'")
     private String type;
     @ToString.Exclude
     private List<List<Node>> nodePath;
