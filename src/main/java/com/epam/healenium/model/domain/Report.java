@@ -36,4 +36,7 @@ public class Report {
     @CreationTimestamp
     private LocalDateTime createdDate;
 
+    @Column(name = "name")
+    private String name;
+
 }

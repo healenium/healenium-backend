@@ -6,6 +6,7 @@ import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.domain.Report;
 import com.epam.healenium.model.dto.RecordDto;
 import com.epam.healenium.model.dto.RecordDto.ReportRecord;
+import com.epam.healenium.model.dto.ReportDto;
 import com.epam.healenium.model.dto.ReportLinkDto;
 import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.ReportRepository;
@@ -155,6 +156,49 @@ public class ReportServiceImpl implements ReportService {
                 reportRepository.save(r);
             });
         }
+    }
+
+    @Override
+    public List<ReportDto> getAllReports() {
+        List<Report> all = reportRepository.findAllByOrderByCreatedDateDesc();
+        return getAllReportLinks(all);
+    }
+
+    @Override
+    public RecordDto getReport(String id) {
+        RecordDto result = new RecordDto();
+        reportRepository.findById(id).ifPresent(report -> {
+            result.setId(id)
+                    .setTime(report.getCreatedDate().format(DateTimeFormatter.ISO_DATE_TIME))
+                    .setName(report.getCreatedDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy - HH:mm:ss")));
+            buildReportRecords(result, report);
+        });
+        return result;
+    }
+
+    @Override
+    public RecordDto editReport(String id, ReportDto editReportDto) {
+        RecordDto result = new RecordDto();
+        Report report = reportRepository.findById(id).get();
+        report.setName(editReportDto.getName());
+        reportRepository.save(report);
+        result.setId(id)
+                .setTime(report.getCreatedDate().format(DateTimeFormatter.ISO_DATE_TIME))
+                .setName(report.getName());
+        buildReportRecords(result, report);
+        return result;
+
+    }
+
+    private List<ReportDto> getAllReportLinks(List<Report> all) {
+        return all.stream()
+                .map(r -> new ReportDto()
+                        .setId(r.getUid())
+                        .setName(r.getName() != null
+                                ? r.getName()
+                                : r.getCreatedDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy - HH:mm:ss")))
+                        .setDate(r.getCreatedDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy - HH:mm:ss"))))
+                .collect(Collectors.toList());
     }
 
     /**
