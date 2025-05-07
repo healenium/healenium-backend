@@ -164,6 +164,12 @@ public class HealingController {
         return modelAndView;
     }
 
+    @GetMapping("/selector/all")
+    public List<SelectorRequestDto> getAll() {
+        log.debug("[Get All Selectors]");
+        return selectorService.getAllSelectors();
+    }
+
     /**
      * Setting status (enable/disable) to healing
      *

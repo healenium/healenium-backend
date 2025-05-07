@@ -64,7 +64,7 @@ app:
   metrics:
     allow: ${COLLECT_METRICS:true}
   healing:
-    elements: ${FIND_ELEMENTS_AUTO_HEALING:false}
+    elements: ${FIND_ELEMENTS_AUTO_HEALING:true}
 
 cloud:
   aws:
@@ -75,6 +75,9 @@ cloud:
 
 logging:
   level:
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.cloud.gateway: DEBUG
     ROOT: ${SPRING_LOG_LEVEL:INFO}
     org.springframework: INFO
     org.mongodb.driver.connection: WARN

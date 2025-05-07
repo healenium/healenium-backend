@@ -3,6 +3,9 @@ package com.epam.healenium.service;
 import com.epam.healenium.model.domain.Healing;
 import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.dto.RecordDto;
+import com.epam.healenium.model.dto.ReportDto;
+
+import java.util.List;
 
 public interface ReportService {
 
@@ -41,4 +44,9 @@ public interface ReportService {
      */
     void createReportRecord(HealingResult result, Healing healing, String sessionId, byte[] screenshot);
 
+    List<ReportDto> getAllReports();
+
+    RecordDto getReport(String id);
+
+    RecordDto editReport(String uid, ReportDto reportUpdateDto);
 }
