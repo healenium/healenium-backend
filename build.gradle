@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '3.3.9'
+    id 'org.springframework.boot' version '3.3.11'
     id 'io.spring.dependency-management' version "1.1.4"
     id 'java'
     id 'maven-publish'
@@ -7,7 +7,7 @@ plugins {
 }
 
 group 'com.epam.healenium'
-version '3.4.7'
+version '3.4.8'
 
 
 repositories {
