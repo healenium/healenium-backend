@@ -47,7 +47,7 @@ public interface SelectorMapper {
                     ? null
                     : selectorEntity.getClassName());
             requestDto.setEnableHealing(selectorEntity.getEnableHealing());
-            requestDto.setCommand("findElement".equals(selectorEntity.getCommand()) ? "single" : "multiple");
+            requestDto.setCommand("findElement".equals(selectorEntity.getCommand()) ? "Single Locator" : "Locator Set");
             String selectorIdWithUrl = Utils.buildKey(selectorEntity.getLocator().getValue(), selectorEntity.getCommand(), selectorEntity.getUrl());
             requestDto.setUrlKey(selectorEntity.getUid().equals(selectorIdWithUrl));
             requestDtoResult.add(requestDto);
