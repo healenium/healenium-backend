@@ -14,4 +14,7 @@ public interface HealingResultRepository extends JpaRepository<HealingResult, In
     @Query("select hr from HealingResult hr WHERE hr.healing.uid = :id")
     List<HealingResult> findByHealingId(@Param("id") String id);
 
+    @Query("select hr from HealingResult hr WHERE hr.successHealing = false")
+    List<HealingResult> findUnsuccessfulHealings();
+
 }

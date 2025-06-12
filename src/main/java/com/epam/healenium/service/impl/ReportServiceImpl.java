@@ -37,16 +37,20 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public String initialize() {
+        LocalDateTime now = LocalDateTime.now();
         Report report = new Report()
-                .setCreatedDate(LocalDateTime.now());
+                .setCreatedDate(LocalDateTime.now())
+                .setName(now.format(DateTimeFormatter.ofPattern("dd MMM yyyy - HH:mm")));
         return reportRepository.save(report).getUid();
     }
 
     @Override
     public String initialize(String uid) {
+        LocalDateTime now = LocalDateTime.now();
         Report report = new Report()
                 .setUid(uid)
-                .setCreatedDate(LocalDateTime.now());
+                .setCreatedDate(now)
+                .setName(now.format(DateTimeFormatter.ofPattern("dd MMM yyyy - HH:mm")));
         return reportRepository.save(report).getUid();
     }
 
@@ -99,7 +103,7 @@ public class ReportServiceImpl implements ReportService {
         List<ReportLinkDto> reportLinks = all.stream()
                 .map(r -> new ReportLinkDto()
                         .setId(r.getUid())
-                        .setName(r.getCreatedDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy - HH:mm:ss"))))
+                        .setName(r.getCreatedDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy - HH:mm"))))
                 .collect(Collectors.toList());
         return reportLinks;
     }
@@ -170,7 +174,7 @@ public class ReportServiceImpl implements ReportService {
         reportRepository.findById(id).ifPresent(report -> {
             result.setId(id)
                     .setTime(report.getCreatedDate().format(DateTimeFormatter.ISO_DATE_TIME))
-                    .setName(report.getCreatedDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy - HH:mm:ss")));
+                    .setName(report.getCreatedDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy - HH:mm")));
             buildReportRecords(result, report);
         });
         return result;
@@ -196,8 +200,8 @@ public class ReportServiceImpl implements ReportService {
                         .setId(r.getUid())
                         .setName(r.getName() != null
                                 ? r.getName()
-                                : r.getCreatedDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy - HH:mm:ss")))
-                        .setDate(r.getCreatedDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy - HH:mm:ss"))))
+                                : r.getCreatedDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy - HH:mm")))
+                        .setDate(r.getCreatedDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy - HH:mm"))))
                 .collect(Collectors.toList());
     }
 

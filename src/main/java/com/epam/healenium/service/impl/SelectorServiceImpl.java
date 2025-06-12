@@ -2,7 +2,9 @@ package com.epam.healenium.service.impl;
 
 
 import com.epam.healenium.mapper.SelectorMapper;
+import com.epam.healenium.model.Locator;
 import com.epam.healenium.model.domain.Healing;
+import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.domain.Selector;
 import com.epam.healenium.model.dto.ConfigSelectorDto;
 import com.epam.healenium.model.dto.ReferenceElementsDto;
@@ -10,6 +12,7 @@ import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
 import com.epam.healenium.repository.HealingRepository;
+import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.SelectorRepository;
 import com.epam.healenium.service.SelectorService;
 import com.epam.healenium.treecomparing.Node;
@@ -41,6 +44,7 @@ public class SelectorServiceImpl implements SelectorService {
     private final SelectorRepository selectorRepository;
     private final SelectorMapper selectorMapper;
     private final HealingRepository healingRepository;
+    private final HealingResultRepository healingResultRepository;
 
     @Override
     public void saveSelector(SelectorRequestDto request) {
@@ -54,11 +58,19 @@ public class SelectorServiceImpl implements SelectorService {
     @Override
     public ReferenceElementsDto getReferenceElements(RequestDto dto) {
         String selectorId = getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), urlForKey);
-        List<List<Node>> paths = selectorRepository.findById(selectorId)
+        Optional<Selector> optionalSelector = selectorRepository.findById(selectorId);
+        List<List<Node>> paths = optionalSelector
                 .map(t -> t.getNodePathWrapper().getNodePath())
                 .orElse(Collections.emptyList());
+        List<HealingResult> unsuccessfulHealings = healingResultRepository.findUnsuccessfulHealings();
+        List<Locator> unsuccessfulLocators = unsuccessfulHealings.stream().filter(
+                        healingResult -> healingResult.getHealing().getSelector().getUid().equals(selectorId)
+                )
+                .map(HealingResult::getLocator)
+                .toList();
         return new ReferenceElementsDto()
-                .setPaths(paths);
+                .setPaths(paths)
+                .setUnsuccessfulLocators(unsuccessfulLocators);
     }
 
     @Override

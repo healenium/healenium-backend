@@ -18,5 +18,6 @@
 	<include file="005_report.xml" relativeToChangelogFile="true"/>
 	<include file="006_command_and_healingenable_column.xml" relativeToChangelogFile="true"/>
 	<include file="007_report_name_column.xml" relativeToChangelogFile="true"/>
+	<include file="008_credential.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
