@@ -7,8 +7,6 @@ import java.util.List;
 
 @Data
 @Accessors(chain = true)
-public class EliteaDto {
-    private List<EliteaHealing> healings;
-    private String repositoryName;
-    private String reportName;
+public class DetectionPaths {
+    private List<LocatorPathsDto> detectionPaths;
 }

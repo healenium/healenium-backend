@@ -75,9 +75,9 @@ cloud:
 
 logging:
   level:
-    org.springframework.web: DEBUG
-    org.springframework.security: DEBUG
-    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.springframework.cloud.gateway: INFO
     ROOT: ${SPRING_LOG_LEVEL:INFO}
     org.springframework: INFO
     org.mongodb.driver.connection: WARN
