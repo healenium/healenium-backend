@@ -8,6 +8,6 @@ import lombok.experimental.Accessors;
 public class IntegrationFormDto {
     private String gitHubRepository;
     private String gitHubAccessToken;
+    private String gitHubBranch;
     private String eliteaToken;
-
 }

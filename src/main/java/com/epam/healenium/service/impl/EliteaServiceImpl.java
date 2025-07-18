@@ -2,34 +2,28 @@ package com.epam.healenium.service.impl;
 
 import com.epam.healenium.constants.Constants;
 import com.epam.healenium.model.Locator;
+import com.epam.healenium.model.domain.Vcs;
 import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.domain.Report;
 import com.epam.healenium.model.domain.Selector;
-import com.epam.healenium.model.dto.elitea.EliteaDto;
-import com.epam.healenium.model.dto.elitea.EliteaHealing;
-import com.epam.healenium.model.dto.elitea.EliteaLocator;
-import com.epam.healenium.model.dto.elitea.EliteaSelectorDetectionRequestDto;
-import com.epam.healenium.model.dto.elitea.GitSearchItem;
-import com.epam.healenium.model.dto.elitea.GitSearchResponseDto;
-import com.epam.healenium.model.dto.elitea.LocatorPathsDto;
-import com.epam.healenium.model.dto.elitea.TextMatches;
+import com.epam.healenium.model.dto.elitea.*;
 import com.epam.healenium.model.wrapper.RecordWrapper;
 import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.repository.SelectorRepository;
-import com.epam.healenium.rest.GitRestService;
+import com.epam.healenium.repository.VcsRepository;
+import com.epam.healenium.rest.IntegrationRestService;
 import com.epam.healenium.service.EliteaService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Slf4j(topic = "healenium")
 @Service
@@ -38,53 +32,41 @@ import java.util.stream.Collectors;
 public class EliteaServiceImpl implements EliteaService {
 
     private final ReportRepository reportRepository;
-    private final GitRestService gitRestService;
+    private final IntegrationRestService integrationRestService;
     private final HealingResultRepository healingResultRepository;
     private final SelectorRepository selectorRepository;
+    private final VcsRepository vcsRepository;
 
-    //TODO Remove v1
     @Override
-    public EliteaDto getEliteaDto(String authorizationHeader, String repoName) {
-        Optional<Report> latestReport = reportRepository.findAllByOrderByCreatedDateDesc().stream().findFirst();
-        List<EliteaHealing> healings = latestReport
-                .map(report -> getEliteaHealings(repoName, authorizationHeader, report))
-                .orElse(Collections.emptyList());
-        return new EliteaDto()
-                .setHealings(healings)
-                .setRepositoryName(repoName)
-                .setReportName(latestReport.map(Report::getName).orElse(null));
-    }
+    public List<EliteaSelectorDetectionRequestDto> selectorDetectionByReport(String reportId) {
+        Vcs vcs = getGitHubCredential();
+        String repoName = extractRepoName(vcs);
+        Report report = getReportById(reportId);
 
-    //TODO Remove v1
-    @Override
-    public EliteaDto getEliteaDto(String authorizationHeader, String repoName, String reportId) {
-        Optional<Report> latestReport = reportRepository.findById(reportId);
-        List<EliteaHealing> healings = latestReport
-                .map(report -> getEliteaHealings(repoName, authorizationHeader, report))
-                .orElse(Collections.emptyList());
-        return new EliteaDto()
-                .setHealings(healings)
-                .setRepositoryName(repoName)
-                .setReportName(latestReport.map(Report::getName).orElse(null));
+        return report.getRecordWrapper()
+                .getRecords()
+                .stream()
+                .map(record -> createSelectorDetectionRequest(repoName, vcs.getAccessToken(), record))
+                .toList();
     }
 
     @Override
-    public List<EliteaSelectorDetectionRequestDto> selectorDetectionByReport(String authorizationHeader, String repoName, String reportId) {
-        return reportRepository.findById(reportId)
-                .map(report -> getEliteaHealings2(repoName, authorizationHeader, report))
-                .orElse(List.of());
-    }
+    public EliteaDto createPullRequest(String reportId) {
+        Vcs vcs = getGitHubCredential();
+        String repoName = vcs.getRepository();
+        Report report = getReportById(reportId);
 
-    @Override
-    public EliteaDto getEliteaDto3(String authorizationHeader, String repoName, String reportId) {
-        Optional<Report> latestReport = reportRepository.findById(reportId);
-        List<EliteaHealing> healings = latestReport
-                .map(report -> getEliteaHealings3(repoName, authorizationHeader, report))
-                .orElse(Collections.emptyList());
+        List<EliteaHealing> healings = report.getRecordWrapper()
+                .getRecords()
+                .stream()
+                .map(this::createHealingIfValid)
+                .filter(Objects::nonNull)
+                .toList();
+
         return new EliteaDto()
                 .setHealings(healings)
                 .setRepositoryName(repoName)
-                .setReportName(latestReport.map(Report::getName).orElse(null));
+                .setReportName(report.getName());
     }
 
     @Override
@@ -100,140 +82,6 @@ public class EliteaServiceImpl implements EliteaService {
                 .toList();
     }
 
-    private boolean isInvalidSelectorClass(HealingResult healingResult) {
-        if (!healingResult.isSuccessHealing()) {
-            return false;
-        }
-        Selector selector = healingResult.getHealing().getSelector();
-        String className = selector.getClassName();
-        return className.contains(Constants.SINGLE_ELEMENT_PROXY_CLASS_PATH)
-                || className.contains(Constants.MULTIPLE_ELEMENTS_PROXY_CLASS_PATH);
-    }
-
-    private List<EliteaHealing> getEliteaHealings(String repoName, String authorizationHeader, Report report) {
-        return report.getRecordWrapper().getRecords().stream()
-                .flatMap(record -> createHealingsForRecord(repoName, authorizationHeader, record).stream())
-                .collect(Collectors.toList());
-    }
-
-    private List<EliteaSelectorDetectionRequestDto> getEliteaHealings2(String repoName, String authorizationHeader, Report report) {
-        return report.getRecordWrapper().getRecords().stream()
-//                .flatMap(record -> getMultiplePlaceOptions(repoName, authorizationHeader, record).stream())
-                .map(record -> getMultiplePlaceOptions(repoName, authorizationHeader, record))
-                .collect(Collectors.toList());
-    }
-
-    private List<EliteaHealing> getEliteaHealings3(String repoName, String authorizationHeader, Report report) {
-        return report.getRecordWrapper().getRecords().stream()
-                .map(record -> createHealingsForRecord3(repoName, authorizationHeader, record))
-                .collect(Collectors.toList());
-    }
-
-    private List<EliteaHealing> createHealingsForRecord(String repoName, String authorizationHeader, RecordWrapper.Record record) {
-        String value = record.getFailedLocator().getValue();
-        GitSearchResponseDto responseDto = gitRestService.callExternalService(repoName, value, authorizationHeader);
-        List<GitSearchItem> gitSearchItems = validateFragment(repoName, responseDto, value);
-
-        return gitSearchItems.stream()
-                .map(GitSearchItem::getPath)
-                .map(path -> createHealing(record, path, value))
-                .collect(Collectors.toList());
-    }
-
-
-    private EliteaSelectorDetectionRequestDto getMultiplePlaceOptions(String repoName, String authorizationHeader, RecordWrapper.Record record) {
-        String value = record.getFailedLocator().getValue();
-        GitSearchResponseDto responseDto = gitRestService.callExternalService(repoName, value, authorizationHeader);
-        List<GitSearchItem> validGitFragments = validateFragment(repoName, responseDto, value);
-        Integer healingResultId = record.getHealingResultId();
-        Optional<HealingResult> healingResults = healingResultRepository.findById(healingResultId);
-        if (healingResults.isPresent()) {
-            Selector selector = healingResults.get().getHealing().getSelector();
-            if (validGitFragments.size() == 1) {
-                selector.setClassName(validGitFragments.get(0).getPath());
-                selectorRepository.save(selector);
-            } else {
-                if (validGitFragments.size() > 1) {
-                    List<String> paths = validGitFragments.stream()
-                            .map(GitSearchItem::getPath)
-                            .toList();
-                    return new EliteaSelectorDetectionRequestDto()
-                            .setId(selector.getUid())
-                            .setLocator(value)
-                            .setLocatorType(record.getFailedLocator().getType())
-                            .setPathList(paths);
-
-                } else {
-                    return new EliteaSelectorDetectionRequestDto()
-                            .setId(selector.getUid())
-                            .setLocator(value)
-                            .setLocatorType(record.getFailedLocator().getType())
-                            .setPathList(Collections.emptyList());
-                }
-            }
-        }
-//        return Collections.emptyList();
-        return null;
-    }
-
-    private EliteaHealing createHealingsForRecord3(String repoName, String authorizationHeader, RecordWrapper.Record record) {
-        String value = record.getFailedLocator().getValue();
-        Integer healingResultId = record.getHealingResultId();
-        List<HealingResult> healingResults = healingResultRepository.findAllById(Collections.singleton(healingResultId));
-        if (!healingResults.isEmpty() && healingResults.get(0).isSuccessHealing()) {
-            Selector selector = healingResults.get(0).getHealing().getSelector();
-            selectorRepository.save(selector);
-            return createHealing(record, selector.getClassName(), value);
-        } else {
-            return null;
-        }
-    }
-
-    private EliteaHealing createHealing(RecordWrapper.Record record, String filePath, String value) {
-        EliteaLocator brokenLocator = getEliteaLocator(record.getFailedLocator(), value);
-        EliteaLocator healedLocator = getEliteaLocator(record.getHealedLocator(), record.getHealedLocator().getValue());
-        return new EliteaHealing()
-                .setBrokenLocator(brokenLocator)
-                .setHealedLocator(healedLocator)
-                .setFilePath(filePath);
-    }
-
-    private static EliteaLocator getEliteaLocator(Locator record, String value) {
-        return new EliteaLocator()
-                .setType(record.getType())
-                .setValue(value);
-    }
-
-    private List<GitSearchItem> validateFragment(String repoName, GitSearchResponseDto responseDto, String value) {
-        if (responseDto == null) {
-            return new ArrayList<>();
-        }
-        List<GitSearchItem> resultList = new ArrayList<>();
-        for (GitSearchItem item : responseDto.getItems()) {
-            if (!item.getPath().equals("infra/dump.sql")) {
-                for (TextMatches textMatch : item.getText_matches()) {
-                    if (textMatch.getMatches().size() > 1) {
-                        String decode = gitRestService.getFile(repoName, item.getPath());
-                        if (containsQuotedSubstring(decode, value)) {
-                            resultList.add(item);
-                            break;
-                        }
-                    } else {
-                        if (containsQuotedSubstring(textMatch.getFragment(), value)) {
-                            resultList.add(item);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return resultList;
-    }
-
-    private boolean containsQuotedSubstring(String fragment, String value) {
-        return fragment != null && (fragment.contains("'" + value + "'") || fragment.contains("\"" + value + "\""));
-    }
-
     @Override
     public void saveLocatorPaths(List<LocatorPathsDto> request) {
         request.forEach(r -> {
@@ -243,5 +91,153 @@ public class EliteaServiceImpl implements EliteaService {
                 selectorRepository.save(s);
             });
         });
+    }
+
+    @Override
+    public void updateGitHubToolkit(VcsDto vcsDto) {
+        if (!StringUtils.isEmpty(vcsDto.getRepository())
+                || !StringUtils.isEmpty(vcsDto.getBranch())
+                || !StringUtils.isEmpty(vcsDto.getAccessToken())) {
+            vcsRepository.findAll().stream()
+                    .findFirst()
+                    .ifPresent(vsc ->
+                            integrationRestService.callGetEliteaApplicationDetails(vsc, "5")
+                                    .map(jsonNode -> updateEliteaToolkitJson(jsonNode, vsc))
+                                    .flatMap(modifiedJson ->
+                                            integrationRestService.callUpdateEliteaApplicationDetails(vsc, "5", Mono.just(modifiedJson))
+                                    )
+                                    .subscribe()
+
+                    );
+        }
+    }
+
+    private ObjectNode updateEliteaToolkitJson(ObjectNode jsonNode, Vcs vcs) {
+        jsonNode.remove("versions");
+        jsonNode.put("version", jsonNode.get("version_details"));
+        jsonNode.remove("version_details");
+
+        ObjectNode versionNode = (ObjectNode) jsonNode.get("version");
+        JsonNode toolsNode = versionNode.get("tools");
+
+        if (toolsNode.isArray() && toolsNode.size() > 0) {
+            ObjectNode firstToolNode = (ObjectNode) toolsNode.get(0);
+            ObjectNode settingsNode = (ObjectNode) firstToolNode.get("settings");
+
+            settingsNode.put("repository", vcs.getRepository());
+            settingsNode.put("base_branch", vcs.getBranch());
+            settingsNode.put("active_branch", vcs.getBranch());
+            settingsNode.put("access_token", vcs.getAccessToken());
+        }
+        return jsonNode;
+    }
+
+    private Vcs getGitHubCredential() {
+        return vcsRepository.findAll().stream().findFirst()
+                .orElseThrow(() -> new NoSuchElementException("VCS not found"));
+    }
+
+    private String extractRepoName(Vcs vcs) {
+        return vcs.getRepository().replace("https://github.com/", "");
+    }
+
+    private Report getReportById(String reportId) {
+        return reportRepository.findById(reportId)
+                .orElseThrow(() -> new NoSuchElementException("Report not found: " + reportId));
+    }
+
+    private EliteaSelectorDetectionRequestDto createSelectorDetectionRequest(String repoName, String token, RecordWrapper.Record record) {
+        String value = record.getFailedLocator().getValue();
+        GitSearchResponseDto responseDto = integrationRestService.callGitHubService(repoName, value, token);
+        List<GitSearchItem> validGitFragments = validateFragments(repoName, responseDto, value);
+
+        Integer healingResultId = record.getHealingResultId();
+        HealingResult healingResult = healingResultRepository.findById(healingResultId)
+                .orElse(null);
+
+        if (healingResult != null) {
+            Selector selector = healingResult.getHealing().getSelector();
+            handleGitFragmentsAndSave(selector, validGitFragments);
+            return createSelectorDetectionDto(selector, record, value, validGitFragments);
+        }
+        return null;
+    }
+
+    private void handleGitFragmentsAndSave(Selector selector, List<GitSearchItem> fragments) {
+        if (fragments.size() == 1) {
+            selector.setClassName(fragments.get(0).getPath());
+            selectorRepository.save(selector);
+        }
+    }
+
+    private EliteaSelectorDetectionRequestDto createSelectorDetectionDto(Selector selector, RecordWrapper.Record record, String value, List<GitSearchItem> validGitFragments) {
+        List<String> paths = validGitFragments.stream()
+                .map(GitSearchItem::getPath)
+                .toList();
+
+        return new EliteaSelectorDetectionRequestDto()
+                .setId(selector.getUid())
+                .setLocator(value)
+                .setLocatorType(record.getFailedLocator().getType())
+                .setPathList(paths);
+    }
+
+    private List<GitSearchItem> validateFragments(String repoName, GitSearchResponseDto responseDto, String value) {
+        if (responseDto == null) {
+            return Collections.emptyList();
+        }
+        return responseDto.getItems().stream()
+                .filter(item -> isFragmentValid(repoName, item, value))
+                .toList();
+    }
+
+    private boolean isFragmentValid(String repoName, GitSearchItem item, String value) {
+        return item.getText_matches().stream()
+                .anyMatch(textMatch -> isTextMatchValid(repoName, textMatch, item.getPath(), value));
+    }
+
+    private boolean isTextMatchValid(String repoName, TextMatches textMatch, String path, String value) {
+        if (textMatch.getMatches().size() > 1) {
+            String fileContent = integrationRestService.getFile(repoName, path);
+            return containsQuotedSubstring(fileContent, value);
+        }
+        return containsQuotedSubstring(textMatch.getFragment(), value);
+    }
+
+    private boolean containsQuotedSubstring(String fragment, String value) {
+        return fragment != null && (fragment.contains("'" + value + "'") || fragment.contains("\"" + value + "\""));
+    }
+
+    private EliteaHealing createHealingIfValid(RecordWrapper.Record record) {
+        List<HealingResult> healingResults = healingResultRepository.findAllById(Collections.singleton(record.getHealingResultId()));
+        if (healingResults.isEmpty() || !healingResults.get(0).isSuccessHealing()) {
+            return null;
+        }
+
+        Selector selector = healingResults.get(0).getHealing().getSelector();
+        return createEliteaHealing(record, selector.getClassName(), record.getFailedLocator().getValue());
+    }
+
+    private EliteaHealing createEliteaHealing(RecordWrapper.Record record, String filePath, String value) {
+        return new EliteaHealing()
+                .setBrokenLocator(createEliteaLocator(record.getFailedLocator(), value))
+                .setHealedLocator(createEliteaLocator(record.getHealedLocator(), record.getHealedLocator().getValue()))
+                .setFilePath(filePath);
+    }
+
+    private static EliteaLocator createEliteaLocator(Locator locator, String value) {
+        return new EliteaLocator()
+                .setType(locator.getType())
+                .setValue(value);
+    }
+
+    private boolean isInvalidSelectorClass(HealingResult healingResult) {
+        if (!healingResult.isSuccessHealing()) {
+            return false;
+        }
+        Selector selector = healingResult.getHealing().getSelector();
+        String className = selector.getClassName();
+        return className.contains(Constants.SINGLE_ELEMENT_PROXY_CLASS_PATH)
+                || className.contains(Constants.MULTIPLE_ELEMENTS_PROXY_CLASS_PATH);
     }
 }
