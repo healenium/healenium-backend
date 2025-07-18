@@ -1,35 +1,42 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   logicalFilePath="changelog/008_credential.xml"
+                   logicalFilePath="changelog/009_llm.xml"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
-    <changeSet author="alex" id="15">
-        <createTable tableName="CREDENTIAL">
+    <changeSet author="alex" id="19">
+        <createTable tableName="llm">
             <column name="UID" type="VARCHAR(64)">
                 <constraints nullable="false"/>
             </column>
-            <column name="NAME" type="VARCHAR">
-                <constraints nullable="false"/>
-            </column>
-            <column name="TOKEN" type="VARCHAR(264)">
+            <column name="NAME" type="VARCHAR(264)">
                 <constraints nullable="true"/>
             </column>
-            <column name="RESOURCE" type="VARCHAR(264)">
+            <column name="ACCESS_TOKEN" type="VARCHAR">
                 <constraints nullable="true"/>
             </column>
             <column name="CREATE_DATE" type="TIMESTAMP(6)" defaultValueComputed="current_timestamp"/>
         </createTable>
     </changeSet>
 
-    <changeSet author="alex" id="16" >
+    <changeSet author="alex" id="20" >
         <preConditions onFail="MARK_RAN">
             <not>
-                <indexExists indexName="CREDENTIAL_PK" />
+                <indexExists indexName="LLM_PK" />
             </not>
         </preConditions>
-        <createIndex indexName="CREDENTIAL_PK" tableName="CREDENTIAL" unique="true">
+        <createIndex indexName="LLM_PK" tableName="LLM" unique="true">
             <column name="UID"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="alex" id="21" >
+        <addUniqueConstraint tableName="llm" columnNames="NAME" constraintName="UNIQUE_LLM_NAME"/>
+    </changeSet>
+
+    <changeSet author="alex" id="22">
+        <createIndex tableName="llm" indexName="INDEX_LLM_NAME">
+            <column name="NAME"/>
         </createIndex>
     </changeSet>
 

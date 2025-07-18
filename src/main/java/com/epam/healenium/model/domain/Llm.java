@@ -1,5 +1,6 @@
 package com.epam.healenium.model.domain;
 
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -13,8 +14,8 @@ import java.time.LocalDateTime;
 @Accessors(chain = true)
 @Data
 @Entity
-@Table(name = "credential")
-public class Credential {
+@Table(name = "llm")
+public class Llm {
 
     @Id
     @Column(name = "uid")
@@ -23,11 +24,8 @@ public class Credential {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "token")
-    private String token;
-
-    @Column(name = "resource")
-    private String resource;
+    @Column(name = "access_token")
+    private String accessToken;
 
     @Column(name = "create_date")
     @CreationTimestamp

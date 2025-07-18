@@ -2,6 +2,7 @@ package com.epam.healenium.model.dto;
 
 import com.epam.healenium.treecomparing.Node;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -29,7 +30,7 @@ public class SelectorRequestDto {
     private String methodName;
     @Pattern(regexp = "^(findElement|findElements)$", message = "The command must be either 'findElement' or 'findElements'")
     private String command;
-    @NotBlank
+    @NotNull
     private String url;
 }
 

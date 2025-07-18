@@ -1,0 +1,49 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   logicalFilePath="changelog/008_vcs.xml"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet author="alex" id="15">
+        <createTable tableName="vcs">
+            <column name="UID" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="NAME" type="VARCHAR(264)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="ACCESS_TOKEN" type="VARCHAR">
+                <constraints nullable="true"/>
+            </column>
+            <column name="REPOSITORY" type="VARCHAR(264)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="BRANCH" type="VARCHAR(264)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="CREATE_DATE" type="TIMESTAMP(6)" defaultValueComputed="current_timestamp"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="alex" id="16" >
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="VCS_PK" />
+            </not>
+        </preConditions>
+        <createIndex indexName="VCS_PK" tableName="vcs" unique="true">
+            <column name="UID"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="alex" id="17" >
+        <addUniqueConstraint tableName="vcs" columnNames="NAME" constraintName="UNIQUE_VCS_NAME"/>
+    </changeSet>
+
+    <changeSet author="alex" id="18">
+        <createIndex tableName="vcs" indexName="INDEX_VCS_NAME">
+            <column name="NAME"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
