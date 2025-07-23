@@ -11,6 +11,7 @@ import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.service.ReportService;
 import com.epam.healenium.util.Utils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 
 @Slf4j(topic = "healenium")
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ReportServiceImpl implements ReportService {
 
