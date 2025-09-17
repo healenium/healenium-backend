@@ -6,6 +6,7 @@ import com.epam.healenium.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,9 +63,9 @@ public class ReportController {
         return Paths.get(reportUrl, key).toString();
     }
 
-    @GetMapping("/data/{uid}")
-    public RecordDto getRecord(@PathVariable String uid) {
-        return reportService.generate(uid);
+    @GetMapping("/all")
+    public List<ReportDto> getAllReports() {
+        return reportService.getAllReports();
     }
 
     @GetMapping("/data")
@@ -72,17 +73,31 @@ public class ReportController {
         return reportService.generate();
     }
 
-    @GetMapping("/reports")
-    public List<ReportDto> getAllReports() {
-        return reportService.getAllReports();
+    @GetMapping("/data/{uid}")
+    public ResponseEntity<RecordDto> getReport(@PathVariable String uid) {
+        log.info("[REPORT] Getting report with UID: {}", uid);
+        
+        if (uid == null || uid.trim().isEmpty()) {
+            log.warn("[REPORT] Invalid report UID provided: {}", uid);
+            return ResponseEntity.badRequest().build();
+        }
+        
+        try {
+            RecordDto report = reportService.generate(uid);
+            if (report == null || report.getId() == null) {
+                log.warn("[REPORT] Report not found with UID: {}", uid);
+                return ResponseEntity.notFound().build();
+            }
+            
+            log.info("[REPORT] Successfully retrieved report with UID: {}", uid);
+            return ResponseEntity.ok(report);
+        } catch (Exception e) {
+            log.error("[REPORT] Error retrieving report with UID: {}", uid, e);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
-    @GetMapping("/reports/{id}")
-    public RecordDto getReport(@PathVariable String id) {
-        return reportService.getReport(id);
-    }
-
-    @PatchMapping("/edit/{uid}")
+    @PatchMapping("/data/{uid}")
     public RecordDto editReport(@PathVariable String uid, @RequestBody ReportDto editReportDto) {
         return reportService.editReport(uid, editReportDto);
     }

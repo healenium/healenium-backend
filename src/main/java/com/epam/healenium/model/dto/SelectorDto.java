@@ -9,4 +9,5 @@ public class SelectorDto {
     private String id;
     private String locator;
     private boolean enableHealing;
+    private String filePath;
 }

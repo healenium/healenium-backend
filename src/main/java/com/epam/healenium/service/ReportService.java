@@ -37,6 +37,8 @@ public interface ReportService {
      */
     RecordDto generate();
 
+    List<HealingResult> getDedicatedInfo(String reportId);
+
     /**
      * Create Report Record during Save healing
      *
@@ -46,7 +48,5 @@ public interface ReportService {
 
     List<ReportDto> getAllReports();
 
-    RecordDto getReport(String id);
-
-    RecordDto editReport(String uid, ReportDto reportUpdateDto);
+    RecordDto editReport(String id, ReportDto reportUpdateDto);
 }

@@ -10,10 +10,13 @@
                 <constraints nullable="false"/>
             </column>
             <column name="NAME" type="VARCHAR(264)">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="ACCESS_TOKEN" type="VARCHAR">
                 <constraints nullable="true"/>
+            </column>
+            <column name="IS_ACTIVE" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
             </column>
             <column name="CREATE_DATE" type="TIMESTAMP(6)" defaultValueComputed="current_timestamp"/>
         </createTable>

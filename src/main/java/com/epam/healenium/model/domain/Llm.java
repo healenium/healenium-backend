@@ -27,6 +27,9 @@ public class Llm {
     @Column(name = "access_token")
     private String accessToken;
 
+    @Column(name = "is_active")
+    private boolean isActive;
+
     @Column(name = "create_date")
     @CreationTimestamp
     private LocalDateTime createdDate;
