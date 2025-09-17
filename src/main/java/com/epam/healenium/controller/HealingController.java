@@ -192,6 +192,12 @@ public class HealingController {
         return modelAndView;
     }
 
+    @PostMapping("/selector/save/path")
+    public void saveSelectorFilePath(@Valid @RequestBody RecordDto dto) {
+        log.debug("[Set Selector File Path] Request: {}", dto);
+        selectorService.saveSelectorFilePath(dto);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();

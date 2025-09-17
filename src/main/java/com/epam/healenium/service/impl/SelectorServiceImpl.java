@@ -5,14 +5,14 @@ import com.epam.healenium.mapper.SelectorMapper;
 import com.epam.healenium.model.Locator;
 import com.epam.healenium.model.domain.Healing;
 import com.epam.healenium.model.domain.HealingResult;
+import com.epam.healenium.model.domain.Report;
 import com.epam.healenium.model.domain.Selector;
-import com.epam.healenium.model.dto.ConfigSelectorDto;
-import com.epam.healenium.model.dto.ReferenceElementsDto;
-import com.epam.healenium.model.dto.RequestDto;
-import com.epam.healenium.model.dto.SelectorDto;
-import com.epam.healenium.model.dto.SelectorRequestDto;
+import com.epam.healenium.model.dto.*;
+import com.epam.healenium.model.dto.elitea.LocatorPathsDto;
+import com.epam.healenium.model.wrapper.RecordWrapper;
 import com.epam.healenium.repository.HealingRepository;
 import com.epam.healenium.repository.HealingResultRepository;
+import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.repository.SelectorRepository;
 import com.epam.healenium.service.SelectorService;
 import com.epam.healenium.treecomparing.Node;
@@ -45,6 +45,7 @@ public class SelectorServiceImpl implements SelectorService {
     private final SelectorMapper selectorMapper;
     private final HealingRepository healingRepository;
     private final HealingResultRepository healingResultRepository;
+    private final ReportRepository reportRepository;
 
     @Override
     public void saveSelector(SelectorRequestDto request) {
@@ -102,6 +103,25 @@ public class SelectorServiceImpl implements SelectorService {
     }
 
     @Override
+    public void saveSelectorFilePath(RecordDto dto) {
+        Report report = reportRepository.findById(dto.getId()).get();
+        dto.getData().forEach(d ->
+                healingResultRepository.findById(d.getHealingResultId())
+                        .ifPresent(healingResult -> {
+                            Selector selector = healingResult.getHealing().getSelector();
+                            selector.setClassName(d.getDeclaringClass());
+                            selectorRepository.saveAndFlush(selector);
+                            Optional<RecordWrapper.Record> first = report.getRecordWrapper().getRecords().stream()
+                                    .filter(item -> item.getHealingResultId().equals(d.getHealingResultId()))
+                                    .findFirst();
+                            first.ifPresent(recordWrapper -> recordWrapper
+                                    .setClassName(d.getDeclaringClass())
+                                    .setMethodName(""));
+
+                        }));
+    }
+
+    @Override
     public String getSelectorId(String locator, String url, String command, boolean urlForKey) {
         String addressForKey = Utils.getAddressForKey(url, urlForKey);
         String id = Utils.buildKey(locator, command, addressForKey);
@@ -135,6 +155,41 @@ public class SelectorServiceImpl implements SelectorService {
         healingRepository.saveAll(sourceHealings);
         log.info("[Migrate] Migrated {} Healings", sourceHealings.size());
         selectorRepository.deleteAll(sourceSelectors);
+    }
+
+    @Override
+    public void saveLocatorPaths(List<LocatorPathsDto> request, String reportId) {
+        if (request == null || request.isEmpty()) {
+            log.warn("[ELITEA] Empty locator paths request provided");
+            return;
+        }
+
+        Optional<Report> reportOptional = reportRepository.findById(reportId);
+        if (reportOptional.isEmpty()) {
+            log.error("[ELITEA] Report with ID {} not found", reportId);
+            throw new IllegalArgumentException("Report not found with ID: " + reportId);
+        }
+
+        Report report = reportOptional.get();
+
+        for (LocatorPathsDto locatorPath : request) {
+            try {
+                Integer healingResultId = Integer.valueOf(locatorPath.getId());
+                Optional<HealingResult> healingResult = healingResultRepository.findById(healingResultId);
+
+                if (healingResult.isPresent()) {
+                    updateSelectorAndRecord(healingResult.get(), locatorPath, report);
+                } else {
+                    log.warn("[ELITEA] HealingResult with ID {} not found", healingResultId);
+                }
+            } catch (NumberFormatException e) {
+                log.error("[ELITEA] Invalid healing result ID format: {}", locatorPath.getId());
+                throw new IllegalArgumentException("Invalid healing result ID format: " + locatorPath.getId());
+            }
+        }
+
+        reportRepository.save(report);
+        log.info("[ELITEA] Successfully saved {} locator paths for report {}", request.size(), reportId);
     }
 
     private void migrateHealings(Map<String, Selector> sourceToTarget, List<Selector> selectors, List<Healing> sourceHealings) {
@@ -172,6 +227,21 @@ public class SelectorServiceImpl implements SelectorService {
             targetSelector.setUid(selectorId);
             sourceToTarget.put(sourceSelector.getUid(), targetSelector);
         }
+    }
+
+    private void updateSelectorAndRecord(HealingResult healingResult, LocatorPathsDto locatorPath, Report report) {
+        Selector selector = healingResult.getHealing().getSelector();
+        selector.setClassName(locatorPath.getSelectedPath());
+        selectorRepository.save(selector);
+
+        Optional<RecordWrapper.Record> recordOptional = report.getRecordWrapper().getRecords().stream()
+                .filter(item -> item.getHealingResultId().equals(healingResult.getId()))
+                .findFirst();
+
+        recordOptional.ifPresent(record -> {
+            record.setClassName(locatorPath.getSelectedPath())
+                    .setMethodName("");
+        });
     }
 
 }
