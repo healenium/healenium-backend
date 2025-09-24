@@ -2,7 +2,9 @@ package com.epam.healenium.service.impl;
 
 
 import com.epam.healenium.mapper.SelectorMapper;
+import com.epam.healenium.model.Locator;
 import com.epam.healenium.model.domain.Healing;
+import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.domain.Selector;
 import com.epam.healenium.model.dto.ConfigSelectorDto;
 import com.epam.healenium.model.dto.ReferenceElementsDto;
@@ -20,11 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j(topic = "healenium")
 @Service
@@ -55,10 +53,13 @@ public class SelectorServiceImpl implements SelectorService {
     public ReferenceElementsDto getReferenceElements(RequestDto dto) {
         String selectorId = getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), urlForKey);
         List<List<Node>> paths = selectorRepository.findById(selectorId)
-                .map(t -> t.getNodePathWrapper().getNodePath())
+                .map(selector -> selector.getNodePathWrapper().getNodePath())
                 .orElse(Collections.emptyList());
+        List<Locator> unsuccessfulLocators = getUnsuccessfulLocators(selectorId);
+
         return new ReferenceElementsDto()
-                .setPaths(paths);
+                .setPaths(paths)
+                .setUnsuccessfulLocators(unsuccessfulLocators);
     }
 
     @Override
@@ -160,6 +161,16 @@ public class SelectorServiceImpl implements SelectorService {
             targetSelector.setUid(selectorId);
             sourceToTarget.put(sourceSelector.getUid(), targetSelector);
         }
+    }
+
+    private List<Locator> getUnsuccessfulLocators(String selectorId) {
+        List<Healing> healings = healingRepository.findBySelectorId(selectorId);
+
+        return healings.stream()
+                .flatMap(healing -> healing.getResults().stream())
+                .filter(result -> !result.isSuccessHealing())
+                .map(HealingResult::getLocator)
+                .toList();
     }
 
 }
