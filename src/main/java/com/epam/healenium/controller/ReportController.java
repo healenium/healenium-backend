@@ -6,16 +6,13 @@ import com.epam.healenium.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.time.LocalDateTime;
+import java.util.Map;
 
 import java.nio.file.Paths;
 import java.util.List;
@@ -54,6 +51,7 @@ public class ReportController {
 
     @PostMapping("/init/{uid}")
     public String initById(@PathVariable String uid) {
+        log.info("[Report] Init Request. Session Id: {}", uid);
         String key = reportService.initialize(uid);
         return Paths.get(reportUrl, key).toString();
     }
@@ -64,8 +62,27 @@ public class ReportController {
     }
 
     @GetMapping("/all")
-    public List<ReportDto> getAllReports() {
-        return reportService.getAllReports();
+    public List<ReportDto> getAllReports(
+            @RequestParam(required = false, defaultValue = "false") boolean hideEmpty,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        return reportService.getAllReports(hideEmpty, startDate, endDate);
+    }
+    
+    @GetMapping("/grouped-by-time")
+    public Map<String, List<ReportDto>> getReportsGroupedByTime(
+            @RequestParam(required = false, defaultValue = "false") boolean hideEmpty,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false, defaultValue = "day") String groupLevel) {
+        return reportService.getReportsGroupedByTime(hideEmpty, startDate, endDate, groupLevel);
+    }
+    
+    @GetMapping("/aggregated")
+    public RecordDto getAggregatedReport(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        return reportService.generateAggregatedReport(startDate, endDate);
     }
 
     @GetMapping("/data")

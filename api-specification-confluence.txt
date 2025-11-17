@@ -1,0 +1,609 @@
+h1. Healenium API Specification
+
+h2. Overview
+
+Healenium is a self-healing testing tool that helps to maintain web tests by automatically healing broken locators. This document describes the REST API endpoints provided by the Healenium backend service.
+
+h2. Base URL
+
+All API endpoints are relative to the base URL: {{/healenium}}
+
+h2. Endpoints
+
+h3. Selector Management
+
+h4. Save Selector
+* *URL*: {{/healenium}}
+* *Method*: {{POST}}
+* *Description*: Save information about a successfully found element
+* *Request Body*: {{SelectorRequestDto}}
+{code:json}
+{
+  "locator": "//div[@id='example']",
+  "className": "com.example.TestClass",
+  "methodName": "testMethod",
+  "command": "findElement",
+  "url": "https://example.com",
+  "type": "xpath",
+  "enableHealing": true
+}
+{code}
+* *Response*: {{204 No Content}}
+
+h4. Get Reference Elements
+* *URL*: {{/healenium}}
+* *Method*: {{GET}}
+* *Description*: Get last valid path for provided request
+* *Request Parameters*:
+** {{locator}}: The locator string
+** {{className}}: The class name
+** {{methodName}}: The method name
+** {{command}}: The command (findElement or findElements)
+** {{url}}: The URL
+* *Response*: {{ReferenceElementsDto}}
+{code:json}
+{
+  "elements": [
+    {
+      "nodePathes": [...],
+      "elementIds": ["id1", "id2"]
+    }
+  ]
+}
+{code}
+
+h4. Get All Elements and Config
+* *URL*: {{/healenium/elements}}
+* *Method*: {{GET}}
+* *Description*: Get all saved selectors and configuration
+* *Response*: {{ConfigSelectorDto}}
+{code:json}
+{
+  "config": {...},
+  "selectors": [...]
+}
+{code}
+
+h4. Get Selectors Page
+* *URL*: {{/healenium/selectors}}
+* *Method*: {{GET}}
+* *Description*: Get all selectors for the selector.html view
+* *Response*: {{ModelAndView}} with selector data
+
+h4. Get All Selectors
+* *URL*: {{/healenium/selector/all}}
+* *Method*: {{GET}}
+* *Description*: Get all selectors as a list
+* *Response*: List of {{SelectorRequestDto}}
+{code:json}
+[
+  {
+    "id": "selector-id",
+    "locator": "//div[@id='example']",
+    "className": "com.example.TestClass",
+    "methodName": "testMethod",
+    "command": "findElement",
+    "url": "https://example.com",
+    "type": "xpath",
+    "enableHealing": true
+  }
+]
+{code}
+
+h4. Set Selector Status
+* *URL*: {{/healenium/selector/status}}
+* *Method*: {{POST}}
+* *Description*: Set status (enable/disable) for healing
+* *Request Body*: {{SelectorDto}}
+{code:json}
+{
+  "id": "selector-id",
+  "enable": true
+}
+{code}
+* *Response*: {{204 No Content}}
+
+h4. Save Selector File Path
+* *URL*: {{/healenium/selector/save/path}}
+* *Method*: {{POST}}
+* *Description*: Save selector file path
+* *Request Body*: {{RecordDto}}
+* *Response*: {{204 No Content}}
+
+h4. Migrate Selectors
+* *URL*: {{/healenium/migrate}}
+* *Method*: {{GET}}
+* *Description*: Migrate selectors
+* *Response*: {{ModelAndView}} with migration status message
+
+h3. Healing Management
+
+h4. Save Healing
+* *URL*: {{/healenium/healing}}
+* *Method*: {{POST}}
+* *Description*: Save healing result for specific selector
+* *Headers*:
+** {{sessionKey}}: Session key for report association
+* *Request Body*: List of {{HealingRequestDto}}
+{code:json}
+[
+  {
+    "locator": "//div[@id='example']",
+    "className": "com.example.TestClass",
+    "methodName": "testMethod",
+    "command": "findElement",
+    "url": "https://example.com",
+    "type": "xpath",
+    "results": [
+      {
+        "locator": "//div[@id='new-example']",
+        "score": 0.95
+      }
+    ],
+    "usedResult": {
+      "locator": "//div[@id='new-example']",
+      "score": 0.95
+    }
+  }
+]
+{code}
+* *Response*: {{204 No Content}}
+
+h4. Get Healings
+* *URL*: {{/healenium/healing}}
+* *Method*: {{GET}}
+* *Description*: Get healing with their results for provided request
+* *Request Parameters*:
+** {{locator}}: The locator string
+** {{className}}: The class name
+** {{methodName}}: The method name
+** {{command}}: The command
+** {{url}}: The URL
+* *Response*: Set of {{HealingDto}}
+{code:json}
+[
+  {
+    "id": "healing-id",
+    "locator": "//div[@id='example']",
+    "results": [
+      {
+        "id": "result-id",
+        "locator": "//div[@id='new-example']",
+        "score": 0.95,
+        "successHealing": true
+      }
+    ]
+  }
+]
+{code}
+
+h4. Get Healing Results
+* *URL*: {{/healenium/healing/results}}
+* *Method*: {{GET}}
+* *Description*: Get healing results for selector
+* *Request Parameters*:
+** {{locator}}: The locator string
+** {{className}}: The class name
+** {{methodName}}: The method name
+** {{command}}: The command
+** {{url}}: The URL
+* *Response*: Set of {{HealingResultDto}}
+{code:json}
+[
+  {
+    "id": "result-id",
+    "locator": "//div[@id='new-example']",
+    "score": 0.95,
+    "successHealing": true
+  }
+]
+{code}
+
+h4. Set Healing Success
+* *URL*: {{/healenium/healing/success}}
+* *Method*: {{POST}}
+* *Description*: Set status of healing
+* *Request Body*: {{RecordDto.ReportRecord}}
+{code:json}
+{
+  "healingResultId": 123,
+  "successHealing": true
+}
+{code}
+* *Response*: {{204 No Content}}
+
+h3. Session Management
+
+h4. Restore Session
+* *URL*: {{/healenium/session}}
+* *Method*: {{POST}}
+* *Description*: Restore session to parse DOM for proxy type
+* *Request Body*: {{SessionDto}}
+* *Response*: {{204 No Content}}
+
+h3. Report Management
+
+h4. Get Report by ID
+* *URL*: {{/healenium/report/{uid}}}
+* *Method*: {{GET}}
+* *Description*: Get report by ID
+* *Path Parameters*:
+** {{uid}}: Report unique ID
+* *Response*: {{ModelAndView}} with report data
+
+h4. Get Latest Report
+* *URL*: {{/healenium/report}}
+* *Method*: {{GET}}
+* *Description*: Get latest report
+* *Response*: {{ModelAndView}} with report data
+
+h4. Initialize Report
+* *URL*: {{/healenium/report/init}}
+* *Method*: {{POST}}
+* *Description*: Initialize a new report
+* *Response*: Report key as string
+
+h4. Initialize Report by ID
+* *URL*: {{/healenium/report/init/{uid}}}
+* *Method*: {{POST}}
+* *Description*: Initialize a report with specific ID
+* *Path Parameters*:
+** {{uid}}: Report unique ID
+* *Response*: Report URL as string
+
+h4. Build Report
+* *URL*: {{/healenium/report/build}}
+* *Method*: {{POST}}
+* *Description*: Build report
+* *Headers*:
+** {{sessionKey}}: Session key for report association
+* *Response*: Report URL as string
+
+h4. Get All Reports
+* *URL*: {{/healenium/report/all}}
+* *Method*: {{GET}}
+* *Description*: Get all reports
+* *Response*: List of {{ReportDto}}
+{code:json}
+[
+  {
+    "id": "report-id",
+    "name": "Report Name",
+    "time": "2025-09-08T12:00:00"
+  }
+]
+{code}
+
+h4. Get Report Data
+* *URL*: {{/healenium/report/data/{uid}}}
+* *Method*: {{GET}}
+* *Description*: Get report data by ID
+* *Path Parameters*:
+** {{uid}}: Report unique ID
+* *Response*: {{RecordDto}}
+{code:json}
+{
+  "id": "report-id",
+  "name": "Report Name",
+  "time": "2025-09-08T12:00:00",
+  "data": [
+    {
+      "declaringClass": "com.example.TestClass",
+      "screenShotPath": "/path/to/screenshot.png",
+      "failedLocatorValue": "//div[@id='example']",
+      "failedLocatorType": "xpath",
+      "healedLocatorValue": "//div[@id='new-example']",
+      "healedLocatorType": "xpath",
+      "score": "0.95",
+      "successHealing": true,
+      "healingResultId": 123
+    }
+  ]
+}
+{code}
+
+h4. Edit Report
+* *URL*: {{/healenium/report/data/{uid}}}
+* *Method*: {{PATCH}}
+* *Description*: Edit report data
+* *Path Parameters*:
+** {{uid}}: Report unique ID
+* *Request Body*: {{ReportDto}}
+* *Response*: {{RecordDto}} with updated data
+
+h3. Settings Management
+
+h4. Get Dedicated Info
+* *URL*: {{/healenium/settings/dedicated-info/{reportId}}}
+* *Method*: {{GET}}
+* *Description*: Get dedicated info for report
+* *Path Parameters*:
+** {{reportId}}: Report ID
+* *Response*: {{DedicatedInfo}}
+{code:json}
+{
+  "availableForSd": true,
+  "availableForMr": true
+}
+{code}
+
+h4. Save Locator Paths
+* *URL*: {{/healenium/settings/paths/save/{reportId}}}
+* *Method*: {{PATCH}}
+* *Description*: Save locator paths for report
+* *Path Parameters*:
+** {{reportId}}: Report ID
+* *Request Body*: List of {{LocatorPathsDto}}
+{code:json}
+[
+  {
+    "selectedPath": "/path/to/locator"
+  }
+]
+{code}
+* *Response*: {{DedicatedInfo}}
+{code:json}
+{
+  "availableForMr": true
+}
+{code}
+
+h4. Save VCS Credentials
+* *URL*: {{/healenium/settings/vcs/save}}
+* *Method*: {{POST}}
+* *Description*: Save VCS credentials
+* *Request Body*: {{VcsDto}}
+{code:json}
+{
+  "name": "github",
+  "accessToken": "token",
+  "repository": "user/repo",
+  "branch": "main"
+}
+{code}
+* *Response*: {{204 No Content}}
+
+h4. Get VCS Configuration
+* *URL*: {{/healenium/settings/vcs/{platform}}}
+* *Method*: {{GET}}
+* *Description*: Get VCS configuration for platform
+* *Path Parameters*:
+** {{platform}}: VCS platform name
+* *Response*: {{VcsDto}}
+{code:json}
+{
+  "name": "github",
+  "accessToken": "token",
+  "repository": "user/repo",
+  "branch": "main"
+}
+{code}
+
+h4. Save LLM Credentials
+* *URL*: {{/healenium/settings/llm/save}}
+* *Method*: {{POST}}
+* *Description*: Save LLM credentials
+* *Request Body*: {{LlmDto}}
+{code:json}
+{
+  "name": "model-name",
+  "accessToken": "token"
+}
+{code}
+* *Response*: List of {{LlmDto}}
+{code:json}
+[
+  {
+    "id": "llm-id",
+    "name": "model-name",
+    "accessToken": "token",
+    "isActive": true,
+    "createdDate": "2025-09-08T12:00:00"
+  }
+]
+{code}
+
+h4. Get LLM Configuration
+* *URL*: {{/healenium/settings/llm/{platform}}}
+* *Method*: {{GET}}
+* *Description*: Get LLM configuration for platform
+* *Path Parameters*:
+** {{platform}}: LLM platform name
+* *Response*: {{LlmDto}}
+{code:json}
+{
+  "id": "llm-id",
+  "name": "model-name",
+  "accessToken": "token",
+  "isActive": true,
+  "createdDate": "2025-09-08T12:00:00"
+}
+{code}
+
+h4. Get All LLMs
+* *URL*: {{/healenium/settings/llm/all}}
+* *Method*: {{GET}}
+* *Description*: Get all LLM configurations
+* *Response*: List of {{LlmDto}}
+{code:json}
+[
+  {
+    "id": "llm-id",
+    "name": "model-name",
+    "accessToken": "token",
+    "isActive": true,
+    "createdDate": "2025-09-08T12:00:00"
+  }
+]
+{code}
+
+h4. Activate LLM
+* *URL*: {{/healenium/settings/llm/activate/{id}}}
+* *Method*: {{POST}}
+* *Description*: Activate LLM by ID
+* *Path Parameters*:
+** {{id}}: LLM ID
+* *Response*: List of {{LlmDto}}
+{code:json}
+[
+  {
+    "id": "llm-id",
+    "name": "model-name",
+    "accessToken": "token",
+    "isActive": true,
+    "createdDate": "2025-09-08T12:00:00"
+  }
+]
+{code}
+
+h4. Get Active LLM
+* *URL*: {{/healenium/settings/llm/active}}
+* *Method*: {{GET}}
+* *Description*: Get active LLM configuration
+* *Response*: {{LlmDto}}
+{code:json}
+{
+  "id": "llm-id",
+  "name": "model-name",
+  "accessToken": "token",
+  "isActive": true,
+  "createdDate": "2025-09-08T12:00:00"
+}
+{code}
+
+h4. Delete LLM
+* *URL*: {{/healenium/settings/llm/delete/{id}}}
+* *Method*: {{DELETE}}
+* *Description*: Delete LLM by ID
+* *Path Parameters*:
+** {{id}}: LLM ID
+* *Response*: {{204 No Content}}
+
+h2. Data Models
+
+h3. SelectorRequestDto
+{code:json}
+{
+  "id": "string",
+  "type": "string",
+  "locator": "string",
+  "className": "string",
+  "methodName": "string",
+  "command": "string",
+  "url": "string",
+  "enableHealing": "boolean",
+  "urlKey": "boolean",
+  "sessionId": "string",
+  "elementIds": ["string"]
+}
+{code}
+
+h3. RequestDto
+{code:json}
+{
+  "locator": "string",
+  "className": "string",
+  "methodName": "string",
+  "command": "string",
+  "url": "string"
+}
+{code}
+
+h3. HealingRequestDto
+{code:json}
+{
+  "locator": "string",
+  "className": "string",
+  "methodName": "string",
+  "command": "string",
+  "url": "string",
+  "type": "string",
+  "pageContent": "string",
+  "results": [
+    {
+      "locator": "string",
+      "score": "number",
+      "successHealing": "boolean"
+    }
+  ],
+  "usedResult": {
+    "locator": "string",
+    "score": "number",
+    "successHealing": "boolean"
+  },
+  "elementIds": ["string"]
+}
+{code}
+
+h3. RecordDto
+{code:json}
+{
+  "id": "string",
+  "name": "string",
+  "time": "string",
+  "data": [
+    {
+      "declaringClass": "string",
+      "screenShotPath": "string",
+      "failedLocatorValue": "string",
+      "failedLocatorType": "string",
+      "healedLocatorValue": "string",
+      "healedLocatorType": "string",
+      "score": "string",
+      "successHealing": "boolean",
+      "healingResultId": "number"
+    }
+  ],
+  "reportLinks": [
+    {
+      "name": "string",
+      "url": "string"
+    }
+  ]
+}
+{code}
+
+h3. LlmDto
+{code:json}
+{
+  "id": "string",
+  "name": "string",
+  "accessToken": "string",
+  "isActive": "boolean",
+  "createdDate": "string"
+}
+{code}
+
+h3. VcsDto
+{code:json}
+{
+  "name": "string",
+  "accessToken": "string",
+  "repository": "string",
+  "branch": "string"
+}
+{code}
+
+h3. DedicatedInfo
+{code:json}
+{
+  "availableForSd": "boolean",
+  "availableForMr": "boolean"
+}
+{code}
+
+h3. LocatorPathsDto
+{code:json}
+{
+  "selectedPath": "string"
+}
+{code}
+
+
+
+
+
+
+
+
+

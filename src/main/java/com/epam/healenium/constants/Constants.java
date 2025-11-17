@@ -12,5 +12,6 @@ public class Constants {
 
     public static final String SINGLE_ELEMENT_PROXY_CLASS_PATH = "HealeniumFindElementPostRequest";
     public static final String MULTIPLE_ELEMENTS_PROXY_CLASS_PATH = "HealeniumFindElementsPostRequest";
+    public static final String TEMP_HEALING = "HealeniumFindElementPostRequest";
 
 }

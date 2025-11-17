@@ -1,0 +1,939 @@
+openapi: 3.0.0
+info:
+  title: Healenium API
+  description: API for Healenium, a self-healing testing tool that helps to maintain web tests by automatically healing broken locators.
+  version: 1.0.0
+servers:
+  - url: /healenium
+    description: Base URL for all API endpoints
+
+paths:
+  /:
+    post:
+      summary: Save Selector
+      description: Save information about a successfully found element
+      tags:
+        - Selector Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectorRequestDto'
+      responses:
+        '204':
+          description: No Content
+    get:
+      summary: Get Reference Elements
+      description: Get last valid path for provided request
+      tags:
+        - Selector Management
+      parameters:
+        - name: locator
+          in: query
+          description: The locator string
+          schema:
+            type: string
+        - name: className
+          in: query
+          description: The class name
+          schema:
+            type: string
+        - name: methodName
+          in: query
+          description: The method name
+          schema:
+            type: string
+        - name: command
+          in: query
+          description: The command (findElement or findElements)
+          schema:
+            type: string
+        - name: url
+          in: query
+          description: The URL
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceElementsDto'
+
+  /elements:
+    get:
+      summary: Get All Elements and Config
+      description: Get all saved selectors and configuration
+      tags:
+        - Selector Management
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigSelectorDto'
+
+  /selectors:
+    get:
+      summary: Get Selectors Page
+      description: Get all selectors for the selector.html view
+      tags:
+        - Selector Management
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /selector/all:
+    get:
+      summary: Get All Selectors
+      description: Get all selectors as a list
+      tags:
+        - Selector Management
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SelectorRequestDto'
+
+  /selector/status:
+    post:
+      summary: Set Selector Status
+      description: Set status (enable/disable) for healing
+      tags:
+        - Selector Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectorDto'
+      responses:
+        '204':
+          description: No Content
+
+  /selector/save/path:
+    post:
+      summary: Save Selector File Path
+      description: Save selector file path
+      tags:
+        - Selector Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordDto'
+      responses:
+        '204':
+          description: No Content
+
+  /migrate:
+    get:
+      summary: Migrate Selectors
+      description: Migrate selectors
+      tags:
+        - Selector Management
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /healing:
+    post:
+      summary: Save Healing
+      description: Save healing result for specific selector
+      tags:
+        - Healing Management
+      parameters:
+        - name: sessionKey
+          in: header
+          description: Session key for report association
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/HealingRequestDto'
+      responses:
+        '204':
+          description: No Content
+    get:
+      summary: Get Healings
+      description: Get healing with their results for provided request
+      tags:
+        - Healing Management
+      parameters:
+        - name: locator
+          in: query
+          description: The locator string
+          schema:
+            type: string
+        - name: className
+          in: query
+          description: The class name
+          schema:
+            type: string
+        - name: methodName
+          in: query
+          description: The method name
+          schema:
+            type: string
+        - name: command
+          in: query
+          description: The command
+          schema:
+            type: string
+        - name: url
+          in: query
+          description: The URL
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HealingDto'
+
+  /healing/results:
+    get:
+      summary: Get Healing Results
+      description: Get healing results for selector
+      tags:
+        - Healing Management
+      parameters:
+        - name: locator
+          in: query
+          description: The locator string
+          schema:
+            type: string
+        - name: className
+          in: query
+          description: The class name
+          schema:
+            type: string
+        - name: methodName
+          in: query
+          description: The method name
+          schema:
+            type: string
+        - name: command
+          in: query
+          description: The command
+          schema:
+            type: string
+        - name: url
+          in: query
+          description: The URL
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HealingResultDto'
+
+  /healing/success:
+    post:
+      summary: Set Healing Success
+      description: Set status of healing
+      tags:
+        - Healing Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRecord'
+      responses:
+        '204':
+          description: No Content
+
+  /session:
+    post:
+      summary: Restore Session
+      description: Restore session to parse DOM for proxy type
+      tags:
+        - Session Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionDto'
+      responses:
+        '204':
+          description: No Content
+
+  /report:
+    get:
+      summary: Get Latest Report
+      description: Get latest report
+      tags:
+        - Report Management
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /report/{uid}:
+    get:
+      summary: Get Report by ID
+      description: Get report by ID
+      tags:
+        - Report Management
+      parameters:
+        - name: uid
+          in: path
+          description: Report unique ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /report/init:
+    post:
+      summary: Initialize Report
+      description: Initialize a new report
+      tags:
+        - Report Management
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /report/init/{uid}:
+    post:
+      summary: Initialize Report by ID
+      description: Initialize a report with specific ID
+      tags:
+        - Report Management
+      parameters:
+        - name: uid
+          in: path
+          description: Report unique ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /report/build:
+    post:
+      summary: Build Report
+      description: Build report
+      tags:
+        - Report Management
+      parameters:
+        - name: sessionKey
+          in: header
+          description: Session key for report association
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /report/all:
+    get:
+      summary: Get All Reports
+      description: Get all reports
+      tags:
+        - Report Management
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReportDto'
+
+  /report/data/{uid}:
+    get:
+      summary: Get Report Data
+      description: Get report data by ID
+      tags:
+        - Report Management
+      parameters:
+        - name: uid
+          in: path
+          description: Report unique ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordDto'
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+    patch:
+      summary: Edit Report
+      description: Edit report data
+      tags:
+        - Report Management
+      parameters:
+        - name: uid
+          in: path
+          description: Report unique ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportDto'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordDto'
+
+  /settings/dedicated-info/{reportId}:
+    get:
+      summary: Get Dedicated Info
+      description: Get dedicated info for report
+      tags:
+        - Settings Management
+      parameters:
+        - name: reportId
+          in: path
+          description: Report ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DedicatedInfo'
+        '400':
+          description: Bad Request
+
+  /settings/paths/save/{reportId}:
+    patch:
+      summary: Save Locator Paths
+      description: Save locator paths for report
+      tags:
+        - Settings Management
+      parameters:
+        - name: reportId
+          in: path
+          description: Report ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/LocatorPathsDto'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DedicatedInfo'
+        '400':
+          description: Bad Request
+
+  /settings/vcs/save:
+    post:
+      summary: Save VCS Credentials
+      description: Save VCS credentials
+      tags:
+        - Settings Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VcsDto'
+      responses:
+        '200':
+          description: Successful operation
+
+  /settings/vcs/{platform}:
+    get:
+      summary: Get VCS Configuration
+      description: Get VCS configuration for platform
+      tags:
+        - Settings Management
+      parameters:
+        - name: platform
+          in: path
+          description: VCS platform name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VcsDto'
+
+  /settings/llm/save:
+    post:
+      summary: Save LLM Credentials
+      description: Save LLM credentials
+      tags:
+        - Settings Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LlmDto'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LlmDto'
+
+  /settings/llm/{platform}:
+    get:
+      summary: Get LLM Configuration
+      description: Get LLM configuration for platform
+      tags:
+        - Settings Management
+      parameters:
+        - name: platform
+          in: path
+          description: LLM platform name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LlmDto'
+
+  /settings/llm/all:
+    get:
+      summary: Get All LLMs
+      description: Get all LLM configurations
+      tags:
+        - Settings Management
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LlmDto'
+
+  /settings/llm/activate/{id}:
+    post:
+      summary: Activate LLM
+      description: Activate LLM by ID
+      tags:
+        - Settings Management
+      parameters:
+        - name: id
+          in: path
+          description: LLM ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LlmDto'
+
+  /settings/llm/active:
+    get:
+      summary: Get Active LLM
+      description: Get active LLM configuration
+      tags:
+        - Settings Management
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LlmDto'
+
+  /settings/llm/delete/{id}:
+    delete:
+      summary: Delete LLM
+      description: Delete LLM by ID
+      tags:
+        - Settings Management
+      parameters:
+        - name: id
+          in: path
+          description: LLM ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+
+components:
+  schemas:
+    SelectorRequestDto:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        nodePath:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Node'
+        elementIds:
+          type: array
+          items:
+            type: string
+        sessionId:
+          type: string
+        enableHealing:
+          type: boolean
+        urlKey:
+          type: boolean
+        locator:
+          type: string
+        className:
+          type: string
+        methodName:
+          type: string
+        command:
+          type: string
+          enum: [findElement, findElements]
+        url:
+          type: string
+      required:
+        - locator
+        - className
+        - methodName
+        - command
+        - url
+
+    Node:
+      type: object
+      properties:
+        tagName:
+          type: string
+        attributes:
+          type: object
+          additionalProperties:
+            type: string
+        id:
+          type: string
+        innerText:
+          type: string
+        xpath:
+          type: string
+
+    RequestDto:
+      type: object
+      properties:
+        locator:
+          type: string
+        className:
+          type: string
+        methodName:
+          type: string
+        command:
+          type: string
+        url:
+          type: string
+
+    HealingRequestDto:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/RequestDto'
+        - type: object
+          properties:
+            type:
+              type: string
+            pageContent:
+              type: string
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/HealingResultDto'
+            usedResult:
+              $ref: '#/components/schemas/HealingResultDto'
+            screenshot:
+              type: string
+              format: byte
+            metrics:
+              type: string
+            elementIds:
+              type: array
+              items:
+                type: string
+
+    HealingResultDto:
+      type: object
+      properties:
+        id:
+          type: string
+        locator:
+          type: string
+        score:
+          type: number
+          format: double
+        successHealing:
+          type: boolean
+
+    HealingDto:
+      type: object
+      properties:
+        id:
+          type: string
+        locator:
+          type: string
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealingResultDto'
+
+    ReferenceElementsDto:
+      type: object
+      properties:
+        elements:
+          type: array
+          items:
+            type: object
+            properties:
+              nodePathes:
+                type: array
+                items:
+                  type: object
+              elementIds:
+                type: array
+                items:
+                  type: string
+
+    ConfigSelectorDto:
+      type: object
+      properties:
+        config:
+          type: object
+        selectors:
+          type: array
+          items:
+            type: object
+
+    SelectorDto:
+      type: object
+      properties:
+        id:
+          type: string
+        enable:
+          type: boolean
+
+    SessionDto:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        url:
+          type: string
+        content:
+          type: string
+
+    ReportDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        time:
+          type: string
+
+    RecordDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        time:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportRecord'
+        reportLinks:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportLinkDto'
+
+    ReportRecord:
+      type: object
+      properties:
+        declaringClass:
+          type: string
+        screenShotPath:
+          type: string
+        failedLocatorValue:
+          type: string
+        failedLocatorType:
+          type: string
+        healedLocatorValue:
+          type: string
+        healedLocatorType:
+          type: string
+        score:
+          type: string
+        successHealing:
+          type: boolean
+        healingResultId:
+          type: integer
+          format: int32
+
+    ReportLinkDto:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+
+    LlmDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        accessToken:
+          type: string
+        isActive:
+          type: boolean
+        createdDate:
+          type: string
+          format: date-time
+      required:
+        - name
+        - accessToken
+
+    VcsDto:
+      type: object
+      properties:
+        name:
+          type: string
+        accessToken:
+          type: string
+        repository:
+          type: string
+        branch:
+          type: string
+      required:
+        - accessToken
+        - repository
+        - branch
+
+    DedicatedInfo:
+      type: object
+      properties:
+        availableForSd:
+          type: boolean
+        availableForMr:
+          type: boolean
+
+    LocatorPathsDto:
+      type: object
+      properties:
+        selectedPath:
+          type: string
+
+
+
+
+
+
+
+
+

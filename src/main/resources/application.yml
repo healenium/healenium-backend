@@ -66,6 +66,15 @@ app:
   healing:
     elements: ${FIND_ELEMENTS_AUTO_HEALING:true}
 
+management:
+  endpoints:
+    enabled-by-default: false
+  endpoint:
+    health:
+      enabled: true
+  jmx:
+    enabled: false
+
 cloud:
   aws:
     region:
@@ -83,7 +92,18 @@ logging:
     org.mongodb.driver.connection: WARN
     healenium: ${HLM_LOG_LEVEL:INFO}
   pattern:
-    console: '%d{yyyy-MM-dd HH:mm:ss.SSS,Europe/Moscow} %clr(%5p) %clr(${PID:- }){magenta} %clr(-){faint} %clr([%11.11t]){faint} %clr(%-32.32logger{30}){cyan} %clr(:){faint} %replace(%m){''[\n\r]'',''\\n ''} %replace(%ex){''[\r\n]'', ''\\n ''}%nopex%n'
-    file: '%d{yyyy-MM-dd HH:mm:ss.SSS,Europe/Moscow} %clr(%5p) %clr(${PID:- }){magenta} %clr(-){faint} %clr([%11.11t]){faint} %clr(%-32.32logger{30}){cyan} %clr(:){faint} %replace(%m){''[\n\r]'',''\\n ''} %replace(%ex){''[\r\n]'', ''\\n ''}%nopex%n'
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${PID:- } --- [%t] %-40.40logger{39} : %m%n%wEx'
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${PID:- } --- [%t] %-40.40logger{39} : %m%n%wEx'
   file:
     name: ./logs/healenium-backend.log
+  logback:
+    rollingpolicy:
+      file-name-pattern: ./logs/healenium-backend-%d{yyyy-MM-dd}.%i.log.gz
+      max-file-size: 10MB
+      max-history: 10
+      total-size-cap: 100MB
+    
+# Proxy service configuration
+proxy:
+  service:
+    url: ${PROXY_SERVICE_URL:http://localhost:8085}
