@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healenium API Specification</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --border-color: #e9ecef;
+            --text-color: #343a40;
+            --text-light: #6c757d;
+            --get-color: #61affe;
+            --post-color: #49cc90;
+            --put-color: #fca130;
+            --patch-color: #50e3c2;
+            --delete-color: #f93e3e;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --radius: 6px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #fff;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 40px;
+        }
+        
+        header .container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        
+        .base-url {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: var(--radius);
+            font-family: monospace;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        
+        section {
+            margin-bottom: 50px;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+            font-size: 1.8rem;
+        }
+        
+        h3 {
+            color: var(--primary-color);
+            margin: 30px 0 20px;
+            font-size: 1.5rem;
+        }
+        
+        .endpoint-group {
+            margin-bottom: 40px;
+        }
+        
+        .endpoint {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: var(--light-bg);
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+        
+        .method {
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: white;
+            min-width: 80px;
+            text-align: center;
+            margin-right: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .get { background-color: var(--get-color); }
+        .post { background-color: var(--post-color); }
+        .put, .patch { background-color: var(--put-color); }
+        .delete { background-color: var(--delete-color); }
+        
+        .endpoint-path {
+            font-family: monospace;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .endpoint-summary {
+            margin-left: auto;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        .endpoint-content {
+            padding: 20px;
+        }
+        
+        .endpoint-description {
+            margin-bottom: 20px;
+        }
+        
+        .param-section {
+            margin-bottom: 20px;
+        }
+        
+        .param-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .params {
+            background-color: var(--light-bg);
+            border-radius: var(--radius);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .param-name {
+            font-family: monospace;
+            font-weight: 600;
+        }
+        
+        ul {
+            list-style-type: none;
+        }
+        
+        ul li {
+            margin-bottom: 8px;
+        }
+        
+        code {
+            background-color: var(--light-bg);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: var(--accent-color);
+        }
+        
+        pre {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            border-radius: var(--radius);
+            overflow-x: auto;
+            font-family: monospace;
+            margin: 15px 0;
+        }
+        
+        .response-section {
+            margin-top: 20px;
+        }
+        
+        .model-section {
+            margin-top: 60px;
+        }
+        
+        .model {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        
+        .model-header {
+            padding: 15px 20px;
+            background-color: var(--light-bg);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .model-content {
+            padding: 20px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 50px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-light);
+        }
+
+        /* Accordion functionality */
+        .endpoint-content {
+            display: none;
+        }
+        
+        .endpoint.active .endpoint-content {
+            display: block;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .endpoint-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .method {
+                margin-bottom: 10px;
+            }
+            
+            .endpoint-summary {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Healenium API Specification</h1>
+            <p>Self-healing testing tool that helps to maintain web tests by automatically healing broken locators</p>
+            <div class="base-url">Base URL: <strong>/healenium</strong></div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <section id="selector-management">
+            <h2>Selector Management</h2>
+            
+            <div class="endpoint-group">
+                <div class="endpoint active">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="endpoint-path">/healenium</span>
+                        <span class="endpoint-summary">Save Selector</span>
+                    </div>
+                    <div class="endpoint-content">
+                        <div class="endpoint-description">
+                            <p>Save information about a successfully found element</p>
+                        </div>
+                        
+                        <div class="param-section">
+                            <div class="param-title">Request Body</div>
+                            <div class="params">
+                                <span class="param-name">SelectorRequestDto</span>
+                            </div>
+                            <pre>{
+  "locator": "//div[@id='example']",
+  "className": "com.example.TestClass",
+  "methodName": "testMethod",
+  "command": "findElement",
+  "url": "https://example.com",
+  "type": "xpath",
+  "enableHealing": true
+}</pre>
+                        </div>
+                        
+                        <div class="response-section">
+                            <div class="param-title">Response</div>
+                            <div class="params">
+                                <span class="param-name">204 No Content</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/healenium</span>
+                        <span class="endpoint-summary">Get Reference Elements</span>
+                    </div>
+                    <div class="endpoint-content">
+                        <div class="endpoint-description">
+                            <p>Get last valid path for provided request</p>
+                        </div>
+                        
+                        <div class="param-section">
+                            <div class="param-title">Request Parameters</div>
+                            <div class="params">
+                                <ul>
+                                    <li><span class="param-name">locator</span>: The locator string</li>
+                                    <li><span class="param-name">className</span>: The class name</li>
+                                    <li><span class="param-name">methodName</span>: The method name</li>
+                                    <li><span class="param-name">command</span>: The command (findElement or findElements)</li>
+                                    <li><span class="param-name">url</span>: The URL</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="response-section">
+                            <div class="param-title">Response</div>
+                            <div class="params">
+                                <span class="param-name">ReferenceElementsDto</span>
+                            </div>
+                            <pre>{
+  "elements": [
+    {
+      "nodePathes": [...],
+      "elementIds": ["id1", "id2"]
+    }
+  ]
+}</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/healenium/elements</span>
+                        <span class="endpoint-summary">Get All Elements and Config</span>
+                    </div>
+                    <div class="endpoint-content">
+                        <div class="endpoint-description">
+                            <p>Get all saved selectors and configuration</p>
+                        </div>
+                        
+                        <div class="response-section">
+                            <div class="param-title">Response</div>
+                            <div class="params">
+                                <span class="param-name">ConfigSelectorDto</span>
+                            </div>
+                            <pre>{
+  "config": {...},
+  "selectors": [...]
+}</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/healenium/selectors</span>
+                        <span class="endpoint-summary">Get Selectors Page</span>
+                    </div>
+                    <div class="endpoint-content">
+                        <div class="endpoint-description">
+                            <p>Get all selectors for the selector.html view</p>
+                        </div>
+                        
+                        <div class="response-section">
+                            <div class="param-title">Response</div>
+                            <div class="params">
+                                <span class="param-name">ModelAndView</span> with selector data
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/healenium/selector/all</span>
+                        <span class="endpoint-summary">Get All Selectors</span>
+                    </div>
+                    <div class="endpoint-content">
+                        <div class="endpoint-description">
+                            <p>Get all selectors as a list</p>
+                        </div>
+                        
+                        <div class="response-section">
+                            <div class="param-title">Response</div>
+                            <div class="params">
+                                <span class="param-name">List of SelectorRequestDto</span>
+                            </div>
+                            <pre>[
+  {
+    "id": "selector-id",
+    "locator": "//div[@id='example']",
+    "className": "com.example.TestClass",
+    "methodName": "testMethod",
+    "command": "findElement",
+    "url": "https://example.com",
+    "type": "xpath",
+    "enableHealing": true
+  }
+]</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="endpoint-path">/healenium/selector/status</span>
+                        <span class="endpoint-summary">Set Selector Status</span>
+                    </div>
+                    <div class="endpoint-content">
+                        <div class="endpoint-description">
+                            <p>Set status (enable/disable) for healing</p>
+                        </div>
+                        
+                        <div class="param-section">
+                            <div class="param-title">Request Body</div>
+                            <div class="params">
+                                <span class="param-name">SelectorDto</span>
+                            </div>
+                            <pre>{
+  "id": "selector-id",
+  "enable": true
+}</pre>
+                        </div>
+                        
+                        <div class="response-section">
+                            <div class="param-title">Response</div>
+                            <div class="params">
+                                <span class="param-name">204 No Content</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- More endpoints for Selector Management section -->
+        </section>
+        
+        <section id="healing-management">
+            <h2>Healing Management</h2>
+            
+            <div class="endpoint-group">
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="endpoint-path">/healenium/healing</span>
+                        <span class="endpoint-summary">Save Healing</span>
+                    </div>
+                    <div class="endpoint-content">
+                        <div class="endpoint-description">
+                            <p>Save healing result for specific selector</p>
+                        </div>
+                        
+                        <div class="param-section">
+                            <div class="param-title">Headers</div>
+                            <div class="params">
+                                <ul>
+                                    <li><span class="param-name">sessionKey</span>: Session key for report association</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="param-section">
+                            <div class="param-title">Request Body</div>
+                            <div class="params">
+                                <span class="param-name">List of HealingRequestDto</span>
+                            </div>
+                            <pre>[
+  {
+    "locator": "//div[@id='example']",
+    "className": "com.example.TestClass",
+    "methodName": "testMethod",
+    "command": "findElement",
+    "url": "https://example.com",
+    "type": "xpath",
+    "results": [
+      {
+        "locator": "//div[@id='new-example']",
+        "score": 0.95
+      }
+    ],
+    "usedResult": {
+      "locator": "//div[@id='new-example']",
+      "score": 0.95
+    }
+  }
+]</pre>
+                        </div>
+                        
+                        <div class="response-section">
+                            <div class="param-title">Response</div>
+                            <div class="params">
+                                <span class="param-name">204 No Content</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/healenium/healing</span>
+                        <span class="endpoint-summary">Get Healings</span>
+                    </div>
+                    <div class="endpoint-content">
+                        <div class="endpoint-description">
+                            <p>Get healing with their results for provided request</p>
+                        </div>
+                        
+                        <div class="param-section">
+                            <div class="param-title">Request Parameters</div>
+                            <div class="params">
+                                <ul>
+                                    <li><span class="param-name">locator</span>: The locator string</li>
+                                    <li><span class="param-name">className</span>: The class name</li>
+                                    <li><span class="param-name">methodName</span>: The method name</li>
+                                    <li><span class="param-name">command</span>: The command</li>
+                                    <li><span class="param-name">url</span>: The URL</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="response-section">
+                            <div class="param-title">Response</div>
+                            <div class="params">
+                                <span class="param-name">Set of HealingDto</span>
+                            </div>
+                            <pre>[
+  {
+    "id": "healing-id",
+    "locator": "//div[@id='example']",
+    "results": [
+      {
+        "id": "result-id",
+        "locator": "//div[@id='new-example']",
+        "score": 0.95,
+        "successHealing": true
+      }
+    ]
+  }
+]</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- More endpoints for Healing Management section -->
+        </section>
+        
+        <section id="report-management">
+            <h2>Report Management</h2>
+            
+            <div class="endpoint-group">
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/healenium/report/{uid}</span>
+                        <span class="endpoint-summary">Get Report by ID</span>
+                    </div>
+                    <div class="endpoint-content">
+                        <div class="endpoint-description">
+                            <p>Get report by ID</p>
+                        </div>
+                        
+                        <div class="param-section">
+                            <div class="param-title">Path Parameters</div>
+                            <div class="params">
+                                <ul>
+                                    <li><span class="param-name">uid</span>: Report unique ID</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="response-section">
+                            <div class="param-title">Response</div>
+                            <div class="params">
+                                <span class="param-name">ModelAndView</span> with report data
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/healenium/report/data/{uid}</span>
+                        <span class="endpoint-summary">Get Report Data</span>
+                    </div>
+                    <div class="endpoint-content">
+                        <div class="endpoint-description">
+                            <p>Get report data by ID</p>
+                        </div>
+                        
+                        <div class="param-section">
+                            <div class="param-title">Path Parameters</div>
+                            <div class="params">
+                                <ul>
+                                    <li><span class="param-name">uid</span>: Report unique ID</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="response-section">
+                            <div class="param-title">Response</div>
+                            <div class="params">
+                                <span class="param-name">RecordDto</span>
+                            </div>
+                            <pre>{
+  "id": "report-id",
+  "name": "Report Name",
+  "time": "2025-09-08T12:00:00",
+  "data": [
+    {
+      "declaringClass": "com.example.TestClass",
+      "screenShotPath": "/path/to/screenshot.png",
+      "failedLocatorValue": "//div[@id='example']",
+      "failedLocatorType": "xpath",
+      "healedLocatorValue": "//div[@id='new-example']",
+      "healedLocatorType": "xpath",
+      "score": "0.95",
+      "successHealing": true,
+      "healingResultId": 123
+    }
+  ]
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- More endpoints for Report Management section -->
+        </section>
+        
+        <section id="settings-management">
+            <h2>Settings Management</h2>
+            
+            <div class="endpoint-group">
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/healenium/settings/llm/all</span>
+                        <span class="endpoint-summary">Get All LLMs</span>
+                    </div>
+                    <div class="endpoint-content">
+                        <div class="endpoint-description">
+                            <p>Get all LLM configurations</p>
+                        </div>
+                        
+                        <div class="response-section">
+                            <div class="param-title">Response</div>
+                            <div class="params">
+                                <span class="param-name">List of LlmDto</span>
+                            </div>
+                            <pre>[
+  {
+    "id": "llm-id",
+    "name": "model-name",
+    "accessToken": "token",
+    "isActive": true,
+    "createdDate": "2025-09-08T12:00:00"
+  }
+]</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="endpoint-path">/healenium/settings/vcs/save</span>
+                        <span class="endpoint-summary">Save VCS Credentials</span>
+                    </div>
+                    <div class="endpoint-content">
+                        <div class="endpoint-description">
+                            <p>Save VCS credentials</p>
+                        </div>
+                        
+                        <div class="param-section">
+                            <div class="param-title">Request Body</div>
+                            <div class="params">
+                                <span class="param-name">VcsDto</span>
+                            </div>
+                            <pre>{
+  "name": "github",
+  "accessToken": "token",
+  "repository": "user/repo",
+  "branch": "main"
+}</pre>
+                        </div>
+                        
+                        <div class="response-section">
+                            <div class="param-title">Response</div>
+                            <div class="params">
+                                <span class="param-name">204 No Content</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- More endpoints for Settings Management section -->
+        </section>
+        
+        <section id="data-models" class="model-section">
+            <h2>Data Models</h2>
+            
+            <div class="model">
+                <div class="model-header">SelectorRequestDto</div>
+                <div class="model-content">
+                    <pre>{
+  "id": "string",
+  "type": "string",
+  "locator": "string",
+  "className": "string",
+  "methodName": "string",
+  "command": "string",
+  "url": "string",
+  "enableHealing": "boolean",
+  "urlKey": "boolean",
+  "sessionId": "string",
+  "elementIds": ["string"]
+}</pre>
+                </div>
+            </div>
+            
+            <div class="model">
+                <div class="model-header">RequestDto</div>
+                <div class="model-content">
+                    <pre>{
+  "locator": "string",
+  "className": "string",
+  "methodName": "string",
+  "command": "string",
+  "url": "string"
+}</pre>
+                </div>
+            </div>
+            
+            <div class="model">
+                <div class="model-header">HealingRequestDto</div>
+                <div class="model-content">
+                    <pre>{
+  "locator": "string",
+  "className": "string",
+  "methodName": "string",
+  "command": "string",
+  "url": "string",
+  "type": "string",
+  "pageContent": "string",
+  "results": [
+    {
+      "locator": "string",
+      "score": "number",
+      "successHealing": "boolean"
+    }
+  ],
+  "usedResult": {
+    "locator": "string",
+    "score": "number",
+    "successHealing": "boolean"
+  },
+  "elementIds": ["string"]
+}</pre>
+                </div>
+            </div>
+            
+            <div class="model">
+                <div class="model-header">LlmDto</div>
+                <div class="model-content">
+                    <pre>{
+  "id": "string",
+  "name": "string",
+  "accessToken": "string",
+  "isActive": "boolean",
+  "createdDate": "string"
+}</pre>
+                </div>
+            </div>
+            
+            <div class="model">
+                <div class="model-header">VcsDto</div>
+                <div class="model-content">
+                    <pre>{
+  "name": "string",
+  "accessToken": "string",
+  "repository": "string",
+  "branch": "string"
+}</pre>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>Healenium API Documentation</p>
+        </div>
+    </footer>
+
+    <script>
+        // Simple accordion functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const headers = document.querySelectorAll('.endpoint-header');
+            
+            headers.forEach(header => {
+                header.addEventListener('click', function() {
+                    const endpoint = this.parentElement;
+                    endpoint.classList.toggle('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

@@ -29,9 +29,13 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j(topic = "healenium")
@@ -206,15 +210,98 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<ReportDto> getAllReports() {
-        List<Report> all = reportRepository.findAllByOrderByCreatedDateDesc();
+        return getAllReports(false, null, null);
+    }
+    
+    @Override
+    public List<ReportDto> getAllReports(boolean hideEmpty) {
+        return getAllReports(hideEmpty, null, null);
+    }
+    
+    @Override
+    public List<ReportDto> getAllReports(boolean hideEmpty, LocalDateTime startDate, LocalDateTime endDate) {
+        List<Report> all;
+        
+        if (startDate != null && endDate != null) {
+            all = reportRepository.findByCreatedDateBetweenOrderByCreatedDateDesc(startDate, endDate);
+        } else {
+            all = reportRepository.findAllByOrderByCreatedDateDesc();
+        }
+        
+        if (hideEmpty) {
+            // Фильтруем отчеты, оставляя только те, у которых есть записи
+            all = all.stream()
+                    .filter(report -> report.getRecordWrapper() != null && 
+                                     !report.getRecordWrapper().getRecords().isEmpty())
+                    .collect(Collectors.toList());
+        }
+        
         return getAllReportLinks(all);
     }
 
+    @Override
+    public Map<String, List<ReportDto>> getReportsGroupedByTime(boolean hideEmpty, LocalDateTime startDate, LocalDateTime endDate, String groupLevel) {
+        List<Report> allReports = reportRepository.findByCreatedDateBetweenOrderByCreatedDateDesc(startDate, endDate);
+        
+        if (hideEmpty) {
+            allReports = allReports.stream()
+                    .filter(report -> report.getRecordWrapper() != null && 
+                                   !report.getRecordWrapper().getRecords().isEmpty())
+                    .collect(Collectors.toList());
+        }
+        
+        Map<String, List<ReportDto>> groupedReports = new LinkedHashMap<>();
+        DateTimeFormatter formatter;
+        
+        if ("hour".equals(groupLevel)) {
+            formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:00");
+        } else {
+            formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        }
+        
+        for (Report report : allReports) {
+            String timeKey = report.getCreatedDate().format(formatter);
+            
+            if (!groupedReports.containsKey(timeKey)) {
+                groupedReports.put(timeKey, new ArrayList<>());
+            }
+            
+            ReportDto dto = new ReportDto()
+                    .setId(report.getUid())
+                    .setName(report.getName())
+                    .setDate(report.getCreatedDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy - HH:mm")));
+            
+            groupedReports.get(timeKey).add(dto);
+        }
+        
+        return groupedReports;
+    }
+    
+    @Override
+    public RecordDto generateAggregatedReport(LocalDateTime startDate, LocalDateTime endDate) {
+        List<Report> reportsInRange = reportRepository.findByCreatedDateBetweenOrderByCreatedDateDesc(startDate, endDate);
 
+        RecordDto aggregatedReport = new RecordDto();
+        aggregatedReport.setId("aggregated-" + UUID.randomUUID());
+        aggregatedReport.setName("Aggregated Report: " + 
+                                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").format(startDate) + " to " + 
+                                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").format(endDate));
+        aggregatedReport.setTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
 
-
-
-
+        for (Report report : reportsInRange) {
+            if (report.getRecordWrapper() != null && !report.getRecordWrapper().getRecords().isEmpty()) {
+                for (RecordWrapper.Record record : report.getRecordWrapper().getRecords()) {
+                    ReportRecord reportRecord = createReportRecord(record);
+                    reportRecord.setSourceReportId(report.getUid());
+                    reportRecord.setSourceReportName(report.getName());
+                    reportRecord.setSourceReportTime(report.getCreatedDate().format(DateTimeFormatter.ISO_DATE_TIME));
+                    aggregatedReport.getData().add(reportRecord);
+                }
+            }
+        }
+        
+        return aggregatedReport;
+    }
 
     @Override
     public RecordDto editReport(String id, ReportDto editReportDto) {
@@ -287,107 +374,58 @@ public class ReportServiceImpl implements ReportService {
         String className = getClassNameFromSelector(record);
         
         if (className != null && !className.trim().isEmpty()) {
-            // Use selector class name if available
             reportRecord.setDeclaringClass(className);
         } else {
-            // Fallback to record class name logic
             setDeclaringClassFromRecord(reportRecord, record);
         }
     }
 
     private String getClassNameFromSelector(RecordWrapper.Record record) {
         return healingResultRepository.findById(record.getHealingResultId())
-                .map(healingResult -> healingResult.getHealing().getSelector())
+                .map(HealingResult::getHealing)
+                .map(Healing::getSelector)
                 .map(Selector::getClassName)
                 .orElse(null);
     }
 
     private void setDeclaringClassFromRecord(ReportRecord reportRecord, RecordWrapper.Record record) {
-        String declaringClass = record.getClassName().contains(Constants.SINGLE_ELEMENT_PROXY_CLASS_PATH)
-                || record.getClassName().contains(Constants.MULTIPLE_ELEMENTS_PROXY_CLASS_PATH)
-                ? record.getFailedLocator().getValue()
-                : record.getClassName() + "." + record.getMethodName() + "()";
-        reportRecord.setDeclaringClass(declaringClass);
+        String className = record.getClassName();
+        if (className != null) {
+            String[] path = className.split("\\.");
+            if (path.length > 0) {
+                reportRecord.setDeclaringClass(path[path.length - 1]);
+            } else {
+                reportRecord.setDeclaringClass(className);
+            }
+        } else {
+            reportRecord.setDeclaringClass("Not Set");
+        }
     }
 
     private void setCommonFields(ReportRecord reportRecord, RecordWrapper.Record record) {
-        reportRecord.setScreenShotPath(transformPath(record.getScreenShotPath()));
-        reportRecord.setFailedLocatorType(record.getFailedLocator().getType());
-        reportRecord.setFailedLocatorValue(record.getFailedLocator().getValue());
-        reportRecord.setHealedLocatorType(record.getHealedLocator().getType());
-        reportRecord.setHealedLocatorValue(record.getHealedLocator().getValue());
+        reportRecord.setScreenShotPath(record.getScreenShotPath());
         reportRecord.setHealingResultId(record.getHealingResultId());
     }
 
     private void setHealingResultFields(ReportRecord reportRecord, Integer healingResultId) {
-        healingResultRepository.findById(healingResultId)
-                .ifPresentOrElse(
-                        healingResult -> {
-                            reportRecord.setScore(new DecimalFormat("#.###").format(healingResult.getScore()));
-                            reportRecord.setSuccessHealing(healingResult.isSuccessHealing());
-                        },
-                        () -> {
-                            log.warn("[REPORT] Could not find healing result with ID: {}", healingResultId);
-                            reportRecord.setScore("0.000");
-                            reportRecord.setSuccessHealing(false);
-                        }
-                );
-    }
-
-    private String transformPath(String sourcePath) {
-        if (sourcePath == null || sourcePath.trim().isEmpty()) {
-            log.warn("[REPORT] Source path is null or empty");
-            return "";
-        }
-        
-        try {
-            int screenshotIndex = sourcePath.lastIndexOf("screenshots");
-            if (screenshotIndex == -1) {
-                log.warn("[REPORT] 'screenshots' not found in path: {}", sourcePath);
-                return sourcePath;
-            }
+        healingResultRepository.findById(healingResultId).ifPresent(result -> {
+            reportRecord.setSuccessHealing(result.isSuccessHealing());
+            reportRecord.setScore(new DecimalFormat("#0.00").format(result.getScore()));
+            reportRecord.setHealedLocatorType(result.getLocator().getType());
+            reportRecord.setHealedLocatorValue(result.getLocator().getValue());
             
-            if (screenshotIndex == 0) {
-                log.warn("[REPORT] 'screenshots' found at beginning of path: {}", sourcePath);
-                return sourcePath;
-            }
-            
-            return sourcePath.substring(screenshotIndex - 1);
-        } catch (Exception e) {
-            log.warn("[REPORT] Error transforming source path: {}", sourcePath, e);
-            return sourcePath;
-        }
+            Optional.ofNullable(result.getHealing())
+                    .map(Healing::getSelector)
+                    .ifPresent(selector -> {
+                        reportRecord.setFailedLocatorType(selector.getLocator().getType());
+                        reportRecord.setFailedLocatorValue(selector.getLocator().getValue());
+                    });
+        });
     }
 
     private boolean isInvalidSelectorClass(HealingResult healingResult) {
-        if (healingResult == null) {
-            log.warn("[REPORT] Healing result is null");
-            return false;
-        }
-        
-        if (!healingResult.isSuccessHealing()) {
-            return false;
-        }
-        
-        try {
-            Selector selector = healingResult.getHealing().getSelector();
-            if (selector == null) {
-                log.warn("[REPORT] Selector is null for healing result ID: {}", healingResult.getId());
-                return false;
-            }
-            
-            String className = selector.getClassName();
-            if (className == null || className.trim().isEmpty()) {
-                log.warn("[REPORT] Class name is null or empty for selector");
-                return false;
-            }
-            
-            return className.contains(Constants.SINGLE_ELEMENT_PROXY_CLASS_PATH)
-                    || className.contains(Constants.MULTIPLE_ELEMENTS_PROXY_CLASS_PATH);
-        } catch (Exception e) {
-            log.error("[REPORT] Error checking invalid selector class for healing result ID: {}", 
-                    healingResult.getId(), e);
-            return false;
-        }
+        return healingResult.getHealing() != null && healingResult.getHealing().getSelector() != null
+                && healingResult.getHealing().getSelector().getClassName() != null
+                && healingResult.getHealing().getSelector().getClassName().equals(Constants.TEMP_HEALING);
     }
 }

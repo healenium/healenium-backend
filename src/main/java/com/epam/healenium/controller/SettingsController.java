@@ -1,7 +1,9 @@
 package com.epam.healenium.controller;
 
 import com.epam.healenium.model.domain.HealingResult;
+import com.epam.healenium.model.domain.Report;
 import com.epam.healenium.model.dto.elitea.*;
+import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.service.ReportService;
 import com.epam.healenium.service.SelectorService;
 import com.epam.healenium.service.SettingsService;
@@ -20,18 +22,22 @@ import java.util.List;
 public class SettingsController {
 
     private final ReportService reportService;
+    private final ReportRepository reportRepository;
     private final SelectorService selectorService;
     private final SettingsService settingsService;
 
     @GetMapping("/dedicated-info/{reportId}")
     public ResponseEntity<DedicatedInfo> getDedicatedInfo(@PathVariable String reportId) {
-        log.info("[SETTINGS] Getting dedicated info for report: {}", reportId);
-        
         if (reportId == null || reportId.trim().isEmpty()) {
             throw new IllegalArgumentException("Report ID cannot be null or empty");
         }
-        
-        boolean availableForSd = settingsService.isAvailableForSd();
+
+        boolean hasRecords = reportRepository.findById(reportId)
+                .map(Report::getRecordWrapper)
+                .map(wrapper -> !wrapper.getRecords().isEmpty())
+                .orElse(false);
+
+        boolean availableForSd = settingsService.isAvailableForSd() && hasRecords;
         boolean availableForMr = availableForSd && reportService.getDedicatedInfo(reportId).isEmpty();
         
         DedicatedInfo dedicatedInfo = new DedicatedInfo()
@@ -51,7 +57,7 @@ public class SettingsController {
             throw new IllegalArgumentException("Report ID cannot be null or empty");
         }
         
-        if (detectionPaths == null || detectionPaths.isEmpty()) {
+        if (detectionPaths.isEmpty()) {
             throw new IllegalArgumentException("Detection paths cannot be null or empty");
         }
 
