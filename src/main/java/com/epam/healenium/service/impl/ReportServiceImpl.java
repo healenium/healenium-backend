@@ -38,7 +38,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Slf4j(topic = "healenium")
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -229,7 +229,6 @@ public class ReportServiceImpl implements ReportService {
         }
         
         if (hideEmpty) {
-            // Фильтруем отчеты, оставляя только те, у которых есть записи
             all = all.stream()
                     .filter(report -> report.getRecordWrapper() != null && 
                                      !report.getRecordWrapper().getRecords().isEmpty())

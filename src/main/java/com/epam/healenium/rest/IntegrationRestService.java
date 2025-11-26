@@ -83,7 +83,7 @@ public class IntegrationRestService {
                         e.getStatusCode(), e.getResponseBodyAsString()))
                 .onErrorResume(e -> {
                     log.error("[ELITEA] Error during Get Elitea details", e);
-                    return Mono.empty(); // Возвращаем пустой поток при ошибке
+                    return Mono.empty();
                 });
     }
 

@@ -1,5 +1,6 @@
 package com.epam.healenium.service.impl;
 
+import com.epam.healenium.config.DynamicSettings;
 import com.epam.healenium.exception.MissingSelectorException;
 import com.epam.healenium.mapper.HealingMapper;
 import com.epam.healenium.model.domain.Healing;
@@ -24,7 +25,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -44,17 +44,13 @@ import static com.epam.healenium.constants.Constants.SESSION_KEY_V2;
 import static com.epam.healenium.constants.Constants.SUCCESSFUL_HEALING_BUCKET;
 import static com.epam.healenium.constants.Constants.UNSUCCESSFUL_HEALING_BUCKET;
 
-@Slf4j(topic = "healenium")
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class HealingServiceImpl implements HealingService {
 
-    @Value("${app.selector.key.url-for-key}")
-    private boolean urlForKey;
-    @Value("${app.metrics.allow}")
-    private boolean allowCollectMetrics;
-
+    private final DynamicSettings dynamicSettings;
     private final HealingRepository healingRepository;
     private final SelectorRepository selectorRepository;
     private final SelectorService selectorService;
@@ -80,7 +76,7 @@ public class HealingServiceImpl implements HealingService {
                 .orElseThrow(() -> new IllegalArgumentException("[Save Healing] Internal exception! Somehow we lost selected healing result on save"));
         // add report record
         reportService.createReportRecord(selectedResult, healing, getSessionKey(headers), dto.getScreenshot());
-        if (allowCollectMetrics) {
+        if (dynamicSettings.isCollectMetrics()) {
             pushMetrics(dto.getMetrics(), headers, selectedResult, dto.getUrl());
         }
     }
@@ -112,7 +108,7 @@ public class HealingServiceImpl implements HealingService {
 
     @Override
     public Set<HealingResultDto> getHealingResults(RequestDto dto) {
-        String selectorId = selectorService.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), urlForKey);
+        String selectorId = selectorService.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), dynamicSettings.isKeySelectorUrl());
         log.debug("[Get Healing Result] Selector ID: {}", selectorId);
         return healingRepository.findBySelectorId(selectorId).stream()
                 .flatMap(it -> healingMapper.modelToResultDto(it.getResults()).stream())
@@ -126,7 +122,7 @@ public class HealingServiceImpl implements HealingService {
             HealingResult healingResult = healingResultOptional.get();
             healingResult.setSuccessHealing(dto.isSuccessHealing());
             resultRepository.save(healingResult);
-            if (allowCollectMetrics) {
+            if (dynamicSettings.isCollectMetrics()) {
                 moveMetrics(dto, healingResult);
             }
         }
@@ -134,7 +130,7 @@ public class HealingServiceImpl implements HealingService {
 
     private Healing getHealing(HealingRequestDto dto) {
         // build selector key
-        String selectorId = selectorService.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), urlForKey);
+        String selectorId = selectorService.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), dynamicSettings.isKeySelectorUrl());
         // build healing key
         String healingId = Utils.buildHealingKey(selectorId, dto.getPageContent());
         return healingRepository.findById(healingId).orElseGet(() -> {
@@ -152,9 +148,6 @@ public class HealingServiceImpl implements HealingService {
 
     /**
      * Persist healing results
-     *
-     * @param healing
-     * @param healingResults
      */
     private void saveHealingResults(Collection<HealingResult> healingResults, Healing healing) {
         if (!CollectionUtils.isEmpty(healing.getResults())) {

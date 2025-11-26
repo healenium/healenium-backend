@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-@Slf4j(topic = "healenium")
+@Slf4j
 @UtilityClass
 public class Utils {
 
@@ -18,7 +18,6 @@ public class Utils {
      * Builds ID for element that represent selector meta
      *
      * @param locator the selector value
-     * @param url
      * @return hashed key of locator
      */
     public String buildKey(String locator, String command, String url) {

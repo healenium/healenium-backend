@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Slf4j(topic = "healenium")
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
