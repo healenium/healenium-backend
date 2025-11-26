@@ -1,19 +1,16 @@
 package com.epam.healenium.controller;
 
-import com.epam.healenium.model.domain.HealingResult;
-import com.epam.healenium.model.domain.Report;
-import com.epam.healenium.model.dto.elitea.*;
-import com.epam.healenium.repository.ReportRepository;
-import com.epam.healenium.service.ReportService;
-import com.epam.healenium.service.SelectorService;
-import com.epam.healenium.service.SettingsService;
+import com.epam.healenium.service.SettingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
-import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -21,109 +18,30 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SettingsController {
 
-    private final ReportService reportService;
-    private final ReportRepository reportRepository;
-    private final SelectorService selectorService;
-    private final SettingsService settingsService;
+    private final SettingService settingService;
 
-    @GetMapping("/dedicated-info/{reportId}")
-    public ResponseEntity<DedicatedInfo> getDedicatedInfo(@PathVariable String reportId) {
-        if (reportId == null || reportId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Report ID cannot be null or empty");
-        }
+    /**
+     * Update a configuration setting
+     * @param request Map containing "key" and "value" for the configuration to update
+     * @return ResponseEntity with status message
+     */
+    @PostMapping("/update")
+    public ResponseEntity<Map<String, Object>> updateSetting(@RequestBody Map<String, String> request) {
+        String key = request.get("key");
+        String value = request.get("value");
+        Map<String, Object> result = settingService.updateSetting(key, value);
 
-        boolean hasRecords = reportRepository.findById(reportId)
-                .map(Report::getRecordWrapper)
-                .map(wrapper -> !wrapper.getRecords().isEmpty())
-                .orElse(false);
-
-        boolean availableForSd = settingsService.isAvailableForSd() && hasRecords;
-        boolean availableForMr = availableForSd && reportService.getDedicatedInfo(reportId).isEmpty();
-        
-        DedicatedInfo dedicatedInfo = new DedicatedInfo()
-                .setAvailableForSd(availableForSd)
-                .setAvailableForMr(availableForMr);
-                
-        return ResponseEntity.ok(dedicatedInfo);
-    }
-
-    @PatchMapping("/paths/save/{reportId}")
-    public ResponseEntity<DedicatedInfo> saveLocatorPaths(@PathVariable String reportId, 
-                                                         @Valid @RequestBody List<LocatorPathsDto> detectionPaths) {
-        log.info("[SETTINGS] Saving locator paths for report: {}, paths: {}", 
-                reportId, detectionPaths.stream().map(LocatorPathsDto::getSelectedPath).toList());
-        
-        if (reportId == null || reportId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Report ID cannot be null or empty");
-        }
-        
-        if (detectionPaths.isEmpty()) {
-            throw new IllegalArgumentException("Detection paths cannot be null or empty");
-        }
-
-        selectorService.saveLocatorPaths(detectionPaths, reportId);
-        List<HealingResult> invalidSelectorClass = reportService.getDedicatedInfo(reportId);
-        
-        DedicatedInfo dedicatedInfo = new DedicatedInfo()
-                .setAvailableForMr(invalidSelectorClass.isEmpty());
-                
-        return ResponseEntity.ok(dedicatedInfo);
-    }
-
-    @PostMapping("/vcs/save")
-    public ResponseEntity<Void> saveVcsCredentials(@Valid @RequestBody VcsDto vcsDto) {
-        log.info("[SETTINGS] Saving VCS credentials for repository: {}", vcsDto.getRepository());
-        settingsService.saveOrUpdateVcs(vcsDto);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/llm/save")
-    public ResponseEntity<List<LlmDto>> saveLlmCredentials(@Valid @RequestBody LlmDto llmDto) {
-        log.info("[SETTINGS] Saving LLM credentials for model: {}", llmDto.getName());
-        List<LlmDto> result = settingsService.saveOrUpdateLlm(llmDto);
         return ResponseEntity.ok(result);
     }
-
-    @GetMapping("/vcs/{platform}")
-    public ResponseEntity<VcsDto> getVcs(@PathVariable String platform) {
-        log.info("[SETTINGS] Getting VCS configuration for platform: {}", platform);
-        VcsDto vcsDto = settingsService.getVcs(platform);
-        return ResponseEntity.ok(vcsDto);
-    }
-
-    @GetMapping("/llm/{platform}")
-    public ResponseEntity<LlmDto> getLlm(@PathVariable String platform) {
-        log.info("[SETTINGS] Getting LLM configuration for platform: {}", platform);
-        LlmDto llmDto = settingsService.getLlm(platform);
-        return ResponseEntity.ok(llmDto);
-    }
-
-    @GetMapping("/llm/all")
-    public ResponseEntity<List<LlmDto>> getAllLlms() {
-        log.info("[SETTINGS] Getting all LLM configurations");
-        List<LlmDto> llmDtos = settingsService.getLlmAll();
-        return ResponseEntity.ok(llmDtos);
-    }
-
-    @PostMapping("/llm/activate/{id}")
-    public ResponseEntity<List<LlmDto>> activateLlm(@PathVariable String id) {
-        log.info("[SETTINGS] Activating LLM with id: {}", id);
-        List<LlmDto> llmDtos = settingsService.setActiveLlm(id);
-        return ResponseEntity.ok(llmDtos);
-    }
-
-    @GetMapping("/llm/active")
-    public ResponseEntity<LlmDto> getActiveLlm() {
-        log.info("[SETTINGS] Getting active LLM configuration");
-        LlmDto activeLlm = settingsService.getActiveLlm();
-        return ResponseEntity.ok(activeLlm);
-    }
-
-    @DeleteMapping("/llm/delete/{id}")
-    public ResponseEntity<Void> deleteLlm(@PathVariable String id) {
-        log.info("[SETTINGS] Deleting LLM with id: {}", id);
-        settingsService.deleteLlm(id);
-        return ResponseEntity.ok().build();
+    
+    /**
+     * Get all current configuration settings
+     * @return ResponseEntity with all settings
+     */
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> getAllSettings() {
+        Map<String, Object> settings = settingService.getAllSettings();
+        return ResponseEntity.ok(settings);
     }
 
 }

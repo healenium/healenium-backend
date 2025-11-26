@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -21,22 +20,35 @@ public class LogController {
     private static final DateTimeFormatter LOG_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     /**
-     * Get backend logs for a specific time range (for proxy to use)
+     * Get backend logs for a specific time range
      * @param startTime Start time for log collection
      * @param endTime End time for log collection
      * @return String containing the backend logs for the time range
      */
     @GetMapping("/time-range")
-    public ResponseEntity<String> getBackendLogsForTimeRangeGet(
+    public ResponseEntity<String> getBackendLogsForTimeRange(
             @RequestParam String startTime,
             @RequestParam String endTime) {
-        log.info("[LOGS] Getting backend logs for time range: {} to {}", startTime, endTime);
-        
         try {
-            return ResponseEntity.ok(logService.getBackendLogsForTimeRange(
-                LocalDateTime.parse(startTime), 
-                LocalDateTime.parse(endTime)
-            ));
+            LocalDateTime start;
+            LocalDateTime end;
+            
+            try {
+                start = LocalDateTime.parse(startTime, LOG_DATE_FORMAT);
+                end = LocalDateTime.parse(endTime, LOG_DATE_FORMAT);
+            } catch (Exception e) {
+                log.debug("Failed to parse using LOG_DATE_FORMAT, trying ISO format: {}", e.getMessage());
+                try {
+                    start = LocalDateTime.parse(startTime);
+                    end = LocalDateTime.parse(endTime);
+                } catch (Exception e2) {
+                    DateTimeFormatter alternateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+                    start = LocalDateTime.parse(startTime, alternateFormat);
+                    end = LocalDateTime.parse(endTime, alternateFormat);
+                }
+            }
+            
+            return ResponseEntity.ok(logService.getBackendLogsForTimeRange(start, end));
         } catch (Exception e) {
             log.error("[LOGS] Error retrieving backend logs: {}", e.getMessage());
             return ResponseEntity.internalServerError().body("Error retrieving logs: " + e.getMessage());
@@ -44,48 +56,18 @@ public class LogController {
     }
     
     /**
-     * Get backend logs for a specific time range or session ID (for proxy to use) - POST version
-     * @param requestBody Map containing startTime, endTime, or sessionId
-     * @return String containing the backend logs
+     * Get backend logs for a specific session ID
+     * @param sessionId The session ID to get logs for
+     * @return String containing the backend logs for the session
      */
-    @PostMapping("/time-range")
-    public ResponseEntity<String> getBackendLogsForTimeRangePost(
-            @RequestBody Map<String, String> requestBody) {
-        String sessionId = requestBody.get("sessionId");
-        if (sessionId != null && !sessionId.isEmpty()) {
-            log.info("[LOGS] Getting backend logs for session ID: {}", sessionId);
-            try {
-                return ResponseEntity.ok(logService.getBackendLogsForSessionId(sessionId));
-            } catch (Exception e) {
-                log.error("[LOGS] Error retrieving backend logs for session ID: {}", sessionId, e);
-                return ResponseEntity.internalServerError().body("Error retrieving logs: " + e.getMessage());
-            }
-        }
-
-        String startTimeStr = requestBody.get("startTime");
-        String endTimeStr = requestBody.get("endTime");
+    @GetMapping("/session/{sessionId}")
+    public ResponseEntity<String> getBackendLogsForSession(@PathVariable String sessionId) {
+        log.info("[LOGS] Getting backend logs for session ID: {}", sessionId);
         
         try {
-            LocalDateTime start = null;
-            LocalDateTime end = null;
-            
-            if (startTimeStr != null && endTimeStr != null) {
-                try {
-                    start = LocalDateTime.parse(startTimeStr, LOG_DATE_FORMAT);
-                    end = LocalDateTime.parse(endTimeStr, LOG_DATE_FORMAT);
-                } catch (Exception e) {
-                    start = LocalDateTime.parse(startTimeStr);
-                    end = LocalDateTime.parse(endTimeStr);
-                }
-            }
-            
-            if (start == null) {
-                return ResponseEntity.badRequest().body("Error: No valid time range or session ID provided");
-            }
-            
-            return ResponseEntity.ok(logService.getBackendLogsForTimeRange(start, end));
+            return ResponseEntity.ok(logService.getBackendLogsForSessionId(sessionId));
         } catch (Exception e) {
-            log.error("[LOGS] Error retrieving backend logs: {}", e.getMessage());
+            log.error("[LOGS] Error retrieving backend logs for session ID: {}", sessionId, e);
             return ResponseEntity.internalServerError().body("Error retrieving logs: " + e.getMessage());
         }
     }

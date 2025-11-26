@@ -92,8 +92,6 @@ public class ReportController {
 
     @GetMapping("/data/{uid}")
     public ResponseEntity<RecordDto> getReport(@PathVariable String uid) {
-        log.info("[REPORT] Getting report with UID: {}", uid);
-        
         if (uid == null || uid.trim().isEmpty()) {
             log.warn("[REPORT] Invalid report UID provided: {}", uid);
             return ResponseEntity.badRequest().build();
@@ -105,8 +103,7 @@ public class ReportController {
                 log.warn("[REPORT] Report not found with UID: {}", uid);
                 return ResponseEntity.notFound().build();
             }
-            
-            log.info("[REPORT] Successfully retrieved report with UID: {}", uid);
+
             return ResponseEntity.ok(report);
         } catch (Exception e) {
             log.error("[REPORT] Error retrieving report with UID: {}", uid, e);

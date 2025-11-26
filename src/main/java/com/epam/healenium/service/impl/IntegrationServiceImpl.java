@@ -1,16 +1,13 @@
 package com.epam.healenium.service.impl;
 
-import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.domain.Llm;
-import com.epam.healenium.model.domain.Report;
 import com.epam.healenium.model.domain.Vcs;
 import com.epam.healenium.model.dto.elitea.IntegrationFormDto;
 import com.epam.healenium.model.dto.elitea.LlmDto;
 import com.epam.healenium.model.dto.elitea.VcsDto;
-import com.epam.healenium.model.wrapper.RecordWrapper;
 import com.epam.healenium.repository.LlmRepository;
 import com.epam.healenium.repository.VcsRepository;
-import com.epam.healenium.service.SettingsService;
+import com.epam.healenium.service.IntegrationService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,11 +17,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-@Slf4j(topic = "healenium")
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class SettingsServiceImpl implements SettingsService {
+public class IntegrationServiceImpl implements IntegrationService {
 
     private final VcsRepository vcsRepository;
     private final LlmRepository llmRepository;
@@ -83,7 +80,7 @@ public class SettingsServiceImpl implements SettingsService {
     }
 
     @Override
-    public List<LlmDto> saveOrUpdateLlm(LlmDto llmDto) {
+    public @NotNull List<LlmDto> saveOrUpdateLlm(LlmDto llmDto) {
         if (!isLlmDtoValid(llmDto)) {
             log.warn("[SETTINGS] Invalid LLM DTO provided, skipping save operation");
             return getAllLlms();
