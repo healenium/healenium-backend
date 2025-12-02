@@ -1,13 +1,13 @@
 plugins {
-    id 'org.springframework.boot' version '3.3.11'
-    id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.springframework.boot' version '3.5.3'
+    id 'io.spring.dependency-management' version "1.1.4"
     id 'java'
     id 'maven-publish'
     id 'jacoco'
 }
 
 group 'com.epam.healenium'
-version '3.4.8'
+version '3.4.9'
 
 
 repositories {
@@ -24,10 +24,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.boot:spring-boot-starter-logging'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.retry:spring-retry'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2'
-    implementation 'org.liquibase:liquibase-core:4.25.1'
-    implementation 'org.postgresql:postgresql:42.6.1'
+    implementation 'org.liquibase:liquibase-core:4.33.0'
+    implementation 'org.postgresql:postgresql:42.7.7'
     implementation 'com.zaxxer:HikariCP:3.3.1'
     implementation 'com.vladmihalcea:hibernate-types-52:2.7.0'
     implementation 'javax.validation:validation-api:2.0.1.Final'
