@@ -404,7 +404,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private void setCommonFields(ReportRecord reportRecord, RecordWrapper.Record record) {
-        reportRecord.setScreenShotPath(record.getScreenShotPath());
+        reportRecord.setScreenShotPath(transformPath(record.getScreenShotPath()));
         reportRecord.setHealingResultId(record.getHealingResultId());
     }
 
@@ -428,5 +428,15 @@ public class ReportServiceImpl implements ReportService {
         return healingResult.getHealing() != null && healingResult.getHealing().getSelector() != null
                 && healingResult.getHealing().getSelector().getClassName() != null
                 && healingResult.getHealing().getSelector().getClassName().equals(Constants.TEMP_HEALING);
+    }
+
+    private String transformPath(String sourcePath) {
+        try {
+            int i = sourcePath.lastIndexOf("screenshots");
+            return sourcePath.substring(i - 1);
+        } catch (Exception e) {
+            log.warn("[Build Report] Error transform sourcePath: {}", sourcePath);
+            return sourcePath;
+        }
     }
 }
