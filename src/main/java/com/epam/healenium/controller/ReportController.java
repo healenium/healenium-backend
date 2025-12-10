@@ -68,7 +68,7 @@ public class ReportController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
         return reportService.getAllReports(hideEmpty, startDate, endDate);
     }
-    
+
     @GetMapping("/grouped-by-time")
     public Map<String, List<ReportDto>> getReportsGroupedByTime(
             @RequestParam(required = false, defaultValue = "false") boolean hideEmpty,
@@ -77,7 +77,7 @@ public class ReportController {
             @RequestParam(required = false, defaultValue = "day") String groupLevel) {
         return reportService.getReportsGroupedByTime(hideEmpty, startDate, endDate, groupLevel);
     }
-    
+
     @GetMapping("/aggregated")
     public RecordDto getAggregatedReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -96,7 +96,7 @@ public class ReportController {
             log.warn("[REPORT] Invalid report UID provided: {}", uid);
             return ResponseEntity.badRequest().build();
         }
-        
+
         try {
             RecordDto report = reportService.generate(uid);
             if (report == null || report.getId() == null) {
