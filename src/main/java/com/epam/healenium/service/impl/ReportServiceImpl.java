@@ -369,10 +369,12 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private void setDeclaringClass(ReportRecord reportRecord, RecordWrapper.Record record) {
-        // Try to get class name from selector first (preferred method)
         String className = getClassNameFromSelector(record);
 
-        if (className != null && !className.trim().isEmpty()) {
+        if ("HealeniumFindElementPostRequest".equals(className)) {
+            reportRecord.setDeclaringClass(record.getFailedLocator().getValue());
+        }
+        else if (className != null && !className.trim().isEmpty()) {
             reportRecord.setDeclaringClass(className);
         } else {
             setDeclaringClassFromRecord(reportRecord, record);

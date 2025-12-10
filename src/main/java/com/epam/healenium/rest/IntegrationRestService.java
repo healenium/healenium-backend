@@ -1,7 +1,6 @@
 package com.epam.healenium.rest;
 
 import com.epam.healenium.model.domain.Vcs;
-import com.epam.healenium.model.dto.elitea.GitSearchResponseDto;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,29 +22,6 @@ public class IntegrationRestService {
     private static final String PUT_APPLICATION_DETAILS_URL = "/api/v1/applications/application/prompt_lib/743/";
 
     private final WebClient.Builder webClient;
-
-    public GitSearchResponseDto callGitHubService(String repoName, String brokenLocatorValue, String authorizationHeader) {
-        String queryUri = String.format("/search/code?q=repo:%s+%s", repoName, brokenLocatorValue);
-        log.info("[ELITEA] Calling search API for GitHub Repository: {} and value: {}", repoName, brokenLocatorValue);
-
-        try {
-            return webClient
-                    .baseUrl(API_GITHUB_URL)
-                    .build()
-                    .get()
-                    .uri(queryUri)
-                    .header("Authorization", "Bearer " + authorizationHeader)
-                    .header("Accept", "application/vnd.github.text-match+json")
-                    .retrieve()
-                    .bodyToMono(GitSearchResponseDto.class)
-                    .block();
-        } catch (WebClientResponseException e) {
-            log.error("[ELITEA] GitHub API response error: Status {}, Body {}", e.getStatusCode(), e.getResponseBodyAsString());
-        } catch (Exception e) {
-            log.error("[ELITEA] Error during GitHub search", e);
-        }
-        return null;
-    }
 
     public String getFile(String repoName, String path) {
         String url = "https://raw.githubusercontent.com/" + repoName + "/master/" + path;
