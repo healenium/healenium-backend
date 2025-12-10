@@ -1,10 +1,10 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   logicalFilePath="changelog/008_vcs.xml"
+                   logicalFilePath="changelog/009_vcs.xml"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
-    <changeSet author="alex" id="15">
+    <changeSet author="alex" id="16">
         <createTable tableName="vcs">
             <column name="UID" type="VARCHAR(64)">
                 <constraints nullable="false"/>
@@ -25,7 +25,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet author="alex" id="16" >
+    <changeSet author="alex" id="17" >
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="VCS_PK" />
@@ -36,11 +36,11 @@
         </createIndex>
     </changeSet>
 
-    <changeSet author="alex" id="17" >
+    <changeSet author="alex" id="18" >
         <addUniqueConstraint tableName="vcs" columnNames="NAME" constraintName="UNIQUE_VCS_NAME"/>
     </changeSet>
 
-    <changeSet author="alex" id="18">
+    <changeSet author="alex" id="19">
         <createIndex tableName="vcs" indexName="INDEX_VCS_NAME">
             <column name="NAME"/>
         </createIndex>
