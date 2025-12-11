@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '3.5.5'
+    id 'org.springframework.boot' version '3.5.8'
     id 'io.spring.dependency-management' version "1.1.4"
     id 'java'
     id 'maven-publish'
@@ -7,16 +7,12 @@ plugins {
 }
 
 group 'com.epam.healenium'
-version '3.4.10'
+version '3.5.0'
 
 
 repositories {
     mavenCentral()
     mavenLocal()
-}
-
-ext {
-    set('springFrameworkVersion', '6.2.11')
 }
 
 
@@ -28,13 +24,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.boot:spring-boot-starter-logging'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    
-    // Явное определение версии Spring Framework
-    implementation "org.springframework:spring-core:${springFrameworkVersion}"
-    implementation "org.springframework:spring-context:${springFrameworkVersion}"
-    implementation "org.springframework:spring-beans:${springFrameworkVersion}"
-    implementation "org.springframework:spring-web:${springFrameworkVersion}"
-    implementation "org.springframework:spring-webmvc:${springFrameworkVersion}"
+    implementation 'org.springframework.retry:spring-retry'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
     implementation 'org.liquibase:liquibase-core:4.33.0'
     implementation 'org.postgresql:postgresql:42.7.7'
     implementation 'com.zaxxer:HikariCP:3.3.1'
@@ -53,6 +44,7 @@ dependencies {
 
     implementation 'org.testcontainers:junit-jupiter:1.19.3'
     implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.26.0'
+    implementation 'commons-io:commons-io:2.15.1'
     testImplementation 'org.testcontainers:postgresql:1.19.3'
     testImplementation('org.testcontainers:testcontainers:1.19.3')
     testImplementation 'io.rest-assured:rest-assured:5.3.2'

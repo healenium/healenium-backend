@@ -36,7 +36,7 @@ import java.util.Set;
 import static com.epam.healenium.constants.Constants.SESSION_KEY_V1;
 import static com.epam.healenium.constants.Constants.SESSION_KEY_V2;
 
-@Slf4j(topic = "healenium")
+@Slf4j
 @RestController
 @RequestMapping("/healenium")
 @RequiredArgsConstructor
@@ -47,8 +47,6 @@ public class HealingController {
 
     /**
      * Saving information about a successfully found item
-     *
-     * @param request
      */
     @PostMapping()
     public void save(@Valid @RequestBody SelectorRequestDto request) {
@@ -58,9 +56,6 @@ public class HealingController {
 
     /**
      * Getting last valid path for provided request
-     *
-     * @param dto
-     * @return
      */
     @GetMapping()
     public ReferenceElementsDto getReferenceElements(RequestDto dto) {
@@ -72,8 +67,6 @@ public class HealingController {
 
     /**
      * Getting all saved selectors and config
-     *
-     * @return
      */
     @GetMapping("/elements")
     public ConfigSelectorDto getElements() {
@@ -84,10 +77,6 @@ public class HealingController {
 
     /**
      * Saving heal result for specific selector
-     *
-     * @param dto
-     * @param headers
-     * @return
      */
     @PostMapping("/healing")
     public void save(@Valid @RequestBody List<HealingRequestDto> dto,
@@ -101,9 +90,6 @@ public class HealingController {
 
     /**
      * Restore session to parse dom for proxy type
-     *
-     * @param dto
-     * @return
      */
     @PostMapping("/session")
     public void session(@Valid @RequestBody SessionDto dto) {
@@ -112,9 +98,6 @@ public class HealingController {
 
     /**
      * Getting healing with their results for provided request
-     *
-     * @param dto
-     * @return
      */
     @GetMapping("/healing")
     public Set<HealingDto> getHealings(RequestDto dto) {
@@ -126,9 +109,6 @@ public class HealingController {
 
     /**
      * Getting healing results for selector
-     *
-     * @param dto
-     * @return
      */
     @GetMapping("/healing/results")
     public Set<HealingResultDto> getResults(RequestDto dto) {
@@ -140,9 +120,6 @@ public class HealingController {
 
     /**
      * Setting status of healing
-     *
-     * @param dto
-     * @return
      */
     @PostMapping("/healing/success")
     public void successHealing(@Valid @RequestBody RecordDto.ReportRecord dto) {
@@ -152,8 +129,6 @@ public class HealingController {
 
     /**
      * Getting all selectors for selector.html
-     *
-     * @return
      */
     @GetMapping("/selectors")
     public ModelAndView get() {
@@ -164,11 +139,14 @@ public class HealingController {
         return modelAndView;
     }
 
+    @GetMapping("/selector/all")
+    public List<SelectorRequestDto> getAll() {
+        log.debug("[Get All Selectors]");
+        return selectorService.getAllSelectors();
+    }
+
     /**
      * Setting status (enable/disable) to healing
-     *
-     * @param dto
-     * @return
      */
     @PostMapping("/selector/status")
     public void setSelectorStatus(@Valid @RequestBody SelectorDto dto) {
@@ -184,6 +162,12 @@ public class HealingController {
         modelAndView.setViewName("index");
         modelAndView.addObject("message", "The migration of selectors was successful.");
         return modelAndView;
+    }
+
+    @PostMapping("/selector/save/path")
+    public void saveSelectorFilePath(@Valid @RequestBody RecordDto dto) {
+        log.debug("[Set Selector File Path] Request: {}", dto);
+        selectorService.saveSelectorFilePath(dto);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

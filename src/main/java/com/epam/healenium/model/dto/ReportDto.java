@@ -5,9 +5,8 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class SelectorDto {
+public class ReportDto {
     private String id;
-    private String locator;
-    private boolean enableHealing;
-    private String filePath;
+    private String name;
+    private String date;
 }

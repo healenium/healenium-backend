@@ -14,7 +14,7 @@ public class RecordDto {
     private String name;
     private String time;
     private List<ReportRecord> data = new ArrayList<>();
-    private List<ReportLinkDto> reportLinks = new ArrayList();
+    private List<ReportLinkDto> reportLinks = new ArrayList<>();
 
     @Data
     public static class ReportRecord {
@@ -27,5 +27,8 @@ public class RecordDto {
         private String score;
         private boolean successHealing;
         private Integer healingResultId;
+        private String sourceReportId;
+        private String sourceReportName;
+        private String sourceReportTime;
     }
 }
