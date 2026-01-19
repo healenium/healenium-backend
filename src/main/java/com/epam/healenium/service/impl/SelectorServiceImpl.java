@@ -1,6 +1,7 @@
 package com.epam.healenium.service.impl;
 
 
+import com.epam.healenium.config.DynamicSettings;
 import com.epam.healenium.mapper.SelectorMapper;
 import com.epam.healenium.model.Locator;
 import com.epam.healenium.model.domain.Healing;
@@ -35,12 +36,7 @@ import java.util.Optional;
 @Transactional
 public class SelectorServiceImpl implements SelectorService {
 
-    @Value("${app.selector.key.url-for-key}")
-    private boolean urlForKey;
-
-    @Value("${app.healing.elements}")
-    private boolean findElementsAutoHealing;
-
+    private final DynamicSettings dynamicSettings;
     private final SelectorRepository selectorRepository;
     private final SelectorMapper selectorMapper;
     private final HealingRepository healingRepository;
@@ -49,16 +45,16 @@ public class SelectorServiceImpl implements SelectorService {
 
     @Override
     public void saveSelector(SelectorRequestDto request) {
-        String id = getSelectorId(request.getLocator(), request.getUrl(), request.getCommand(), urlForKey);
+        String id = getSelectorId(request.getLocator(), request.getUrl(), request.getCommand(), dynamicSettings.isKeySelectorUrl());
         Optional<Selector> existSelector = selectorRepository.findById(id);
-        final Selector selector = selectorMapper.toSelector(request, id, existSelector, findElementsAutoHealing);
+        final Selector selector = selectorMapper.toSelector(request, id, existSelector, dynamicSettings.isFindElementsAutoHealing());
         selectorRepository.save(selector);
         log.debug("[Save Elements] Selector: {}", selector);
     }
 
     @Override
     public ReferenceElementsDto getReferenceElements(RequestDto dto) {
-        String selectorId = getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), urlForKey);
+        String selectorId = getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), dynamicSettings.isKeySelectorUrl());
         Optional<Selector> optionalSelector = selectorRepository.findById(selectorId);
         List<List<Node>> paths = optionalSelector
                 .map(t -> t.getNodePathWrapper().getNodePath())
@@ -88,8 +84,8 @@ public class SelectorServiceImpl implements SelectorService {
         configSelectorDto
                 .setDisableHealingElementDto(selectorMapper.toSelectorDto(disableHealingElement))
                 .setEnableHealingElementsDto(selectorMapper.toSelectorDto(enableHealingElements))
-                .setUrlForKey(urlForKey)
-                .setFindElementsAutoHealing(findElementsAutoHealing);
+                .setUrlForKey(dynamicSettings.isKeySelectorUrl())
+                .setFindElementsAutoHealing(dynamicSettings.isFindElementsAutoHealing());
         return configSelectorDto;
     }
 
@@ -220,7 +216,7 @@ public class SelectorServiceImpl implements SelectorService {
                 }
             }
             String selectorId = getSelectorId(sourceSelector.getLocator().getValue(), sourceSelector.getUrl(),
-                    targetSelector.getCommand(), urlForKey);
+                    targetSelector.getCommand(), dynamicSettings.isKeySelectorUrl());
             if (sourceSelector.getUid().equals(selectorId)) {
                 continue;
             }
