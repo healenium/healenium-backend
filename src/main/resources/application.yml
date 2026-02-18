@@ -2,6 +2,8 @@ server:
   port: ${SPRING_SERVER_PORT:7878}
   tomcat:
     max-swallow-size: -1
+  # Enable forwarded headers Spring Boot for link generation
+  forward-headers-strategy: framework
 
 spring:
   banner:
