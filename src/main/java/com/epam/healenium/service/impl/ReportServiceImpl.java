@@ -377,17 +377,7 @@ public class ReportServiceImpl implements ReportService {
         }
 
         String classNameFromRecord = getDeclaringClassFromRecord(record);
-        if (org.springframework.util.StringUtils.hasText(classNameFromRecord)) {
-            reportRecord.setDeclaringClass(classNameFromRecord);
-            return;
-        }
-
-        if (classNameFromSelector != null && !classNameFromSelector.trim().isEmpty()) {
-            reportRecord.setDeclaringClass(classNameFromSelector);
-            return;
-        }
-
-        reportRecord.setDeclaringClass("Not Set");
+        reportRecord.setDeclaringClass(classNameFromRecord);
     }
 
     private String getClassNameFromSelector(RecordWrapper.Record record) {
@@ -398,19 +388,10 @@ public class ReportServiceImpl implements ReportService {
                 .orElse(null);
     }
 
-    private static final List<String> PW_FILE_ENDINGS = List.of(".js",".ts",".cs",".py");
-
     private String getDeclaringClassFromRecord(RecordWrapper.Record record) {
         String className = record.getClassName();
         if (className == null) {
-            return "";
-        }
-        boolean hasPlaywrightFileEnding = PW_FILE_ENDINGS.stream().anyMatch(className::endsWith);
-        if (!hasPlaywrightFileEnding){
-            String[] path = className.split("\\.");
-            if (path.length > 0) {
-                return path[path.length - 1];
-            }
+            return "Not Set";
         }
         return className;
     }
