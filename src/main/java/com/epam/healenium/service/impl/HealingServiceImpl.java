@@ -37,12 +37,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.epam.healenium.constants.Constants.EMPTY_PROJECT;
-import static com.epam.healenium.constants.Constants.HOST_PROJECT;
-import static com.epam.healenium.constants.Constants.SESSION_KEY_V1;
-import static com.epam.healenium.constants.Constants.SESSION_KEY_V2;
-import static com.epam.healenium.constants.Constants.SUCCESSFUL_HEALING_BUCKET;
-import static com.epam.healenium.constants.Constants.UNSUCCESSFUL_HEALING_BUCKET;
+import static com.epam.healenium.constants.Constants.*;
 
 @Slf4j
 @Service
