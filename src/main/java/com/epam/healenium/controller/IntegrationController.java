@@ -2,15 +2,25 @@ package com.epam.healenium.controller;
 
 import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.domain.Report;
-import com.epam.healenium.model.dto.elitea.*;
+import com.epam.healenium.model.dto.elitea.DedicatedInfo;
+import com.epam.healenium.model.dto.elitea.LlmDto;
+import com.epam.healenium.model.dto.elitea.LocatorPathsDto;
+import com.epam.healenium.model.dto.elitea.VcsDto;
 import com.epam.healenium.repository.ReportRepository;
+import com.epam.healenium.service.IntegrationService;
 import com.epam.healenium.service.ReportService;
 import com.epam.healenium.service.SelectorService;
-import com.epam.healenium.service.IntegrationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
