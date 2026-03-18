@@ -1,0 +1,21 @@
+FROM eclipse-temurin:23
+COPY /build/libs/healenium-backend-*.jar /healenium-backend.jar
+CMD java -jar /healenium-backend.jar
+
+
+LABEL maintainer="healenium"
+
+ENV JAR=healenium-backend.jar
+ENV EXECUTABLE=run.sh
+
+WORKDIR /
+
+COPY /build/libs/healenium-backend-*.jar /${JAR}
+COPY run.sh /${EXECUTABLE}
+
+RUN chmod +x /${EXECUTABLE}
+
+EXPOSE 7878
+EXPOSE 5005
+
+CMD /${EXECUTABLE}

@@ -17,12 +17,12 @@ import com.epam.healenium.util.Utils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -369,16 +369,15 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private void setDeclaringClass(ReportRecord reportRecord, RecordWrapper.Record record) {
-        String className = getClassNameFromSelector(record);
+        String classNameFromSelector = getClassNameFromSelector(record);
 
-        if ("HealeniumFindElementPostRequest".equals(className)) {
+        if ("HealeniumFindElementPostRequest".equals(classNameFromSelector)) {
             reportRecord.setDeclaringClass(record.getFailedLocator().getValue());
+            return;
         }
-        else if (className != null && !className.trim().isEmpty()) {
-            reportRecord.setDeclaringClass(className);
-        } else {
-            setDeclaringClassFromRecord(reportRecord, record);
-        }
+
+        String classNameFromRecord = getDeclaringClassFromRecord(record);
+        reportRecord.setDeclaringClass(classNameFromRecord);
     }
 
     private String getClassNameFromSelector(RecordWrapper.Record record) {
@@ -389,18 +388,12 @@ public class ReportServiceImpl implements ReportService {
                 .orElse(null);
     }
 
-    private void setDeclaringClassFromRecord(ReportRecord reportRecord, RecordWrapper.Record record) {
+    private String getDeclaringClassFromRecord(RecordWrapper.Record record) {
         String className = record.getClassName();
-        if (className != null) {
-            String[] path = className.split("\\.");
-            if (path.length > 0) {
-                reportRecord.setDeclaringClass(path[path.length - 1]);
-            } else {
-                reportRecord.setDeclaringClass(className);
-            }
-        } else {
-            reportRecord.setDeclaringClass("Not Set");
+        if (className == null) {
+            return "Not Set";
         }
+        return className;
     }
 
     private void setCommonFields(ReportRecord reportRecord, RecordWrapper.Record record) {
