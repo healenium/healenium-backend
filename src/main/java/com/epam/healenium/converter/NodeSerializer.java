@@ -2,34 +2,43 @@ package com.epam.healenium.converter;
 
 import com.epam.healenium.constants.FieldName;
 import com.epam.healenium.treecomparing.Node;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.type.WritableTypeId;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.type.WritableTypeId;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.databind.ser.std.StdSerializer;
 
-import java.io.IOException;
+public class NodeSerializer extends StdSerializer<Node> {
 
-public class NodeSerializer extends JsonSerializer<Node> {
-
-    @Override
-    public void serializeWithType(Node value, JsonGenerator gen, SerializerProvider serializers, TypeSerializer typeSer) throws IOException {
-        WritableTypeId typeId = typeSer.typeId(value, Node.class, JsonToken.START_OBJECT);
-        typeSer.writeTypePrefix(gen, typeId);
-        serialize(value, gen, serializers);
-        typeSer.writeTypeSuffix(gen, typeId);
+    public NodeSerializer() {
+        super(Node.class);
     }
 
     @Override
-    public void serialize(Node value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    public void serializeWithType(Node value, JsonGenerator gen, SerializationContext serializers, TypeSerializer typeSer)
+            throws JacksonException {
+        WritableTypeId typeId = typeSer.typeId(value, Node.class, JsonToken.START_OBJECT);
+        typeSer.writeTypePrefix(gen, serializers, typeId);
+        serialize(value, gen, serializers);
+        typeSer.writeTypeSuffix(gen, serializers, typeId);
+    }
+
+    @Override
+    public void serialize(Node value, JsonGenerator gen, SerializationContext serializers) throws JacksonException {
         gen.writeStartObject();
-        gen.writeStringField(FieldName.TAG, value.getTag());
-        gen.writeNumberField(FieldName.INDEX, value.getIndex());
-        gen.writeStringField(FieldName.INNER_TEXT, value.getInnerText());
-        gen.writeStringField(FieldName.ID, value.getId());
-        gen.writeStringField(FieldName.CLASSES, String.join(" ", value.getClasses()));
-        gen.writeObjectField(FieldName.OTHER, value.getOtherAttributes());
+        gen.writeStringProperty(FieldName.TAG, value.getTag());
+        Integer index = value.getIndex();
+        if (index != null) {
+            gen.writeNumberProperty(FieldName.INDEX, index);
+        } else {
+            gen.writeNullProperty(FieldName.INDEX);
+        }
+        gen.writeStringProperty(FieldName.INNER_TEXT, value.getInnerText());
+        gen.writeStringProperty(FieldName.ID, value.getId());
+        gen.writeStringProperty(FieldName.CLASSES, String.join(" ", value.getClasses()));
+        gen.writePOJOProperty(FieldName.OTHER, value.getOtherAttributes());
         gen.writeEndObject();
         gen.flush();
     }

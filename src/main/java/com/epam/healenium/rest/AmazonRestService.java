@@ -31,7 +31,8 @@ public class AmazonRestService {
                         .queryParam("url", url)
                         .build())
                 .bodyValue(metrics)
-                .exchange()
+                .retrieve()
+                .bodyToMono(Void.class)
                 .subscribe();
     }
 
@@ -48,7 +49,8 @@ public class AmazonRestService {
                         .queryParam("result", healingResult.getId().toString())
                         .queryParam("healing", healingResult.getHealing().getUid())
                         .build())
-                .exchange()
+                .retrieve()
+                .bodyToMono(Void.class)
                 .subscribe();
     }
 }

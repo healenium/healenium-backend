@@ -1,20 +1,19 @@
 package com.epam.healenium.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-
 import java.io.Serializable;
 
-@Data
-public class Locator implements Serializable {
+/**
+ * Immutable locator value; JSON maps {@code {"value","type"}} to record components.
+ * Requires {@code -parameters} on compile so Jackson 3 binds JSON property names to components.
+ * {@code getValue()}/{@code getType()} exist for MapStruct and existing call sites.
+ */
+public record Locator(String value, String type) implements Serializable {
 
-    private final String value;
-    private final String type;
+    public String getValue() {
+        return value;
+    }
 
-    @JsonCreator
-    public Locator(@JsonProperty("value") String value, @JsonProperty("type") String type) {
-        this.value = value;
-        this.type = type;
+    public String getType() {
+        return type;
     }
 }

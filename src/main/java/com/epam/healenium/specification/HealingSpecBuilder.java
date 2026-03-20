@@ -17,7 +17,7 @@ import org.springframework.util.StringUtils;
 public class HealingSpecBuilder {
 
     public Specification<Healing> buildSpec(RequestDto filter){
-        Specification<Healing> spec = Specification.where(null);
+        Specification<Healing> spec = Specification.where((Specification<Healing>) null);
 
         if(StringUtils.hasText(filter.getLocator())){
             spec = spec.and(HealingSpecifications.hasLocator(filter.getLocator()));
