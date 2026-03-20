@@ -1,7 +1,6 @@
 package com.epam.healenium.rest;
 
 import com.epam.healenium.model.domain.Vcs;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.node.ObjectNode;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -80,7 +80,7 @@ public class IntegrationRestService {
                 .doOnError(WebClientResponseException.class, e -> log.error("[ELITEA] Update Elitea API response error: Status {}, Body {}",
                         e.getStatusCode(), e.getResponseBodyAsString()))
                 .onErrorResume(e -> {
-                    log.error("[ELITEA] Error during Update Elitea application: ", e);
+                    log.error("[ELITEA] Error during Update Elitea details", e);
                     return Mono.empty();
                 });
     }
