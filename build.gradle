@@ -9,6 +9,7 @@ plugins {
 group 'com.epam.healenium'
 version '3.5.1'
 
+ext['hibernate.version'] = '7.3.0.Final'
 
 repositories {
     mavenCentral()
