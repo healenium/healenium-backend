@@ -16,6 +16,7 @@ spring:
   jpa:
     properties.hibernate:
       dialect: org.hibernate.dialect.PostgreSQLDialect
+      default_schema: ${SPRING_POSTGRES_SCHEMA:healenium}
       temp.use_jdbc_metadata_defaults: false
       jdbc.batch_size: 40
       order_inserts: true
@@ -47,7 +48,7 @@ spring:
   liquibase:
     change-log: classpath:/db/changelog/changelog-main.xml
     enabled: true
-    liquibase-schema:
+    default-schema: ${SPRING_POSTGRES_SCHEMA:healenium}
 
 app:
   host: ${SPRING_HOST_NAME:localhost}
@@ -74,6 +75,7 @@ cloud:
 
 logging:
   level:
+    liquibase: INFO
     org.springframework.web: INFO
     org.springframework.security: INFO
     org.springframework.cloud.gateway: INFO
