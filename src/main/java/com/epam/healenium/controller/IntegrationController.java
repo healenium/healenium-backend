@@ -38,6 +38,7 @@ public class IntegrationController {
 
     @GetMapping("/dedicated-info/{reportId}")
     public ResponseEntity<DedicatedInfo> getDedicatedInfo(@PathVariable String reportId) {
+        log.debug("[Integration] Get dedicated-info, reportId: {}", reportId);
         if (reportId == null || reportId.trim().isEmpty()) {
             throw new IllegalArgumentException("Report ID cannot be null or empty");
         }
@@ -96,18 +97,21 @@ public class IntegrationController {
 
     @GetMapping("/vcs/{platform}")
     public ResponseEntity<VcsDto> getVcs(@PathVariable String platform) {
+        log.debug("[Integration] Get vcs, platform: {}", platform);
         VcsDto vcsDto = integrationService.getVcs(platform);
         return ResponseEntity.ok(vcsDto);
     }
 
     @GetMapping("/llm/{platform}")
     public ResponseEntity<LlmDto> getLlm(@PathVariable String platform) {
+        log.debug("[Integration] Get llm, platform: {}", platform);
         LlmDto llmDto = integrationService.getLlm(platform);
         return ResponseEntity.ok(llmDto);
     }
 
     @GetMapping("/llm/all")
     public ResponseEntity<List<LlmDto>> getAllLlms() {
+        log.debug("[Integration] Get llm all");
         List<LlmDto> llmDtos = integrationService.getLlmAll();
         return ResponseEntity.ok(llmDtos);
     }
@@ -121,6 +125,7 @@ public class IntegrationController {
 
     @GetMapping("/llm/active")
     public ResponseEntity<LlmDto> getActiveLlm() {
+        log.debug("[Integration] Get llm active");
         LlmDto activeLlm = integrationService.getActiveLlm();
         return ResponseEntity.ok(activeLlm);
     }

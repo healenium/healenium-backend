@@ -27,6 +27,7 @@ public class SettingsController {
      */
     @PostMapping("/update")
     public ResponseEntity<Map<String, Object>> updateSetting(@RequestBody Map<String, String> request) {
+        log.debug("[Settings] Update: {}", request);
         String key = request.get("key");
         String value = request.get("value");
         Map<String, Object> result = settingService.updateSetting(key, value);
@@ -40,6 +41,7 @@ public class SettingsController {
      */
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllSettings() {
+        log.debug("[Settings] Get all");
         Map<String, Object> settings = settingService.getAllSettings();
         return ResponseEntity.ok(settings);
     }
