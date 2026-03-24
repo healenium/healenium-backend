@@ -2,15 +2,25 @@ package com.epam.healenium.controller;
 
 import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.domain.Report;
-import com.epam.healenium.model.dto.elitea.*;
+import com.epam.healenium.model.dto.elitea.DedicatedInfo;
+import com.epam.healenium.model.dto.elitea.LlmDto;
+import com.epam.healenium.model.dto.elitea.LocatorPathsDto;
+import com.epam.healenium.model.dto.elitea.VcsDto;
 import com.epam.healenium.repository.ReportRepository;
+import com.epam.healenium.service.IntegrationService;
 import com.epam.healenium.service.ReportService;
 import com.epam.healenium.service.SelectorService;
-import com.epam.healenium.service.IntegrationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -28,6 +38,7 @@ public class IntegrationController {
 
     @GetMapping("/dedicated-info/{reportId}")
     public ResponseEntity<DedicatedInfo> getDedicatedInfo(@PathVariable String reportId) {
+        log.debug("[Integration] Get dedicated-info, reportId: {}", reportId);
         if (reportId == null || reportId.trim().isEmpty()) {
             throw new IllegalArgumentException("Report ID cannot be null or empty");
         }
@@ -86,18 +97,21 @@ public class IntegrationController {
 
     @GetMapping("/vcs/{platform}")
     public ResponseEntity<VcsDto> getVcs(@PathVariable String platform) {
+        log.debug("[Integration] Get vcs, platform: {}", platform);
         VcsDto vcsDto = integrationService.getVcs(platform);
         return ResponseEntity.ok(vcsDto);
     }
 
     @GetMapping("/llm/{platform}")
     public ResponseEntity<LlmDto> getLlm(@PathVariable String platform) {
+        log.debug("[Integration] Get llm, platform: {}", platform);
         LlmDto llmDto = integrationService.getLlm(platform);
         return ResponseEntity.ok(llmDto);
     }
 
     @GetMapping("/llm/all")
     public ResponseEntity<List<LlmDto>> getAllLlms() {
+        log.debug("[Integration] Get llm all");
         List<LlmDto> llmDtos = integrationService.getLlmAll();
         return ResponseEntity.ok(llmDtos);
     }
@@ -111,6 +125,7 @@ public class IntegrationController {
 
     @GetMapping("/llm/active")
     public ResponseEntity<LlmDto> getActiveLlm() {
+        log.debug("[Integration] Get llm active");
         LlmDto activeLlm = integrationService.getActiveLlm();
         return ResponseEntity.ok(activeLlm);
     }

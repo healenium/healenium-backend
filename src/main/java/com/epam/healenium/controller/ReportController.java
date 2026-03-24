@@ -8,14 +8,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.time.LocalDateTime;
-import java.util.Map;
-
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -30,6 +37,7 @@ public class ReportController {
 
     @GetMapping("/{uid}")
     public ModelAndView get(@PathVariable String uid) {
+        log.debug("[Report] Get by Id: {}", uid);
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("report");
         modelAndView.addObject("dto", reportService.generate(uid));
@@ -38,6 +46,7 @@ public class ReportController {
 
     @GetMapping()
     public ModelAndView get() {
+        log.debug("[Report] Get");
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("report");
         modelAndView.addObject("dto", reportService.generate());
@@ -46,6 +55,7 @@ public class ReportController {
 
     @PostMapping("/init")
     public String init() {
+        log.debug("[Report] Init Request");
         return reportService.initialize();
     }
 
@@ -58,6 +68,7 @@ public class ReportController {
 
     @PostMapping("/build")
     public String build(@RequestHeader("sessionKey") String key) {
+        log.debug("[Report] Build. Session Id: {}", key);
         return Paths.get(reportUrl, key).toString();
     }
 
@@ -66,6 +77,7 @@ public class ReportController {
             @RequestParam(required = false, defaultValue = "false") boolean hideEmpty,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        log.debug("[Report] Get all, hideEmpty: {}", hideEmpty);
         return reportService.getAllReports(hideEmpty, startDate, endDate);
     }
 
@@ -75,6 +87,7 @@ public class ReportController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(required = false, defaultValue = "day") String groupLevel) {
+        log.debug("[Report] Get grouped-by-time, hideEmpty: {}", hideEmpty);
         return reportService.getReportsGroupedByTime(hideEmpty, startDate, endDate, groupLevel);
     }
 
@@ -82,16 +95,20 @@ public class ReportController {
     public RecordDto getAggregatedReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        log.debug("[Report] Get aggregated {}, {}", startDate, endDate);
         return reportService.generateAggregatedReport(startDate, endDate);
     }
 
     @GetMapping("/data")
     public RecordDto getRecords() {
+        log.debug("[Report] Get data");
         return reportService.generate();
     }
 
     @GetMapping("/data/{uid}")
     public ResponseEntity<RecordDto> getReport(@PathVariable String uid) {
+        log.debug("[Report] Get data by Id: {}", uid);
+
         if (uid == null || uid.trim().isEmpty()) {
             log.warn("[REPORT] Invalid report UID provided: {}", uid);
             return ResponseEntity.badRequest().build();
@@ -113,6 +130,7 @@ public class ReportController {
 
     @PatchMapping("/data/{uid}")
     public RecordDto editReport(@PathVariable String uid, @RequestBody ReportDto editReportDto) {
+        log.debug("[Report] Patch data by Id: {}", uid);
         return reportService.editReport(uid, editReportDto);
     }
 

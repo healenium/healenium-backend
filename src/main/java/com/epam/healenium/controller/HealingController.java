@@ -12,19 +12,20 @@ import com.epam.healenium.model.dto.SelectorRequestDto;
 import com.epam.healenium.model.dto.SessionDto;
 import com.epam.healenium.service.HealingService;
 import com.epam.healenium.service.SelectorService;
+import com.epam.healenium.util.Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
@@ -32,9 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static com.epam.healenium.constants.Constants.SESSION_KEY_V1;
-import static com.epam.healenium.constants.Constants.SESSION_KEY_V2;
 
 @Slf4j
 @RestController
@@ -82,7 +80,8 @@ public class HealingController {
     public void save(@Valid @RequestBody List<HealingRequestDto> dto,
                      @RequestHeader Map<String, String> headers) {
         log.debug("[Save Healing] Request: {}. Headers: {}", dto, headers);
-        if (StringUtils.isEmpty(headers.get(SESSION_KEY_V1)) && StringUtils.isEmpty(headers.get(SESSION_KEY_V2))) {
+        String sessionKey = Utils.getSessionKey(headers);
+        if (!StringUtils.hasText(sessionKey)) {
             log.warn("Session key is not present. Current issue would not be presented in any reports, but still available in replacement!");
         }
         dto.forEach(requestDto -> healingService.saveHealing(requestDto, headers));

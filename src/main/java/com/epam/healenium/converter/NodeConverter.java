@@ -1,15 +1,12 @@
 package com.epam.healenium.converter;
 
 import com.epam.healenium.model.wrapper.NodePathWrapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 @Component
 @Slf4j
@@ -24,7 +21,7 @@ public class NodeConverter implements AttributeConverter<NodePathWrapper, String
         String nodePathWrapperJson = null;
         try {
             nodePathWrapperJson = objectMapper.writeValueAsString(nodePathWrapper);
-        } catch (final JsonProcessingException e) {
+        } catch (final JacksonException e) {
             log.error("JSON writing error", e);
         }
 
@@ -37,7 +34,7 @@ public class NodeConverter implements AttributeConverter<NodePathWrapper, String
         NodePathWrapper nodePathWrapper = null;
         try {
             nodePathWrapper = objectMapper.readValue(nodePathWrapperJson, NodePathWrapper.class);
-        } catch (final IOException e) {
+        } catch (final JacksonException e) {
             log.error("JSON reading error", e);
         }
 

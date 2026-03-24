@@ -9,6 +9,10 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.Map;
+
+import static com.epam.healenium.constants.Constants.SESSION_KEY_V1;
+import static com.epam.healenium.constants.Constants.SESSION_KEY_V2;
 
 @Slf4j
 @UtilityClass
@@ -59,4 +63,15 @@ public class Utils {
         return StringUtils.EMPTY;
     }
 
+    public static String getSessionKey(Map<String, String> headers) {
+        String sessionKey = headers.get(SESSION_KEY_V1);
+        if (org.springframework.util.StringUtils.hasText(sessionKey)){
+            return sessionKey;
+        }
+        sessionKey = headers.get(SESSION_KEY_V2);
+        if (org.springframework.util.StringUtils.hasText(sessionKey)){
+            return sessionKey;
+        }
+        return null;
+    }
 }

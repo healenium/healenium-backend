@@ -10,15 +10,16 @@ import com.epam.healenium.repository.SelectorRepository;
 import com.epam.healenium.service.HealingService;
 import com.epam.healenium.service.SelectorService;
 import com.epam.healenium.treecomparing.Node;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import io.restassured.RestAssured;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.util.StreamUtils;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -35,9 +36,9 @@ import java.util.*;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class TestSaveLocators extends TestContainersInitializer {
 
-    @SpyBean
+    @MockitoSpyBean
     private HealingService healingService;
-    @SpyBean
+    @MockitoSpyBean
     private SelectorService selectorService;
 
     private final SelectorRepository selectorRepository;
@@ -120,7 +121,7 @@ public class TestSaveLocators extends TestContainersInitializer {
         try {
             byte[] bytes = StreamUtils.copyToByteArray(this.getClass().getResourceAsStream("/nodes"));
             return this.objectMapper.readValue(bytes, NodePathWrapper.class).getNodePath();
-        } catch (IOException e) {
+        } catch (IOException | JacksonException e) {
             throw new RuntimeException(e);
         }
     }

@@ -37,12 +37,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.epam.healenium.constants.Constants.EMPTY_PROJECT;
-import static com.epam.healenium.constants.Constants.HOST_PROJECT;
-import static com.epam.healenium.constants.Constants.SESSION_KEY_V1;
-import static com.epam.healenium.constants.Constants.SESSION_KEY_V2;
-import static com.epam.healenium.constants.Constants.SUCCESSFUL_HEALING_BUCKET;
-import static com.epam.healenium.constants.Constants.UNSUCCESSFUL_HEALING_BUCKET;
+import static com.epam.healenium.constants.Constants.*;
 
 @Slf4j
 @Service
@@ -75,7 +70,8 @@ public class HealingServiceImpl implements HealingService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("[Save Healing] Internal exception! Somehow we lost selected healing result on save"));
         // add report record
-        reportService.createReportRecord(selectedResult, healing, getSessionKey(headers), dto.getScreenshot());
+        String sessionKey = Utils.getSessionKey(headers);
+        reportService.createReportRecord(selectedResult, healing, sessionKey, dto.getScreenshot());
         if (dynamicSettings.isCollectMetrics()) {
             pushMetrics(dto.getMetrics(), headers, selectedResult, dto.getUrl());
         }
@@ -183,9 +179,5 @@ public class HealingServiceImpl implements HealingService {
         } catch (Exception ex) {
             log.warn("[Set Healing Status] Error during move metrics: {}", ex.getMessage());
         }
-    }
-
-    private String getSessionKey(Map<String, String> headers) {
-        return !headers.get(SESSION_KEY_V1).isEmpty() ? headers.get(SESSION_KEY_V1) : headers.get(SESSION_KEY_V2);
     }
 }

@@ -1,13 +1,13 @@
 package com.epam.healenium.mapper;
 
-import java.util.Collection;
-import java.util.Set;
-
 import com.epam.healenium.model.Locator;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 import org.openqa.selenium.By;
+
+import java.util.Collection;
+import java.util.Set;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface LocatorMapper {

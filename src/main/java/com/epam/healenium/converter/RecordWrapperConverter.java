@@ -1,15 +1,12 @@
 package com.epam.healenium.converter;
 
 import com.epam.healenium.model.wrapper.RecordWrapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Component
@@ -23,7 +20,7 @@ public class RecordWrapperConverter implements AttributeConverter<RecordWrapper,
         String recordWrapperJson = null;
         try {
             recordWrapperJson = objectMapper.writeValueAsString(recordWrapper);
-        } catch (final JsonProcessingException e) {
+        } catch (final JacksonException e) {
             log.error("JSON writing error", e);
         }
 
@@ -35,7 +32,7 @@ public class RecordWrapperConverter implements AttributeConverter<RecordWrapper,
         RecordWrapper recordWrapper = null;
         try {
             recordWrapper = objectMapper.readValue(recordJSON, RecordWrapper.class);
-        } catch (final IOException e) {
+        } catch (final JacksonException e) {
             log.error("JSON reading error", e);
         }
 
