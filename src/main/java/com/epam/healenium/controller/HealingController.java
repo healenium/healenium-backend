@@ -129,7 +129,7 @@ public class HealingController {
     /**
      * Getting all selectors for selector.html
      */
-    @GetMapping("/selectors")
+    @GetMapping({"/selectors", "/selectors/"})
     public ModelAndView get() {
         log.debug("[Get Selector Page]");
         ModelAndView modelAndView = new ModelAndView();
