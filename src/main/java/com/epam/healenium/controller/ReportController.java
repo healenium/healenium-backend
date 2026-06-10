@@ -44,13 +44,7 @@ public class ReportController {
         return modelAndView;
     }
 
-    @GetMapping("")
-    public ModelAndView redirectToSlash() {
-        log.debug("[Report] Redirecting to path with trailing slash");
-        return new ModelAndView("redirect:/healenium/report/");
-    }
-
-    @GetMapping("/")
+    @GetMapping({"", "/"})
     public ModelAndView get() {
         log.debug("[Report] Get");
         ModelAndView modelAndView = new ModelAndView();
