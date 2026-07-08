@@ -1,4 +1,7 @@
 package com.epam.healenium.model.domain;
+import com.epam.healenium.tenant.TenantAwareEntity;
+import com.epam.healenium.tenant.FreeTenantEntityListener;
+import com.epam.healenium.tenant.ProTenantEntityListener;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,6 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.EntityListeners;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +23,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Represent record about known element healing attempt in specific context.
@@ -30,12 +35,16 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @Entity
+@EntityListeners({FreeTenantEntityListener.class, ProTenantEntityListener.class})
 @Table(name = "healing")
-public class Healing {
+public class Healing implements TenantAwareEntity {
 
     @Id
     @Column(name = "uid")
     private String uid;
+
+    @Column(name = "tenant_id", nullable = false, updatable = false)
+    private UUID tenantId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "selector_id", referencedColumnName = "uid", nullable = false)

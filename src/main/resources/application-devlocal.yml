@@ -1,0 +1,8 @@
+# Use: --spring.profiles.active=devlocal
+# Activates "pro" (via profile group) and runs Liquibase with context "dev" (dev-only membership seed).
+spring:
+  liquibase:
+    contexts: dev
+    parameters:
+      membershipSeedIssuer: ${MEMBERSHIP_SEED_ISSUER:https://cognito-idp.eu-central-1.amazonaws.com/eu-central-1_REPLACE_POOL}
+      membershipSeedSub: ${MEMBERSHIP_SEED_SUB:replace-with-cognito-sub}

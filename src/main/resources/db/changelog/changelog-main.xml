@@ -21,5 +21,8 @@
 	<include file="008_report_name_column.xml" relativeToChangelogFile="true"/>
 	<include file="009_vcs.xml" relativeToChangelogFile="true"/>
 	<include file="010_llm.xml" relativeToChangelogFile="true"/>
+	<include file="011_multitenancy_base.xml" relativeToChangelogFile="true"/>
+	<include file="013_membership.xml" relativeToChangelogFile="true"/>
+	<include file="014_membership_dev_seed.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

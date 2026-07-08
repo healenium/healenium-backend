@@ -32,6 +32,15 @@ public class Utils {
         return DigestUtils.md5DigestAsHex(rawKey.trim().getBytes(StandardCharsets.UTF_8));
     }
 
+    public String buildKey(String locator, String command, String url, String tenantId) {
+        String rawKey = new StringBuilder(url)
+                .append(command)
+                .append(locator.hashCode())
+                .append(tenantId)
+                .toString();
+        return DigestUtils.md5DigestAsHex(rawKey.trim().getBytes(StandardCharsets.UTF_8));
+    }
+
     /**
      * Builds ID for healing record
      *

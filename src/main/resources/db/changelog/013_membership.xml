@@ -1,0 +1,44 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   logicalFilePath="changelog/013_membership.xml"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <!--
+        Cognito (or other issuer) subject → tenant. Not tenant-scoped: no RLS on this table.
+        MVP: one row per (issuer, external_sub) — single tenant per login.
+    -->
+    <changeSet author="alex" id="38">
+        <createTable tableName="membership">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="issuer" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="external_sub" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="VARCHAR(128)"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="current_timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="membership"
+                baseColumnNames="tenant_id"
+                constraintName="membership_tenant_id_fkey"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+
+        <addUniqueConstraint
+                tableName="membership"
+                columnNames="issuer, external_sub"
+                constraintName="membership_issuer_external_sub_key"/>
+    </changeSet>
+
+</databaseChangeLog>

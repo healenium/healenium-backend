@@ -1,11 +1,9 @@
 package com.epam.healenium.service;
 
-import com.epam.healenium.model.dto.HealingDto;
-import com.epam.healenium.model.dto.HealingRequestDto;
-import com.epam.healenium.model.dto.HealingResultDto;
-import com.epam.healenium.model.dto.RecordDto;
-import com.epam.healenium.model.dto.RequestDto;
+import com.epam.healenium.model.dto.*;
+import org.openqa.selenium.By;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,5 +37,9 @@ public interface HealingService {
      * @param dto
      */
     void saveSuccessHealing(RecordDto.ReportRecord dto);
+
+    boolean validateReference(ReferenceElementsDto referenceElements);
+
+    List<By> getCandidates(RequestDto dto, ReferenceElementsDto referenceElements);
 
 }

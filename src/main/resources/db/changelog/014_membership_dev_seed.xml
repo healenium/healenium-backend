@@ -1,0 +1,23 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   logicalFilePath="changelog/014_membership_dev_seed.xml"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <!-- Runs only when Liquibase contexts include "dev" (see application-devlocal.yml). -->
+    <changeSet author="alex" id="39-membership-dev-seed" context="dev">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM membership
+                WHERE issuer = '${membershipSeedIssuer}' AND external_sub = '${membershipSeedSub}'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="membership">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="issuer" value="${membershipSeedIssuer}"/>
+            <column name="external_sub" value="${membershipSeedSub}"/>
+            <column name="tenant_id" value="00000000-0000-0000-0000-000000000001"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

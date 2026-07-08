@@ -6,6 +6,11 @@ server:
   forward-headers-strategy: framework
 
 spring:
+  profiles:
+    default: pro
+    group:
+      devlocal:
+        - pro
   banner:
     location: /images/banner.txt
   servlet.multipart:
@@ -25,8 +30,6 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${SPRING_POSTGRES_DB_HOST:localhost}:${SPRING_POSTGRES_DB_PORT:5432}/${SPRING_POSTGRES_DB:healenium}?currentSchema=${SPRING_POSTGRES_SCHEMA:healenium}
-    username: ${SPRING_POSTGRES_USER:healenium_user}
-    password: ${SPRING_POSTGRES_PASSWORD:YDk2nmNs4s9aCP6K}
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       maximumPoolSize: ${MAXIMUM_POOL_SIZE:6}
@@ -46,7 +49,6 @@ spring:
     jmx:
       enabled: false
   liquibase:
-    change-log: classpath:/db/changelog/changelog-main.xml
     enabled: true
     default-schema: ${SPRING_POSTGRES_SCHEMA:healenium}
 
@@ -82,7 +84,7 @@ logging:
     ROOT: ${SPRING_LOG_LEVEL:INFO}
     org.springframework: INFO
     org.mongodb.driver.connection: WARN
-    healenium: ${HLM_LOG_LEVEL:INFO}
+    healenium: ${HLM_LOG_LEVEL:DEBUG}
   pattern:
     console: '%d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${PID:- } --- [%t] %-40.40logger{39} : %m%n%wEx'
     file: '%d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${PID:- } --- [%t] %-40.40logger{39} : %m%n%wEx'
@@ -99,3 +101,14 @@ logging:
 proxy:
   service:
     url: ${PROXY_SERVICE_URL:http://localhost:8085}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: free
+  datasource:
+    username: ${SPRING_POSTGRES_USER:healenium_user}
+    password: ${SPRING_POSTGRES_PASSWORD:YDk2nmNs4s9aCP6K}
+  liquibase:
+    change-log: classpath:/db/changelog/changelog-main.xml
