@@ -1,0 +1,129 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   logicalFilePath="changelog/012_multitenancy_rls.xml"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <!-- Enable and enforce RLS for all tenant-owned tables -->
+
+    <changeSet author="alex" id="32">
+        <sql splitStatements="false" endDelimiter=";">
+            ALTER TABLE selector ENABLE ROW LEVEL SECURITY;
+            ALTER TABLE selector FORCE ROW LEVEL SECURITY;
+
+            DO $$ BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_policies
+                    WHERE schemaname = current_schema()
+                      AND tablename = 'selector'
+                      AND policyname = 'selector_tenant_isolation'
+                ) THEN
+                    EXECUTE 'CREATE POLICY selector_tenant_isolation ON selector '
+                         || 'USING (tenant_id = current_setting(''app.tenant_id'', true)::uuid) '
+                         || 'WITH CHECK (tenant_id = current_setting(''app.tenant_id'', true)::uuid)';
+                END IF;
+            END $$;
+        </sql>
+    </changeSet>
+
+    <changeSet author="alex" id="33">
+        <sql splitStatements="false" endDelimiter=";">
+            ALTER TABLE healing ENABLE ROW LEVEL SECURITY;
+            ALTER TABLE healing FORCE ROW LEVEL SECURITY;
+
+            DO $$ BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_policies
+                    WHERE schemaname = current_schema()
+                      AND tablename = 'healing'
+                      AND policyname = 'healing_tenant_isolation'
+                ) THEN
+                    EXECUTE 'CREATE POLICY healing_tenant_isolation ON healing '
+                         || 'USING (tenant_id = current_setting(''app.tenant_id'', true)::uuid) '
+                         || 'WITH CHECK (tenant_id = current_setting(''app.tenant_id'', true)::uuid)';
+                END IF;
+            END $$;
+        </sql>
+    </changeSet>
+
+    <changeSet author="alex" id="34">
+        <sql splitStatements="false" endDelimiter=";">
+            ALTER TABLE healing_result ENABLE ROW LEVEL SECURITY;
+            ALTER TABLE healing_result FORCE ROW LEVEL SECURITY;
+
+            DO $$ BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_policies
+                    WHERE schemaname = current_schema()
+                      AND tablename = 'healing_result'
+                      AND policyname = 'healing_result_tenant_isolation'
+                ) THEN
+                    EXECUTE 'CREATE POLICY healing_result_tenant_isolation ON healing_result '
+                         || 'USING (tenant_id = current_setting(''app.tenant_id'', true)::uuid) '
+                         || 'WITH CHECK (tenant_id = current_setting(''app.tenant_id'', true)::uuid)';
+                END IF;
+            END $$;
+        </sql>
+    </changeSet>
+
+    <changeSet author="alex" id="35">
+        <sql splitStatements="false" endDelimiter=";">
+            ALTER TABLE report ENABLE ROW LEVEL SECURITY;
+            ALTER TABLE report FORCE ROW LEVEL SECURITY;
+
+            DO $$ BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_policies
+                    WHERE schemaname = current_schema()
+                      AND tablename = 'report'
+                      AND policyname = 'report_tenant_isolation'
+                ) THEN
+                    EXECUTE 'CREATE POLICY report_tenant_isolation ON report '
+                         || 'USING (tenant_id = current_setting(''app.tenant_id'', true)::uuid) '
+                         || 'WITH CHECK (tenant_id = current_setting(''app.tenant_id'', true)::uuid)';
+                END IF;
+            END $$;
+        </sql>
+    </changeSet>
+
+    <changeSet author="alex" id="36">
+        <sql splitStatements="false" endDelimiter=";">
+            ALTER TABLE vcs ENABLE ROW LEVEL SECURITY;
+            ALTER TABLE vcs FORCE ROW LEVEL SECURITY;
+
+            DO $$ BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_policies
+                    WHERE schemaname = current_schema()
+                      AND tablename = 'vcs'
+                      AND policyname = 'vcs_tenant_isolation'
+                ) THEN
+                    EXECUTE 'CREATE POLICY vcs_tenant_isolation ON vcs '
+                         || 'USING (tenant_id = current_setting(''app.tenant_id'', true)::uuid) '
+                         || 'WITH CHECK (tenant_id = current_setting(''app.tenant_id'', true)::uuid)';
+                END IF;
+            END $$;
+        </sql>
+    </changeSet>
+
+    <changeSet author="alex" id="37">
+        <sql splitStatements="false" endDelimiter=";">
+            ALTER TABLE llm ENABLE ROW LEVEL SECURITY;
+            ALTER TABLE llm FORCE ROW LEVEL SECURITY;
+
+            DO $$ BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_policies
+                    WHERE schemaname = current_schema()
+                      AND tablename = 'llm'
+                      AND policyname = 'llm_tenant_isolation'
+                ) THEN
+                    EXECUTE 'CREATE POLICY llm_tenant_isolation ON llm '
+                         || 'USING (tenant_id = current_setting(''app.tenant_id'', true)::uuid) '
+                         || 'WITH CHECK (tenant_id = current_setting(''app.tenant_id'', true)::uuid)';
+                END IF;
+            END $$;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -24,11 +24,10 @@ public interface SelectorService {
 
     void saveSelectorFilePath(RecordDto dto);
 
-    String getSelectorId(String locator, String url, String command, boolean urlForKey);
-
     void migrate();
 
     void migrateSelectors(List<Selector> sourceSelectors);
 
     void saveLocatorPaths(List<LocatorPathsDto> request, String reportId);
+
 }

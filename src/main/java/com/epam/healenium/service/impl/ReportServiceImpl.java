@@ -14,7 +14,8 @@ import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.service.ReportService;
 import com.epam.healenium.util.Utils;
-import jakarta.transaction.Transactional;
+import com.epam.healenium.tenant.TenantTransactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@TenantTransactional
 public class ReportServiceImpl implements ReportService {
 
     private final ReportRepository reportRepository;

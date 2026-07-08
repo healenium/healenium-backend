@@ -3,6 +3,9 @@ package com.epam.healenium.model.domain;
 import com.epam.healenium.converter.NodeConverter;
 import com.epam.healenium.model.Locator;
 import com.epam.healenium.model.wrapper.NodePathWrapper;
+import com.epam.healenium.tenant.TenantAwareEntity;
+import com.epam.healenium.tenant.FreeTenantEntityListener;
+import com.epam.healenium.tenant.ProTenantEntityListener;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -10,6 +13,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.EntityListeners;
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.Accessors;
@@ -19,6 +23,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Contains selector information.
@@ -28,8 +33,9 @@ import java.time.LocalDateTime;
 @Accessors(chain = true)
 @Data
 @Entity
+@EntityListeners({FreeTenantEntityListener.class, ProTenantEntityListener.class})
 @Table(name = "selector")
-public class Selector {
+public class Selector implements TenantAwareEntity {
 
     @Id
     @Column(name = "uid")
@@ -57,6 +63,9 @@ public class Selector {
     @ToString.Exclude
     @Convert(converter = NodeConverter.class)
     private NodePathWrapper nodePathWrapper;
+
+    @Column(name = "tenant_id", nullable = false, updatable = false)
+    private UUID tenantId;
 
     @Column(name = "create_date")
     @CreationTimestamp

@@ -8,7 +8,8 @@ import com.epam.healenium.model.dto.elitea.VcsDto;
 import com.epam.healenium.repository.LlmRepository;
 import com.epam.healenium.repository.VcsRepository;
 import com.epam.healenium.service.IntegrationService;
-import jakarta.transaction.Transactional;
+import com.epam.healenium.tenant.TenantTransactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +25,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@TenantTransactional
 public class IntegrationServiceImpl implements IntegrationService {
 
     private final VcsRepository vcsRepository;

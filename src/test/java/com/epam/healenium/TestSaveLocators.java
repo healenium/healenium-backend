@@ -31,7 +31,7 @@ import java.util.*;
 @Testcontainers
 @AutoConfigureMockMvc
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@ActiveProfiles("test")
+@ActiveProfiles("free")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class TestSaveLocators extends TestContainersInitializer {
