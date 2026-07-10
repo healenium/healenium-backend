@@ -11,6 +11,7 @@ import lombok.ToString;
 public class RequestDto {
 
     private String locator;
+    private String locatorType;
     private String className;
     private String methodName;
     private String command;

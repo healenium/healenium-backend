@@ -2,7 +2,10 @@ package com.epam.healenium.config;
 
 import com.epam.healenium.converter.NodeDeserializer;
 import com.epam.healenium.converter.NodeSerializer;
+import com.epam.healenium.converter.ScoredDeserializer;
+import com.epam.healenium.converter.ScoredSerializer;
 import com.epam.healenium.treecomparing.Node;
+import com.epam.healenium.treecomparing.Scored;
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -21,7 +24,9 @@ public class JacksonConfiguration implements JsonMapperBuilderCustomizer {
     public void customize(JsonMapper.Builder builder) {
         SimpleModule nodeModule = new SimpleModule("node")
                 .addSerializer(Node.class, new NodeSerializer())
-                .addDeserializer(Node.class, new NodeDeserializer());
+                .addDeserializer(Node.class, new NodeDeserializer())
+                .addSerializer(Scored.class, new ScoredSerializer())
+                .addDeserializer(Scored.class, new ScoredDeserializer());
         builder.addModule(nodeModule)
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .configure(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS, false)
