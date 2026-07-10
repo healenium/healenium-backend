@@ -30,6 +30,7 @@ public class SettingServiceImpl implements SettingService {
     private static final String FIND_ELEMENTS_AUTO_HEALING = "FIND_ELEMENTS_AUTO_HEALING";
     private static final String SCORE_CAP = "SCORE_CAP";
     private static final String SELECTOR_TYPE = "SELECTOR_TYPE";
+    private static final String RECOVERY_TRIES = "RECOVERY_TRIES";
     private static final String LOG_LEVEL = "LOG_LEVEL";
 
     /**
@@ -124,6 +125,22 @@ public class SettingServiceImpl implements SettingService {
             return false;
         }
     }
+
+    @Override
+    public boolean setRecoveryTries(int recoveryTries) {
+        if (recoveryTries < 0) {
+            log.error("Invalid recovery tries: {}. Value must be a non-negative integer", recoveryTries);
+            return false;
+        }
+
+        try {
+            dynamicSettings.setRecoveryTries(recoveryTries);
+            return true;
+        } catch (Exception e) {
+            log.error("Error setting RECOVERY_TRIES", e);
+            return false;
+        }
+    }
     
     @Override
     public Map<String, Object> updateSetting(String key, String value) {
@@ -158,6 +175,10 @@ public class SettingServiceImpl implements SettingService {
                     boolean selectorTypeSuccess = setSelectorType(value);
                     result.put("success", selectorTypeSuccess);
                     break;
+                case RECOVERY_TRIES:
+                    boolean recoveryTriesSuccess = setRecoveryTries(Integer.parseInt(value));
+                    result.put("success", recoveryTriesSuccess);
+                    break;
                 default:
                     log.warn("Unknown setting key: {}", key);
                     result.put("message", "Unknown setting key");
@@ -183,6 +204,7 @@ public class SettingServiceImpl implements SettingService {
         settings.put(FIND_ELEMENTS_AUTO_HEALING, dynamicSettings.isFindElementsAutoHealing());
         settings.put(SCORE_CAP, dynamicSettings.getScoreCap());
         settings.put(SELECTOR_TYPE, dynamicSettings.getSelectorType());
+        settings.put(RECOVERY_TRIES, dynamicSettings.getRecoveryTries());
         return settings;
     }
 

@@ -14,6 +14,8 @@ public interface SettingService {
     boolean setScoreCap(double scoreCap);
 
     boolean setSelectorType(String selectorType);
+
+    boolean setRecoveryTries(int recoveryTries);
     
     Map<String, Object> updateSetting(String key, String value);
     
