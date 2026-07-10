@@ -10,6 +10,10 @@ public interface SettingService {
     boolean setCollectMetrics(boolean enabled);
     
     boolean setFindElementsAutoHealing(boolean enabled);
+
+    boolean setScoreCap(double scoreCap);
+
+    boolean setSelectorType(String selectorType);
     
     Map<String, Object> updateSetting(String key, String value);
     

@@ -21,5 +21,12 @@ public class DynamicSettings {
     
     @Value("${app.healing.elements:false}")
     private boolean findElementsAutoHealing;
+
+    @Value("${healenium.score-cap:.6}")
+    private double scoreCap;
+
+    // Selector type must be 'cssSelector' or 'xpath'
+    @Value("${healenium.selector-type:cssSelector}")
+    private String selectorType;
 }
 
