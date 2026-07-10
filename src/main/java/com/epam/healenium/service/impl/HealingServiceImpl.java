@@ -236,13 +236,6 @@ public class HealingServiceImpl implements HealingService {
 
     public By toLocator(Scored<Node> node, ReferenceElementsDto referenceElements) {
         By locator = null;
-//        if (useXPath(engine)) {
-//            String xpath = createXPathFromElement(node.getValue(), engine);
-//            locator = By.xpath(xpath);
-//            if (isUnsuccessLocator(locator, context, engine)) {
-//                return null;
-//            }
-//        }
 
         for (Set<SelectorComponent> detailLevel : selectorDetailLevels) {
             locator = construct(node.getValue(), detailLevel);
@@ -259,7 +252,6 @@ public class HealingServiceImpl implements HealingService {
                 .map(component -> component.createComponent(node))
                 .collect(Collectors.joining()));
     }
-
 
     private boolean isUnsuccessLocator(By locator, ReferenceElementsDto referenceElements) {
         List<Locator> unsuccessfulLocators = referenceElements.getUnsuccessfulLocators();
