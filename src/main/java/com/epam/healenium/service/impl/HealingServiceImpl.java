@@ -224,8 +224,7 @@ public class HealingServiceImpl implements HealingService {
         PathFinder pathFinder = new PathFinder(new LCSPathDistance(), new HeuristicNodeDistance());
         AbstractMap.SimpleImmutableEntry<Integer, Map<Double, List<AbstractMap.SimpleImmutableEntry<Node, Integer>>>> scoresToNodes =
                 pathFinder.findScoresToNodes(new Path(paths.toArray(new Node[0])), destination);
-        // TODO get guessCap from settings
-        List<Scored<Node>> scoreds = pathFinder.getSortedNodes(scoresToNodes.getValue(), 1000, 0.6);
+        List<Scored<Node>> scoreds = pathFinder.getSortedNodes(scoresToNodes.getValue(), 1000, dynamicSettings.getScoreCap());
 
         List<By> healedElements = scoreds.stream()
                 .map(node -> toLocator(node, referenceElements))
