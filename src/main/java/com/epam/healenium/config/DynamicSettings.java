@@ -28,5 +28,8 @@ public class DynamicSettings {
     // Selector type must be 'cssSelector' or 'xpath'
     @Value("${healenium.selector-type:cssSelector}")
     private String selectorType;
+
+    @Value("${healenium.recovery-tries:1}")
+    private int recoveryTries;
 }
 
