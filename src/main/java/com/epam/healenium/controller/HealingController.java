@@ -210,7 +210,7 @@ public class HealingController {
             ReferenceElementsDto referenceElements = selectorService.getReferenceElements(dto);
             if (healingService.validateReference(referenceElements)) {
                 List<Locator> candidates = healingService.getCandidates(dto, referenceElements).stream()
-                        .map(c -> new Locator().setUsing("css selector")
+                        .map(c -> new Locator().setType("css selector")
                                 .setValue((String) ((By.ByCssSelector) c).getRemoteParameters().value()))
                         .collect(Collectors.toList());
                 log.info("[Get Candidate] Candidates: {})", candidates);

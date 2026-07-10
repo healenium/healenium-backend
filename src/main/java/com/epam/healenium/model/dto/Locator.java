@@ -6,6 +6,6 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class Locator {
-    private String using;
     private String value;
+    private String type;
 }
