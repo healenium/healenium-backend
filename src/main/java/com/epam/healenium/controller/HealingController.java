@@ -8,10 +8,12 @@ import com.epam.healenium.model.dto.HealingResultDto;
 import com.epam.healenium.model.dto.RecordDto;
 import com.epam.healenium.model.dto.ReferenceElementsDto;
 import com.epam.healenium.model.dto.RequestDto;
+import com.epam.healenium.model.dto.SelectorCandidate;
 import com.epam.healenium.model.dto.SelectorDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
 import com.epam.healenium.model.dto.SessionDto;
 import com.epam.healenium.service.HealingService;
+import com.epam.healenium.service.SelectorCandidateService;
 import com.epam.healenium.service.SelectorService;
 import com.epam.healenium.util.Utils;
 import com.epam.healenium.tenant.TenantTxFacade;
@@ -45,11 +47,13 @@ public class HealingController {
     private final TenantTxFacade tenantTx;
     private final HealingService healingService;
     private final SelectorService selectorService;
+    private final SelectorCandidateService selectorCandidateService;
 
-    public HealingController(TenantTxFacade tenantTx, HealingService healingService, SelectorService selectorService) {
+    public HealingController(TenantTxFacade tenantTx, HealingService healingService, SelectorService selectorService, SelectorCandidateService selectorCandidateService) {
         this.tenantTx = tenantTx;
         this.healingService = healingService;
         this.selectorService = selectorService;
+        this.selectorCandidateService = selectorCandidateService;
     }
 
     /**
@@ -210,10 +214,26 @@ public class HealingController {
             ReferenceElementsDto referenceElements = selectorService.getReferenceElements(dto);
             if (healingService.validateReference(referenceElements)) {
                 List<Locator> candidates = healingService.getCandidates(dto, referenceElements).stream()
-                        .map(c -> new Locator().setUsing("css selector")
+                        .map(c -> new Locator().setType("css selector")
                                 .setValue((String) ((By.ByCssSelector) c).getRemoteParameters().value()))
                         .collect(Collectors.toList());
                 log.info("[Get Candidate] Candidates: {})", candidates);
+                return ResponseEntity.ok(candidates);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        });
+    }
+
+    @PostMapping("/selector-candidates")
+    public ResponseEntity<List<SelectorCandidate>> getElementCandidates(@RequestBody RequestDto dto) {
+        return tenantTx.required(() -> {
+            log.debug("[Get Selector Candidates] Request: {})", dto);
+
+            ReferenceElementsDto referenceElements = selectorService.getReferenceElements(dto);
+            if (selectorCandidateService.validateReference(referenceElements)) {
+                List<SelectorCandidate> candidates = selectorCandidateService.getCandidates(dto, referenceElements);
+                log.info("[Get Selector Candidates] Candidates: {})", candidates);
                 return ResponseEntity.ok(candidates);
             } else {
                 return ResponseEntity.notFound().build();

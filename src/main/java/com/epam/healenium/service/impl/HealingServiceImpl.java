@@ -224,8 +224,7 @@ public class HealingServiceImpl implements HealingService {
         PathFinder pathFinder = new PathFinder(new LCSPathDistance(), new HeuristicNodeDistance());
         AbstractMap.SimpleImmutableEntry<Integer, Map<Double, List<AbstractMap.SimpleImmutableEntry<Node, Integer>>>> scoresToNodes =
                 pathFinder.findScoresToNodes(new Path(paths.toArray(new Node[0])), destination);
-        // TODO get guessCap from settings
-        List<Scored<Node>> scoreds = pathFinder.getSortedNodes(scoresToNodes.getValue(), 1000, 0.6);
+        List<Scored<Node>> scoreds = pathFinder.getSortedNodes(scoresToNodes.getValue(), 1000, dynamicSettings.getScoreCap());
 
         List<By> healedElements = scoreds.stream()
                 .map(node -> toLocator(node, referenceElements))
@@ -236,13 +235,6 @@ public class HealingServiceImpl implements HealingService {
 
     public By toLocator(Scored<Node> node, ReferenceElementsDto referenceElements) {
         By locator = null;
-//        if (useXPath(engine)) {
-//            String xpath = createXPathFromElement(node.getValue(), engine);
-//            locator = By.xpath(xpath);
-//            if (isUnsuccessLocator(locator, context, engine)) {
-//                return null;
-//            }
-//        }
 
         for (Set<SelectorComponent> detailLevel : selectorDetailLevels) {
             locator = construct(node.getValue(), detailLevel);
@@ -259,7 +251,6 @@ public class HealingServiceImpl implements HealingService {
                 .map(component -> component.createComponent(node))
                 .collect(Collectors.joining()));
     }
-
 
     private boolean isUnsuccessLocator(By locator, ReferenceElementsDto referenceElements) {
         List<Locator> unsuccessfulLocators = referenceElements.getUnsuccessfulLocators();

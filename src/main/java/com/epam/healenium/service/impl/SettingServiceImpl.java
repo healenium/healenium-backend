@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,6 +28,9 @@ public class SettingServiceImpl implements SettingService {
     private static final String KEY_SELECTOR_URL = "KEY_SELECTOR_URL";
     private static final String COLLECT_METRICS = "COLLECT_METRICS";
     private static final String FIND_ELEMENTS_AUTO_HEALING = "FIND_ELEMENTS_AUTO_HEALING";
+    private static final String SCORE_CAP = "SCORE_CAP";
+    private static final String SELECTOR_TYPE = "SELECTOR_TYPE";
+    private static final String RECOVERY_TRIES = "RECOVERY_TRIES";
     private static final String LOG_LEVEL = "LOG_LEVEL";
 
     /**
@@ -89,6 +93,54 @@ public class SettingServiceImpl implements SettingService {
             return false;
         }
     }
+
+    @Override
+    public boolean setScoreCap(double scoreCap) {
+        if (scoreCap < 0.0 || scoreCap > 1.0) {
+            log.error("Invalid score cap: {}. Value must be between 0.0 and 1.0", scoreCap);
+            return false;
+        }
+
+        try {
+            dynamicSettings.setScoreCap(scoreCap);
+            return true;
+        } catch (Exception e) {
+            log.error("Error setting SCORE_CAP", e);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean setSelectorType(String selectorType) {
+        if (!isValidSelectorType(selectorType)) {
+            log.error("Invalid selector type: {}. Value must be 'cssSelector' or 'xpath'", selectorType);
+            return false;
+        }
+
+        try {
+            dynamicSettings.setSelectorType(selectorType);
+            return true;
+        } catch (Exception e) {
+            log.error("Error setting SELECTOR_TYPE", e);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean setRecoveryTries(int recoveryTries) {
+        if (recoveryTries < 0) {
+            log.error("Invalid recovery tries: {}. Value must be a non-negative integer", recoveryTries);
+            return false;
+        }
+
+        try {
+            dynamicSettings.setRecoveryTries(recoveryTries);
+            return true;
+        } catch (Exception e) {
+            log.error("Error setting RECOVERY_TRIES", e);
+            return false;
+        }
+    }
     
     @Override
     public Map<String, Object> updateSetting(String key, String value) {
@@ -115,6 +167,18 @@ public class SettingServiceImpl implements SettingService {
                     boolean findElementsAutoHealingSuccess = setFindElementsAutoHealing(Boolean.parseBoolean(value));
                     result.put("success", findElementsAutoHealingSuccess);
                     break;
+                case SCORE_CAP:
+                    boolean scoreCapSuccess = setScoreCap(Double.parseDouble(value));
+                    result.put("success", scoreCapSuccess);
+                    break;
+                case SELECTOR_TYPE:
+                    boolean selectorTypeSuccess = setSelectorType(value);
+                    result.put("success", selectorTypeSuccess);
+                    break;
+                case RECOVERY_TRIES:
+                    boolean recoveryTriesSuccess = setRecoveryTries(Integer.parseInt(value));
+                    result.put("success", recoveryTriesSuccess);
+                    break;
                 default:
                     log.warn("Unknown setting key: {}", key);
                     result.put("message", "Unknown setting key");
@@ -138,7 +202,15 @@ public class SettingServiceImpl implements SettingService {
         settings.put(KEY_SELECTOR_URL, dynamicSettings.isKeySelectorUrl());
         settings.put(COLLECT_METRICS, dynamicSettings.isCollectMetrics());
         settings.put(FIND_ELEMENTS_AUTO_HEALING, dynamicSettings.isFindElementsAutoHealing());
+        settings.put(SCORE_CAP, dynamicSettings.getScoreCap());
+        settings.put(SELECTOR_TYPE, dynamicSettings.getSelectorType());
+        settings.put(RECOVERY_TRIES, dynamicSettings.getRecoveryTries());
         return settings;
+    }
+
+    private boolean isValidSelectorType(String selectorType) {
+        return StringUtils.hasText(selectorType)
+                && ("cssSelector".equals(selectorType) || "xpath".equals(selectorType));
     }
 
     /**
