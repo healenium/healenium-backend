@@ -4,8 +4,7 @@ import com.epam.healenium.converter.NodeConverter;
 import com.epam.healenium.model.Locator;
 import com.epam.healenium.model.wrapper.NodePathWrapper;
 import com.epam.healenium.tenant.TenantAwareEntity;
-import com.epam.healenium.tenant.FreeTenantEntityListener;
-import com.epam.healenium.tenant.ProTenantEntityListener;
+import com.epam.healenium.tenant.TenantEntityListener;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -33,7 +32,7 @@ import java.util.UUID;
 @Accessors(chain = true)
 @Data
 @Entity
-@EntityListeners({FreeTenantEntityListener.class, ProTenantEntityListener.class})
+@EntityListeners(TenantEntityListener.class)
 @Table(name = "selector")
 public class Selector implements TenantAwareEntity {
 

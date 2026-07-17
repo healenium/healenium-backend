@@ -20,7 +20,6 @@ import com.epam.healenium.specification.HealingSpecBuilder;
 import com.epam.healenium.treecomparing.*;
 import com.epam.healenium.util.StreamUtils;
 import com.epam.healenium.util.Utils;
-import com.epam.healenium.tenant.TenantTransactional;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +39,6 @@ import static com.epam.healenium.constants.Constants.*;
 @Service
 @RequiredArgsConstructor
 @Transactional
-@TenantTransactional
 public class HealingServiceImpl implements HealingService {
 
     private final DynamicSettings dynamicSettings;

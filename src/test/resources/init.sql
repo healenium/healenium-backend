@@ -1,1 +1,22 @@
-CREATE SCHEMA healenium
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'healenium_app') THEN
+    CREATE ROLE healenium_app LOGIN PASSWORD 'healenium_app_password';
+  END IF;
+END $$;
+
+ALTER ROLE healenium_app NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+
+CREATE SCHEMA IF NOT EXISTS healenium;
+
+GRANT USAGE ON SCHEMA healenium TO healenium_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA healenium TO healenium_app;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA healenium TO healenium_app;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA healenium
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO healenium_app;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA healenium
+  GRANT USAGE, SELECT ON SEQUENCES TO healenium_app;
+
+ALTER ROLE healenium_app SET search_path TO healenium, public;

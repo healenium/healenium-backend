@@ -1,23 +1,24 @@
 # Activated together with spring.profiles.active=pro (default) or via profile group devlocal → pro
 spring:
   datasource:
-    username: ${SPRING_POSTGRES_USER:healenihealenium_appum_app}
+    username: ${SPRING_POSTGRES_USER:healenium_app}
     password: ${SPRING_POSTGRES_PASSWORD:healenium_app_password}
   liquibase:
     user: ${SPRING_LIQUIBASE_USER:healenium_user}
     password: ${SPRING_LIQUIBASE_PASSWORD:YDk2nmNs4s9aCP6K}
     change-log: classpath:/db/changelog/changelog-pro.xml
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${COGNITO_ISSUER_URI}
 
 healenium:
+  # Pro always requires M2M (filter registered under profile pro; no enforce toggle).
+  m2m:
+    api-keys: ${M2M_API_KEYS:}
+    internal-token: ${M2M_INTERNAL_TOKEN:}
+  tenant:
+    cache-ttl: PT10M
+    cache-max-size: 10000
   ai:
-    base-url: ${HEALENIUM_AI_SERVICE:http://host.docker.internal:6565}
-    tenant-cache-ttl: PT1H
-    tenant-cache-max-size: 10000
+    # Sync / inference targets — not used for per-request tenant validation
+    base-url: ${HEALENIUM_AI_SERVICE:http://localhost:6565}
     service-key: ${HEALENIUM_AI_SERVICE_KEY:}
   membership:
     cache-ttl: PT5M

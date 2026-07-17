@@ -1,0 +1,19 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   logicalFilePath="changelog/017_membership_multi_tenant.xml"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <!-- Allow one identity (issuer + sub) to map to multiple tenants. -->
+    <changeSet author="alex" id="017-membership-multi-tenant-unique">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="membership"/>
+        </preConditions>
+        <dropUniqueConstraint tableName="membership" constraintName="membership_issuer_external_sub_key"/>
+        <addUniqueConstraint
+                tableName="membership"
+                columnNames="issuer, external_sub, tenant_id"
+                constraintName="membership_issuer_sub_tenant_key"/>
+    </changeSet>
+
+</databaseChangeLog>

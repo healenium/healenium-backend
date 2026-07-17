@@ -4,9 +4,8 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
-    <include file="changelog-main.xml" relativeToChangelogFile="true"/>
-
-    <!-- Pro-only multitenancy extensions -->
-    <include file="012_multitenancy_rls.xml" relativeToChangelogFile="true"/>
+    <!-- Pro edition entrypoint: core + full multitenancy (registry, membership, RLS). -->
+    <include file="changelog-core.xml" relativeToChangelogFile="true"/>
+    <include file="changelog-multitenancy.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

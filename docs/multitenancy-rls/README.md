@@ -1,22 +1,35 @@
-# Multi-tenancy (shared schema) with PostgreSQL RLS
+# Multi-tenancy documentation
 
-This folder contains step-by-step implementation guides to introduce multi-tenancy in **healenium-backend** using a shared schema approach (single DB, single schema) with strong isolation enforced by **PostgreSQL Row Level Security (RLS)**.
+Shared-schema multi-tenancy for **healenium-backend** (Pro) with PostgreSQL **RLS**.
 
-## Scope
-- Shared schema + `tenant_id` column in all tenant-owned tables
-- PostgreSQL RLS policies enforcing tenant isolation
-- Application-side `TenantContext` and `SET LOCAL app.tenant_id` per transaction
-- `tenant_id` propagation on inserts/updates
-- Integration tests verifying isolation
+## Start here
 
-## Non-scope
-- Admin endpoints / second datasource for super-admin. Super-admin access is expected via a DB client using a privileged DB role.
+1. **[architecture.md](./architecture.md)** — approach: Free vs Pro, planes, runtime design  
+2. **[implementation-plan.md](./implementation-plan.md)** — phased delivery plan across backend, AI, proxy, UI, infra  
 
-## Documents
-1. [01 Database schema changes (tenants + tenant_id)](./01-db-schema-tenant-id.md)
-2. [02 PostgreSQL RLS setup](./02-db-rls-policies.md)
-3. [03 Database roles & privileges](./03-db-roles-and-privileges.md)
-4. [04 Application tenant context (HTTP)](./04-app-tenant-context.md)
-5. [05 Application transaction hook: `SET LOCAL app.tenant_id`](./05-app-set-local-tenant.md)
-6. [06 Entity changes: persist `tenant_id`](./06-app-entity-tenant-id.md)
-7. [07 Integration tests](./07-tests-integration.md)
+## Detail guides
+
+| Document | What it covers |
+|----------|----------------|
+| [free-to-pro-upgrade.md](./free-to-pro-upgrade.md) | Liquibase entrypoints and Free → Pro DB upgrade |
+| [db-schema.md](./db-schema.md) | Local `tenants` registry, `tenant_id` on tables, Liquibase, default tenant |
+| [db-rls.md](./db-rls.md) | Enable/FORCE RLS, policies, Pro-only changelog |
+| [db-roles.md](./db-roles.md) | Runtime `healenium_app`, admin, Liquibase roles |
+| [app-tenant-filter.md](./app-tenant-filter.md) | `Healenium-Tenant-Id`, local ACTIVE check, skip paths, Free vs Pro |
+| [app-set-local.md](./app-set-local.md) | `SET LOCAL app.tenant_id` via `ProTenantTx` / `FreeTenantTx` |
+| [app-entities.md](./app-entities.md) | JPA `tenantId`, entity listener, `TenantEdition` |
+| [backend-contract.md](./backend-contract.md) | Caller headers, M2M, operational contract |
+| [tests.md](./tests.md) | Integration tests for isolation |
+
+## Reading order
+
+1. [architecture.md](./architecture.md)  
+2. [implementation-plan.md](./implementation-plan.md)  
+3. [backend-contract.md](./backend-contract.md) if you integrate callers  
+4. DB guides (`db-*`) then app guides (`app-*`) then [tests.md](./tests.md)
+
+## Out of scope here
+
+- Cross-tenant admin HTTP API (use privileged DB client)  
+- JWT on healenium-backend (hlm-proxy)  
+- Historical JWT-on-backend notes in `docs/tenant-membership/` (superseded)

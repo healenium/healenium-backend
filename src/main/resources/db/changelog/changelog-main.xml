@@ -4,25 +4,8 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
-	<property name="endOfDays" value="to_date('01/01/9999', 'dd/mm/yyyy')" dbms="postgresql"/>
-	<property name="currentDate" value="current_timestamp" dbms="postgresql"/>
-	<property name="countChecklist" value="0" dbms="postgresql"/>
-	<property name="systemPropertyStringDefaultValue" value="-"/>
-	<property name="defaultSchemaName" value=""/>
-
-	<include file="001_createSequence.xml" relativeToChangelogFile="true"/>
-
-	<include file="002_selector.xml" relativeToChangelogFile="true"/>
-	<include file="003_healing.xml" relativeToChangelogFile="true"/>
-	<include file="004_healingResult.xml" relativeToChangelogFile="true"/>
-	<include file="005_report.xml" relativeToChangelogFile="true"/>
-	<include file="006_command_and_healingenable_column.xml" relativeToChangelogFile="true"/>
-	<include file="007_report_version_column.xml" relativeToChangelogFile="true"/>
-	<include file="008_report_name_column.xml" relativeToChangelogFile="true"/>
-	<include file="009_vcs.xml" relativeToChangelogFile="true"/>
-	<include file="010_llm.xml" relativeToChangelogFile="true"/>
-	<include file="011_multitenancy_base.xml" relativeToChangelogFile="true"/>
-	<include file="013_membership.xml" relativeToChangelogFile="true"/>
-	<include file="014_membership_dev_seed.xml" relativeToChangelogFile="true"/>
+	<!-- Free edition entrypoint: core + tenant_id columns only (no tenants/membership/RLS). -->
+	<include file="changelog-core.xml" relativeToChangelogFile="true"/>
+	<include file="016_free_tenant_id_compat.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

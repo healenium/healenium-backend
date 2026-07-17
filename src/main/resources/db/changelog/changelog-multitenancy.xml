@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <!--
+      Pro-only multitenancy artefacts (not used by Free changelog-main).
+      Order: registry + columns → membership → RLS.
+    -->
+    <include file="011_multitenancy_base.xml" relativeToChangelogFile="true"/>
+    <include file="013_membership.xml" relativeToChangelogFile="true"/>
+    <include file="014_membership_dev_seed.xml" relativeToChangelogFile="true"/>
+    <include file="012_multitenancy_rls.xml" relativeToChangelogFile="true"/>
+    <include file="015_rls_nullif_tenant.xml" relativeToChangelogFile="true"/>
+    <include file="017_membership_multi_tenant.xml" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>
