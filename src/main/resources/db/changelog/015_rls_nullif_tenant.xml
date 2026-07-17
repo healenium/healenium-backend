@@ -1,0 +1,29 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   logicalFilePath="changelog/015_rls_nullif_tenant.xml"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <!-- Guard against empty-string app.tenant_id (invalid uuid cast) on connections without SET LOCAL. -->
+
+    <changeSet author="alex" id="015-rls-nullif-tenant">
+        <sql splitStatements="false" endDelimiter=";">
+            DO $$
+            DECLARE
+                t text;
+            BEGIN
+                FOREACH t IN ARRAY ARRAY['selector', 'healing', 'healing_result', 'report', 'vcs', 'llm']
+                LOOP
+                    EXECUTE format('DROP POLICY IF EXISTS %I ON %I', t || '_tenant_isolation', t);
+                    EXECUTE format(
+                        'CREATE POLICY %I ON %I '
+                        || 'USING (tenant_id = NULLIF(current_setting(''app.tenant_id'', true), '''')::uuid) '
+                        || 'WITH CHECK (tenant_id = NULLIF(current_setting(''app.tenant_id'', true), '''')::uuid)',
+                        t || '_tenant_isolation', t
+                    );
+                END LOOP;
+            END $$;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -9,9 +9,6 @@ spring:
   profiles:
     # pro, free
     default: pro
-    group:
-      devlocal:
-        - pro
   banner:
     location: /images/banner.txt
   servlet.multipart:
@@ -107,7 +104,7 @@ proxy:
 spring:
   config:
     activate:
-      on-profile: free
+      on-profile: pro
   datasource:
     username: ${SPRING_POSTGRES_USER:healenium_user}
     password: ${SPRING_POSTGRES_PASSWORD:YDk2nmNs4s9aCP6K}

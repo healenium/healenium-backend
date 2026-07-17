@@ -26,8 +26,8 @@ import java.util.UUID;
 @Table(
         name = "membership",
         uniqueConstraints = @UniqueConstraint(
-                name = "membership_issuer_external_sub_key",
-                columnNames = {"issuer", "external_sub"}
+                name = "membership_issuer_sub_tenant_key",
+                columnNames = {"issuer", "external_sub", "tenant_id"}
         )
 )
 public class Membership {

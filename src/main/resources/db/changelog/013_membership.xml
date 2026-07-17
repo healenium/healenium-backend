@@ -6,9 +6,14 @@
 
     <!--
         Cognito (or other issuer) subject → tenant. Not tenant-scoped: no RLS on this table.
-        MVP: one row per (issuer, external_sub) — single tenant per login.
+        After 017: UNIQUE(issuer, external_sub, tenant_id) — multi-tenant identities allowed.
     -->
     <changeSet author="alex" id="38">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="membership"/>
+            </not>
+        </preConditions>
         <createTable tableName="membership">
             <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
                 <constraints primaryKey="true" nullable="false"/>

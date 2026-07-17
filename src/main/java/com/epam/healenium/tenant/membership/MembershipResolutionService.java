@@ -41,6 +41,10 @@ public class MembershipResolutionService {
                 .toList());
     }
 
+    public void invalidate(String issuer, String externalSub) {
+        cache.invalidate(new CacheKey(issuer, externalSub));
+    }
+
     private record CacheKey(String issuer, String externalSub) {
     }
 }

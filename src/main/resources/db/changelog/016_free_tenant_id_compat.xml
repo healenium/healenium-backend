@@ -1,0 +1,152 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   logicalFilePath="changelog/016_free_tenant_id_compat.xml"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <!--
+      Free-only: tenant_id columns so shared TenantAwareEntity + ddl-auto=validate work.
+      Does NOT create tenants / membership and does NOT enable RLS.
+      If Free later upgrades to Pro, 011_multitenancy_base skips column work via preConditions.
+    -->
+    <property name="defaultTenantId" value="00000000-0000-0000-0000-000000000001"/>
+
+    <changeSet author="alex" id="016-01-selector-tenant-id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="selector" columnName="tenant_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="selector">
+            <column name="tenant_id" type="UUID"/>
+        </addColumn>
+        <update tableName="selector">
+            <column name="tenant_id" value="${defaultTenantId}"/>
+            <where>tenant_id IS NULL</where>
+        </update>
+        <addNotNullConstraint tableName="selector" columnName="tenant_id" columnDataType="UUID"/>
+        <createIndex tableName="selector" indexName="selector_tenant_id_idx">
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="alex" id="016-02-healing-tenant-id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="healing" columnName="tenant_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="healing">
+            <column name="tenant_id" type="UUID"/>
+        </addColumn>
+        <update tableName="healing">
+            <column name="tenant_id" value="${defaultTenantId}"/>
+            <where>tenant_id IS NULL</where>
+        </update>
+        <addNotNullConstraint tableName="healing" columnName="tenant_id" columnDataType="UUID"/>
+        <createIndex tableName="healing" indexName="healing_tenant_id_idx">
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="alex" id="016-03-healing-result-tenant-id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="healing_result" columnName="tenant_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="healing_result">
+            <column name="tenant_id" type="UUID"/>
+        </addColumn>
+        <update tableName="healing_result">
+            <column name="tenant_id" value="${defaultTenantId}"/>
+            <where>tenant_id IS NULL</where>
+        </update>
+        <addNotNullConstraint tableName="healing_result" columnName="tenant_id" columnDataType="UUID"/>
+        <createIndex tableName="healing_result" indexName="healing_result_tenant_id_idx">
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="alex" id="016-04-report-tenant-id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="report" columnName="tenant_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="report">
+            <column name="tenant_id" type="UUID"/>
+        </addColumn>
+        <update tableName="report">
+            <column name="tenant_id" value="${defaultTenantId}"/>
+            <where>tenant_id IS NULL</where>
+        </update>
+        <addNotNullConstraint tableName="report" columnName="tenant_id" columnDataType="UUID"/>
+        <createIndex tableName="report" indexName="report_tenant_id_idx">
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="alex" id="016-05-vcs-tenant-id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="vcs" columnName="tenant_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="vcs">
+            <column name="tenant_id" type="UUID"/>
+        </addColumn>
+        <update tableName="vcs">
+            <column name="tenant_id" value="${defaultTenantId}"/>
+            <where>tenant_id IS NULL</where>
+        </update>
+        <addNotNullConstraint tableName="vcs" columnName="tenant_id" columnDataType="UUID"/>
+        <createIndex tableName="vcs" indexName="vcs_tenant_id_idx">
+            <column name="tenant_id"/>
+        </createIndex>
+        <sql splitStatements="false" endDelimiter=";">
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM pg_constraint
+                    WHERE conname = 'unique_vcs_name' OR conname = 'UNIQUE_VCS_NAME'
+                ) THEN
+                    EXECUTE 'ALTER TABLE ' || quote_ident(current_schema()) || '.vcs DROP CONSTRAINT IF EXISTS "UNIQUE_VCS_NAME"';
+                END IF;
+            END $$;
+        </sql>
+        <addUniqueConstraint tableName="vcs" columnNames="tenant_id,NAME" constraintName="UNIQUE_VCS_TENANT_NAME"/>
+    </changeSet>
+
+    <changeSet author="alex" id="016-06-llm-tenant-id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="llm" columnName="tenant_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="llm">
+            <column name="tenant_id" type="UUID"/>
+        </addColumn>
+        <update tableName="llm">
+            <column name="tenant_id" value="${defaultTenantId}"/>
+            <where>tenant_id IS NULL</where>
+        </update>
+        <addNotNullConstraint tableName="llm" columnName="tenant_id" columnDataType="UUID"/>
+        <createIndex tableName="llm" indexName="llm_tenant_id_idx">
+            <column name="tenant_id"/>
+        </createIndex>
+        <sql splitStatements="false" endDelimiter=";">
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM pg_constraint
+                    WHERE conname = 'unique_llm_name' OR conname = 'UNIQUE_LLM_NAME'
+                ) THEN
+                    EXECUTE 'ALTER TABLE ' || quote_ident(current_schema()) || '.llm DROP CONSTRAINT IF EXISTS "UNIQUE_LLM_NAME"';
+                END IF;
+            END $$;
+        </sql>
+        <addUniqueConstraint tableName="llm" columnNames="tenant_id,NAME" constraintName="UNIQUE_LLM_TENANT_NAME"/>
+    </changeSet>
+
+</databaseChangeLog>

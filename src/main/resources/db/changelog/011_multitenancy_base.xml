@@ -11,6 +11,11 @@
     <property name="defaultTenantId" value="00000000-0000-0000-0000-000000000001"/>
 
     <changeSet author="alex" id="24">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="tenants"/>
+            </not>
+        </preConditions>
         <createTable tableName="tenants">
             <column name="id" type="UUID">
                 <constraints primaryKey="true" nullable="false"/>
@@ -43,6 +48,11 @@
     <!-- Add tenant_id to existing tenant-owned tables -->
 
     <changeSet author="alex" id="26">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="selector" columnName="tenant_id"/>
+            </not>
+        </preConditions>
         <addColumn tableName="selector">
             <column name="tenant_id" type="UUID"/>
         </addColumn>
@@ -57,6 +67,11 @@
     </changeSet>
 
     <changeSet author="codemie" id="011-04-healing-tenant-id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="healing" columnName="tenant_id"/>
+            </not>
+        </preConditions>
         <addColumn tableName="healing">
             <column name="tenant_id" type="UUID"/>
         </addColumn>
@@ -71,6 +86,11 @@
     </changeSet>
 
     <changeSet author="codemie" id="011-05-healing-result-tenant-id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="healing_result" columnName="tenant_id"/>
+            </not>
+        </preConditions>
         <addColumn tableName="healing_result">
             <column name="tenant_id" type="UUID"/>
         </addColumn>
@@ -85,6 +105,11 @@
     </changeSet>
 
     <changeSet author="codemie" id="011-06-report-tenant-id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="report" columnName="tenant_id"/>
+            </not>
+        </preConditions>
         <addColumn tableName="report">
             <column name="tenant_id" type="UUID"/>
         </addColumn>
@@ -99,6 +124,11 @@
     </changeSet>
 
     <changeSet author="codemie" id="011-07-vcs-tenant-id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="vcs" columnName="tenant_id"/>
+            </not>
+        </preConditions>
         <addColumn tableName="vcs">
             <column name="tenant_id" type="UUID"/>
         </addColumn>
@@ -129,6 +159,11 @@
     </changeSet>
 
     <changeSet author="codemie" id="011-08-llm-tenant-id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="llm" columnName="tenant_id"/>
+            </not>
+        </preConditions>
         <addColumn tableName="llm">
             <column name="tenant_id" type="UUID"/>
         </addColumn>

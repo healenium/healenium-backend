@@ -186,18 +186,6 @@ public class HealingController {
         });
     }
 
-    @GetMapping("/migrate")
-    public ModelAndView migrate() {
-        return tenantTx.required(() -> {
-            log.debug("[Migrate Selectors]");
-            selectorService.migrate();
-            ModelAndView modelAndView = new ModelAndView();
-            modelAndView.setViewName("index");
-            modelAndView.addObject("message", "The migration of selectors was successful.");
-            return modelAndView;
-        });
-    }
-
     @PostMapping("/selector/save/path")
     public void saveSelectorFilePath(@Valid @RequestBody RecordDto dto) {
         tenantTx.required(() -> {
