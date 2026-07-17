@@ -26,6 +26,8 @@ spring:
     open-in-view: false
 
   datasource:
+    username: ${SPRING_POSTGRES_USER:healenium_user}
+    password: ${SPRING_POSTGRES_PASSWORD:YDk2nmNs4s9aCP6K}
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${SPRING_POSTGRES_DB_HOST:localhost}:${SPRING_POSTGRES_DB_PORT:5432}/${SPRING_POSTGRES_DB:healenium}?currentSchema=${SPRING_POSTGRES_SCHEMA:healenium}
     type: com.zaxxer.hikari.HikariDataSource
@@ -47,6 +49,7 @@ spring:
     jmx:
       enabled: false
   liquibase:
+    change-log: classpath:/db/changelog/changelog-main.xml
     enabled: true
     default-schema: ${SPRING_POSTGRES_SCHEMA:healenium}
 
@@ -99,14 +102,3 @@ logging:
 proxy:
   service:
     url: ${PROXY_SERVICE_URL:http://localhost:8085}
-
----
-spring:
-  config:
-    activate:
-      on-profile: pro
-  datasource:
-    username: ${SPRING_POSTGRES_USER:healenium_user}
-    password: ${SPRING_POSTGRES_PASSWORD:YDk2nmNs4s9aCP6K}
-  liquibase:
-    change-log: classpath:/db/changelog/changelog-main.xml
