@@ -8,7 +8,6 @@ import com.epam.healenium.model.dto.ReferenceElementsDto;
 import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorCandidate;
 import com.epam.healenium.service.SelectorCandidateService;
-import com.epam.healenium.tenant.TenantTransactional;
 import com.epam.healenium.treecomparing.HeuristicNodeDistance;
 import com.epam.healenium.treecomparing.JsoupHTMLParser;
 import com.epam.healenium.treecomparing.LCSPathDistance;
@@ -18,7 +17,6 @@ import com.epam.healenium.treecomparing.PathFinder;
 import com.epam.healenium.treecomparing.Scored;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.openqa.selenium.By;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +37,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
-@TenantTransactional
 public class SelectorCandidateServiceImpl implements SelectorCandidateService {
     private final DynamicSettings dynamicSettings;
 
