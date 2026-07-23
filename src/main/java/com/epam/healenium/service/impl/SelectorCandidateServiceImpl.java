@@ -2,11 +2,13 @@ package com.epam.healenium.service.impl;
 
 import com.epam.healenium.config.DynamicSettings;
 import com.epam.healenium.elementcreators.SelectorComponent;
+import com.epam.healenium.model.Locator;
 import com.epam.healenium.model.dto.ElementCandidate;
 import com.epam.healenium.model.dto.HealingCandidateMetaData;
 import com.epam.healenium.model.dto.ReferenceElementsDto;
 import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorCandidate;
+import com.epam.healenium.rest.AiComponentClient;
 import com.epam.healenium.service.SelectorCandidateService;
 import com.epam.healenium.treecomparing.HeuristicNodeDistance;
 import com.epam.healenium.treecomparing.JsoupHTMLParser;
@@ -19,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -39,8 +42,10 @@ import java.util.stream.Collectors;
 @Transactional
 public class SelectorCandidateServiceImpl implements SelectorCandidateService {
     private final DynamicSettings dynamicSettings;
+    private final AiComponentClient aiComponentClient;
 
     public static final String PLAYWRIGHT_LOCATOR_TYPE = "locator";
+    private static final String XPATH_SELECTOR_TYPE = "xpath";
 
     private final List<Set<SelectorComponent>> selectorDetailLevels = Collections.unmodifiableList(TEMP);
 
@@ -119,33 +124,41 @@ public class SelectorCandidateServiceImpl implements SelectorCandidateService {
     }
 
     protected ElementCandidate toElementCandidate(Scored<Node> node, ReferenceElementsDto ref, String locatorType) {
-        List<com.epam.healenium.model.Locator> locators = new ArrayList<>();
-        if (dynamicSettings.getSelectorType().equals("xpath")) {
-            // todo get candidate by xpath from AI service
-        }
-        for (Set<SelectorComponent> detailLevel : selectorDetailLevels) {
-            locators.add(construct(node.getValue(), detailLevel, locatorType));
+        List<Locator> locators;
+        if (XPATH_SELECTOR_TYPE.equals(dynamicSettings.getSelectorType())) {
+            locators = aiComponentClient.generateXPath(node.getValue())
+                    .filter(StringUtils::hasText)
+                    .map(xpath -> List.of(new Locator(xpath, XPATH_SELECTOR_TYPE)))
+                    .orElseGet(List::of);
+        } else {
+            locators = new ArrayList<>();
+            for (Set<SelectorComponent> detailLevel : selectorDetailLevels) {
+                locators.add(construct(node.getValue(), detailLevel, locatorType));
+            }
         }
         log.debug("[Get Selector Candidates] raw candidates before filter: {}", locators);
+        List<Locator> unsuccessful = ref.getUnsuccessfulLocators() != null
+                ? ref.getUnsuccessfulLocators()
+                : List.of();
         @SuppressWarnings("java:S6204")
-        List<com.epam.healenium.model.Locator> filtered = locators.stream()
-                .filter(locator -> !ref.getUnsuccessfulLocators().contains(locator))
+        List<Locator> filtered = locators.stream()
+                .filter(locator -> !unsuccessful.contains(locator))
                 .collect(Collectors.toList());
 
         log.debug("[Get Selector Candidates] raw candidates after filter: {}", filtered);
         return new ElementCandidate().setNodeScored(node).setLocators(filtered);
     }
 
-    protected com.epam.healenium.model.Locator construct(Node node, Set<SelectorComponent> detailLevel, String locatorType) {
+    protected Locator construct(Node node, Set<SelectorComponent> detailLevel, String locatorType) {
         StringBuilder selectorBuilder = new StringBuilder();
 
         for (SelectorComponent component : detailLevel) {
             selectorBuilder.append(component.createComponent(node));
         }
         if (PLAYWRIGHT_LOCATOR_TYPE.equals(locatorType)) {
-            return new com.epam.healenium.model.Locator(selectorBuilder.toString(), PLAYWRIGHT_LOCATOR_TYPE);
+            return new Locator(selectorBuilder.toString(), PLAYWRIGHT_LOCATOR_TYPE);
         } else {
-            return new com.epam.healenium.model.Locator(selectorBuilder.toString(), "By.cssSelector");
+            return new Locator(selectorBuilder.toString(), "By.cssSelector");
         }
 
     }

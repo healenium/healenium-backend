@@ -8,7 +8,7 @@ server:
 spring:
   profiles:
     # pro, free
-    default: pro
+    default: ${PROFILE:free}
   banner:
     location: /images/banner.txt
   servlet.multipart:
