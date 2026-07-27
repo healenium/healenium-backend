@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '4.0.4'
+    id 'org.springframework.boot' version '4.1.0'
     id 'io.spring.dependency-management' version "1.1.7"
     id 'java'
     id 'maven-publish'
@@ -7,7 +7,7 @@ plugins {
 }
 
 group 'com.epam.healenium'
-version '3.5.4'
+version '4.0.0'
 
 
 repositories {
@@ -38,7 +38,7 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-aspectj'
     implementation 'org.springframework.boot:spring-boot-starter-liquibase'
-    implementation 'org.postgresql:postgresql:42.7.7'
+    implementation 'org.postgresql:postgresql:42.7.13'
     implementation 'com.zaxxer:HikariCP:3.3.1'
     implementation 'com.vladmihalcea:hibernate-types-52:2.7.0'
     implementation 'javax.validation:validation-api:2.0.1.Final'
@@ -52,6 +52,10 @@ dependencies {
     implementation group: 'io.netty', name: 'netty-handler', version: '4.1.125.Final'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.16'
     implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.5.16'
+    implementation("io.netty:netty-codec-http:4.2.16.Final")
+    implementation("io.netty:netty-codec-compression:4.2.16.Final")
+    implementation("io.netty:netty-handler:4.2.16.Final")
+    implementation("io.netty:netty-codec-http3:4.2.16.Final")
 
 
 
@@ -73,7 +77,6 @@ dependencies {
 }
 
 test {
-    useJUnitPlatform()
     finalizedBy jacocoTestReport
 }
 
