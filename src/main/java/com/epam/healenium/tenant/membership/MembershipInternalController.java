@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +33,7 @@ public class MembershipInternalController {
 
     private final MembershipResolutionService membershipResolutionService;
     private final MembershipService membershipService;
+    private final UserProvisioningService userProvisioningService;
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> resolve(@RequestParam @NotBlank String issuer,
@@ -64,6 +66,18 @@ public class MembershipInternalController {
                                        @RequestParam @NotNull UUID tenantId) {
         boolean removed = membershipService.delete(issuer, sub, tenantId);
         return removed ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    /**
+     * Idempotent user provisioning: creates a tenant + membership on first call,
+     * returns the existing tenant on subsequent calls.
+     * Called by hlm-proxy/MeController when /me returns empty tenants.
+     */
+    @PostMapping("/provision")
+    public ResponseEntity<Map<String, String>> provision(@RequestParam @NotBlank String issuer,
+                                                         @RequestParam @NotBlank String sub) {
+        UUID tenantId = userProvisioningService.provisionIfNeeded(issuer.trim(), sub.trim());
+        return ResponseEntity.ok(Map.of("tenantId", tenantId.toString()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
