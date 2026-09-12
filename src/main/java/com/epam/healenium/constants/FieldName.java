@@ -9,5 +9,7 @@ public class FieldName {
     public static final String CLASSES = "classes";
     public static final String CLASS = "class";
     public static final String OTHER = "other";
+    /** Parent node in the ancestor chain (serialized without children to avoid cycles). */
+    public static final String PARENT = "parent";
 
 }

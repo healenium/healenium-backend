@@ -98,6 +98,12 @@ logging:
       max-history: 10
       total-size-cap: 100MB
 
+# Healenium healing settings (env aliases used by docker-compose)
+healenium:
+  selector-type: ${SELECTOR_TYPE:cssSelector}
+  score-cap: ${SCORE_CAP:.6}
+  recovery-tries: ${RECOVERY_TRIES:1}
+
 # Proxy service configuration
 proxy:
   service:
