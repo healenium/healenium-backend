@@ -8,5 +8,5 @@ import java.util.UUID;
 @Profile("pro")
 public interface TenantRepository extends JpaRepository<Tenant, UUID> {
 
-    boolean existsByIdAndStatus(UUID id, String status);
+    boolean existsById(UUID id);
 }

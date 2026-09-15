@@ -14,5 +14,7 @@
     <include file="012_multitenancy_rls.xml" relativeToChangelogFile="true"/>
     <include file="015_rls_nullif_tenant.xml" relativeToChangelogFile="true"/>
     <include file="017_membership_multi_tenant.xml" relativeToChangelogFile="true"/>
+    <include file="018_api_keys.xml" relativeToChangelogFile="true"/>
+    <include file="019_subscription.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

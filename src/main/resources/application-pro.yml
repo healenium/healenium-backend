@@ -23,3 +23,6 @@ healenium:
   membership:
     cache-ttl: PT5M
     cache-max-size: 10000
+  apikey:
+    cache-ttl: PT10M
+    cache-max-size: 10000

@@ -3,6 +3,7 @@ package com.epam.healenium.service.impl;
 import com.epam.healenium.config.DynamicSettings;
 import com.epam.healenium.elementcreators.SelectorComponent;
 import com.epam.healenium.model.Locator;
+import com.epam.healenium.tenant.TenantContext;
 import com.epam.healenium.model.dto.ElementCandidate;
 import com.epam.healenium.model.dto.HealingCandidateMetaData;
 import com.epam.healenium.model.dto.ReferenceElementsDto;
@@ -125,7 +126,7 @@ public class SelectorCandidateServiceImpl implements SelectorCandidateService {
 
     protected ElementCandidate toElementCandidate(Scored<Node> node, ReferenceElementsDto ref, String locatorType) {
         List<Locator> locators;
-        if (XPATH_SELECTOR_TYPE.equals(dynamicSettings.getSelectorType())) {
+        if (XPATH_SELECTOR_TYPE.equals(dynamicSettings.getSelectorType()) && !TenantContext.isReadOnly()) {
             locators = aiComponentClient.generateXPath(node.getValue())
                     .filter(StringUtils::hasText)
                     .map(xpath -> List.of(new Locator(xpath, XPATH_SELECTOR_TYPE)))
