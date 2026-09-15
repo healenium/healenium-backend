@@ -1,5 +1,6 @@
 package com.epam.healenium.tenant.membership;
 
+import com.epam.healenium.tenant.apikey.ApiKeyService;
 import com.epam.healenium.tenant.registry.Tenant;
 import com.epam.healenium.tenant.registry.TenantRepository;
 import com.epam.healenium.tenant.registry.TenantStatuses;
@@ -25,6 +26,7 @@ public class UserProvisioningService {
     private final MembershipResolutionService membershipResolutionService;
     private final MembershipRepository membershipRepository;
     private final TenantRepository tenantRepository;
+    private final ApiKeyService apiKeyService;
 
     /**
      * Returns the first tenant for the user, creating one if none exists.
@@ -43,7 +45,7 @@ public class UserProvisioningService {
         Tenant tenant = new Tenant();
         tenant.setId(tenantId);
         tenant.setName(tenantName);
-        tenant.setStatus(TenantStatuses.ACTIVE);
+        tenant.setStatus(TenantStatuses.TRIAL);
         tenantRepository.save(tenant);
 
         Membership membership = new Membership();
@@ -53,6 +55,8 @@ public class UserProvisioningService {
         membershipRepository.save(membership);
 
         membershipResolutionService.invalidate(issuer, sub);
+
+        apiKeyService.create(tenantId, "default");
 
         log.info("Auto-provisioned tenant {} ({}) for sub={}", tenantId, tenantName, sub);
         return tenantId;

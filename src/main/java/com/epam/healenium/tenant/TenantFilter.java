@@ -59,19 +59,22 @@ public class TenantFilter extends OncePerRequestFilter {
         }
 
         if (!tenantValidationService.isTenantAllowed(tenantId)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Tenant is not active or does not exist");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Tenant does not exist");
             return;
         }
 
-        continueWithTenant(request, response, filterChain, tenantId);
+        boolean readOnly = tenantValidationService.isReadOnly(tenantId);
+        continueWithTenant(request, response, filterChain, tenantId, readOnly);
     }
 
     private static void continueWithTenant(HttpServletRequest request,
                                            HttpServletResponse response,
                                            FilterChain filterChain,
-                                           UUID tenantId) throws ServletException, IOException {
+                                           UUID tenantId,
+                                           boolean readOnly) throws ServletException, IOException {
         try {
             TenantContext.setTenantId(tenantId);
+            TenantContext.setReadOnly(readOnly);
             MDC.put("tenant_id", tenantId.toString());
             filterChain.doFilter(request, response);
         } finally {

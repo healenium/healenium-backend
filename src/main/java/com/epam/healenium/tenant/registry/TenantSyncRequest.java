@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Getter
@@ -19,4 +20,7 @@ public class TenantSyncRequest {
 
     @NotBlank
     private String status;
+
+    /** Optional — set by hlm-ai on Trial provisioning, Pro upgrade, and renewal. */
+    private OffsetDateTime subscriptionExpiresAt;
 }

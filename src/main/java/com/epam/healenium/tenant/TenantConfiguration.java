@@ -8,14 +8,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Registers Pro tenant and M2M filters.
+ * Registers Pro tenant filters and MVC interceptors.
  */
 @Configuration
 @Profile("pro")
 @EnableConfigurationProperties(M2mAuthProperties.class)
-public class TenantConfiguration {
+public class TenantConfiguration implements WebMvcConfigurer {
 
     @Bean
     public FilterRegistrationBean<M2mAuthFilter> m2mAuthFilterRegistration(M2mAuthProperties properties) {
@@ -34,5 +36,17 @@ public class TenantConfiguration {
         bean.setOrder(Ordered.LOWEST_PRECEDENCE - 10);
         bean.addUrlPatterns("/*");
         return bean;
+    }
+
+    @Bean
+    public TrialReadOnlyInterceptor trialReadOnlyInterceptor() {
+        return new TrialReadOnlyInterceptor();
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(trialReadOnlyInterceptor())
+                .addPathPatterns("/healenium/**")
+                .excludePathPatterns("/internal/**", "/actuator/**");
     }
 }
