@@ -10,6 +10,14 @@ import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.ser.std.StdSerializer;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
+
+/**
+ * Serializes a {@link Node} including its ancestor chain via nested {@code parent} objects.
+ * Children are intentionally omitted to avoid cycles and oversized payloads.
+ */
 public class NodeSerializer extends StdSerializer<Node> {
 
     public NodeSerializer() {
@@ -27,6 +35,12 @@ public class NodeSerializer extends StdSerializer<Node> {
 
     @Override
     public void serialize(Node value, JsonGenerator gen, SerializationContext serializers) throws JacksonException {
+        Set<Node> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        visited.add(value);
+        serializeNode(value, gen, visited);
+    }
+
+    private void serializeNode(Node value, JsonGenerator gen, Set<Node> visited) throws JacksonException {
         gen.writeStartObject();
         gen.writeStringProperty(FieldName.TAG, value.getTag());
         Integer index = value.getIndex();
@@ -39,6 +53,13 @@ public class NodeSerializer extends StdSerializer<Node> {
         gen.writeStringProperty(FieldName.ID, value.getId());
         gen.writeStringProperty(FieldName.CLASSES, String.join(" ", value.getClasses()));
         gen.writePOJOProperty(FieldName.OTHER, value.getOtherAttributes());
+
+        Node parent = value.getParent();
+        if (parent != null && visited.add(parent)) {
+            gen.writeName(FieldName.PARENT);
+            serializeNode(parent, gen, visited);
+        }
+
         gen.writeEndObject();
         gen.flush();
     }
