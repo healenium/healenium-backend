@@ -4,8 +4,10 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
-	<!-- Free edition entrypoint: core + tenant_id columns only (no tenants/membership/RLS). -->
+	<!-- Healenium backend unified changelog: core tables + tenant_id columns + PostgreSQL RLS -->
 	<include file="changelog-core.xml" relativeToChangelogFile="true"/>
-	<include file="016_free_tenant_id_compat.xml" relativeToChangelogFile="true"/>
+	<include file="011_multitenancy_base.xml" relativeToChangelogFile="true"/>
+	<include file="012_multitenancy_rls.xml" relativeToChangelogFile="true"/>
+	<include file="015_rls_nullif_tenant.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

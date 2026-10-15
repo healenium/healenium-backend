@@ -6,9 +6,6 @@ server:
   forward-headers-strategy: framework
 
 spring:
-  profiles:
-    # pro, free
-    default: ${PROFILE:free}
   banner:
     location: /images/banner.txt
   servlet.multipart:
@@ -26,8 +23,8 @@ spring:
     open-in-view: false
 
   datasource:
-    username: ${SPRING_POSTGRES_USER:healenium_user}
-    password: ${SPRING_POSTGRES_PASSWORD:YDk2nmNs4s9aCP6K}
+    username: ${SPRING_POSTGRES_USER:healenium_app}
+    password: ${SPRING_POSTGRES_PASSWORD:healenium_app_password}
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${SPRING_POSTGRES_DB_HOST:localhost}:${SPRING_POSTGRES_DB_PORT:5432}/${SPRING_POSTGRES_DB:healenium}?currentSchema=${SPRING_POSTGRES_SCHEMA:healenium}
     type: com.zaxxer.hikari.HikariDataSource
@@ -52,6 +49,8 @@ spring:
     change-log: classpath:/db/changelog/changelog-main.xml
     enabled: true
     default-schema: ${SPRING_POSTGRES_SCHEMA:healenium}
+    user: ${SPRING_LIQUIBASE_USER:healenium_user}
+    password: ${SPRING_LIQUIBASE_PASSWORD:YDk2nmNs4s9aCP6K}
 
 app:
   host: ${SPRING_HOST_NAME:localhost}
@@ -103,6 +102,10 @@ healenium:
   selector-type: ${SELECTOR_TYPE:cssSelector}
   score-cap: ${SCORE_CAP:.6}
   recovery-tries: ${RECOVERY_TRIES:1}
+  ai:
+    # Sync / inference targets — not used for per-request tenant validation
+    base-url: ${HEALENIUM_AI_SERVICE:http://localhost:6565}
+    service-key: ${HEALENIUM_AI_SERVICE_KEY:}
 
 # Proxy service configuration
 proxy:
