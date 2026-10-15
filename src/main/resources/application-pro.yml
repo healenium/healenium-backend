@@ -9,16 +9,7 @@ spring:
     change-log: classpath:/db/changelog/changelog-pro.xml
 
 healenium:
-  tenant:
-    cache-ttl: PT10M
-    cache-max-size: 10000
   ai:
     # Sync / inference targets — not used for per-request tenant validation
     base-url: ${HEALENIUM_AI_SERVICE:http://localhost:6565}
     service-key: ${HEALENIUM_AI_SERVICE_KEY:}
-  membership:
-    cache-ttl: PT5M
-    cache-max-size: 10000
-  apikey:
-    cache-ttl: PT10M
-    cache-max-size: 10000

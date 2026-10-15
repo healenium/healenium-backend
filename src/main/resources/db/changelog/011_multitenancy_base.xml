@@ -10,41 +10,6 @@
     -->
     <property name="defaultTenantId" value="00000000-0000-0000-0000-000000000001"/>
 
-    <changeSet author="alex" id="24">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <tableExists tableName="tenants"/>
-            </not>
-        </preConditions>
-        <createTable tableName="tenants">
-            <column name="id" type="UUID">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="name" type="VARCHAR(256)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="status" type="VARCHAR(32)" defaultValue="ACTIVE">
-                <constraints nullable="false"/>
-            </column>
-            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="current_timestamp">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
-
-    <changeSet author="alex" id="25">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <sqlCheck expectedResult="1">SELECT COUNT(*) FROM tenants WHERE id = '${defaultTenantId}'</sqlCheck>
-            </not>
-        </preConditions>
-        <insert tableName="tenants">
-            <column name="id" value="${defaultTenantId}"/>
-            <column name="name" value="Default"/>
-            <column name="status" value="ACTIVE"/>
-        </insert>
-    </changeSet>
-
     <!-- Add tenant_id to existing tenant-owned tables -->
 
     <changeSet author="alex" id="26">
