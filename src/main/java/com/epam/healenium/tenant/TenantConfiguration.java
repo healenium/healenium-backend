@@ -3,16 +3,14 @@ package com.epam.healenium.tenant;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Registers Pro tenant filters and MVC interceptors.
+ * Registers tenant filter and MVC interceptors.
  */
 @Configuration
-@Profile("pro")
 public class TenantConfiguration implements WebMvcConfigurer {
 
     @Bean
