@@ -16,10 +16,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class TenantConfiguration implements WebMvcConfigurer {
 
     @Bean
-    public FilterRegistrationBean<TenantFilter> tenantFilterRegistration(
-            TenantValidationService tenantValidationService) {
+    public FilterRegistrationBean<TenantFilter> tenantFilterRegistration() {
         FilterRegistrationBean<TenantFilter> bean = new FilterRegistrationBean<>();
-        bean.setFilter(new TenantFilter(tenantValidationService));
+        bean.setFilter(new TenantFilter());
         bean.setOrder(Ordered.LOWEST_PRECEDENCE - 10);
         bean.addUrlPatterns("/*");
         return bean;
