@@ -9,10 +9,6 @@ spring:
     change-log: classpath:/db/changelog/changelog-pro.xml
 
 healenium:
-  # Pro always requires M2M (filter registered under profile pro; no enforce toggle).
-  m2m:
-    api-keys: ${M2M_API_KEYS:}
-    internal-token: ${M2M_INTERNAL_TOKEN:}
   tenant:
     cache-ttl: PT10M
     cache-max-size: 10000
