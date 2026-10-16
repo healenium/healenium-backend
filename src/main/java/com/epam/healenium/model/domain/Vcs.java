@@ -32,6 +32,15 @@ public class Vcs implements TenantAwareEntity {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "provider", nullable = false, length = 50)
+    private String provider = "github";
+
+    @Column(name = "base_url", length = 512)
+    private String baseUrl;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
     @Column(name = "access_token")
     private String accessToken;
 

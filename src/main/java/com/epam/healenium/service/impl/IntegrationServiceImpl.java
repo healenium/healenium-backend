@@ -26,36 +26,55 @@ import java.util.UUID;
 @Transactional
 public class IntegrationServiceImpl implements IntegrationService {
 
+    public static final String GITHUB = "github";
     private final VcsRepository vcsRepository;
     private final LlmRepository llmRepository;
 
     @Override
-    public void saveOrUpdateVcs(VcsDto vcsDto) {
+    public @NotNull List<VcsDto> saveOrUpdateVcs(VcsDto vcsDto) {
         if (!isVcsDtoValid(vcsDto)) {
             log.warn("[SETTINGS] Invalid VCS DTO provided, skipping save operation");
-            return;
+            return getAllVcs();
         }
 
-        Optional<Vcs> existingVcs = vcsRepository.findAll().stream().findFirst();
-        
+        Optional<Vcs> existingVcs = findVcsForSave(vcsDto);
+        String provider = resolveProvider(vcsDto, existingVcs);
+        String baseUrl = resolveBaseUrl(vcsDto, existingVcs);
+        VcsDto.validateProviderAndBaseUrl(provider, baseUrl);
+
+        deactivateAllVcs();
         if (existingVcs.isPresent()) {
             updateExistingVcs(existingVcs.get(), vcsDto);
         } else {
-            createNewVcs(vcsDto);
+            createNewVcs(vcsDto, provider, baseUrl);
         }
+
+        return getAllVcs();
     }
 
     private boolean isVcsDtoValid(VcsDto vcsDto) {
         return vcsDto != null && (
-                vcsDto.getRepository() != null || 
-                vcsDto.getAccessToken() != null || 
-                vcsDto.getBranch() != null
+                vcsDto.getRepository() != null ||
+                vcsDto.getAccessToken() != null ||
+                vcsDto.getBranch() != null ||
+                vcsDto.getName() != null ||
+                vcsDto.getProvider() != null ||
+                vcsDto.getBaseUrl() != null
         );
+    }
+
+    private Optional<Vcs> findVcsForSave(VcsDto vcsDto) {
+        if (StringUtils.isNotBlank(vcsDto.getName())) {
+            return vcsRepository.findAll().stream()
+                    .filter(vcs -> vcsDto.getName().equals(vcs.getName()))
+                    .findFirst();
+        }
+        return findActiveVcs().or(() -> vcsRepository.findAll().stream().findFirst());
     }
 
     private void updateExistingVcs(Vcs existingVcs, VcsDto vcsDto) {
         log.info("[SETTINGS] Updating existing VCS configuration");
-        
+
         if (vcsDto.getAccessToken() != null) {
             existingVcs.setAccessToken(vcsDto.getAccessToken());
         }
@@ -65,21 +84,48 @@ public class IntegrationServiceImpl implements IntegrationService {
         if (vcsDto.getBranch() != null) {
             existingVcs.setBranch(vcsDto.getBranch());
         }
-        
+        if (StringUtils.isNotBlank(vcsDto.getProvider())) {
+            existingVcs.setProvider(vcsDto.getProvider());
+        } else if (StringUtils.isBlank(existingVcs.getProvider())) {
+            existingVcs.setProvider(GITHUB);
+        }
+        if (vcsDto.getBaseUrl() != null) {
+            existingVcs.setBaseUrl(StringUtils.trimToNull(vcsDto.getBaseUrl()));
+        }
+        existingVcs.setActive(true);
+
         vcsRepository.save(existingVcs);
     }
 
-    private void createNewVcs(VcsDto vcsDto) {
+    private void createNewVcs(VcsDto vcsDto, String provider, String baseUrl) {
         log.info("[SETTINGS] Creating new VCS configuration");
-        
+
+        String name = StringUtils.isNotBlank(vcsDto.getName()) ? vcsDto.getName() : "github";
         Vcs newVcs = new Vcs()
                 .setUid(generateUid())
-                .setName("github")
+                .setName(name)
+                .setProvider(provider)
+                .setBaseUrl(baseUrl)
+                .setActive(true)
                 .setRepository(vcsDto.getRepository())
                 .setBranch(vcsDto.getBranch())
                 .setAccessToken(vcsDto.getAccessToken());
-                
+
         vcsRepository.save(newVcs);
+    }
+
+    private String resolveProvider(VcsDto vcsDto, Optional<Vcs> existingVcs) {
+        if (StringUtils.isNotBlank(vcsDto.getProvider())) {
+            return vcsDto.getProvider();
+        }
+        return existingVcs.map(Vcs::getProvider).filter(StringUtils::isNotBlank).orElse("github");
+    }
+
+    private String resolveBaseUrl(VcsDto vcsDto, Optional<Vcs> existingVcs) {
+        if (vcsDto.getBaseUrl() != null) {
+            return StringUtils.trimToNull(vcsDto.getBaseUrl());
+        }
+        return existingVcs.map(Vcs::getBaseUrl).orElse(null);
     }
 
     @Override
@@ -143,7 +189,7 @@ public class IntegrationServiceImpl implements IntegrationService {
 
     @Override
     public IntegrationFormDto getSettings(String platform) {
-        Optional<Vcs> vcsOptional = vcsRepository.findAll().stream().findFirst();
+        Optional<Vcs> vcsOptional = findActiveVcs();
         Optional<Llm> llmOptional = llmRepository.findAll().stream().findFirst();
 
         IntegrationFormDto integrationFormDto = new IntegrationFormDto();
@@ -160,23 +206,79 @@ public class IntegrationServiceImpl implements IntegrationService {
 
     @Override
     public VcsDto getVcs(String platform) {
-        Optional<Vcs> vcsOptional = vcsRepository.findAll().stream().findFirst();
+        return findActiveVcs()
+                .map(vcs -> toVcsDto(vcs, platform))
+                .orElse(new VcsDto());
+    }
 
-        VcsDto vcsDto = new VcsDto();
-        vcsOptional.ifPresent(vcs -> {
-            vcsDto.setAccessToken(getPlatformValue(platform, vcs.getAccessToken()));
-            vcsDto.setRepository(vcs.getRepository());
-            vcsDto.setBranch(vcs.getBranch());
-        });
-        return vcsDto;
+    @Override
+    public @NotNull List<VcsDto> getVcsAll() {
+        return getAllVcs();
+    }
+
+    @Override
+    public @NotNull List<VcsDto> activateVcs(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            log.warn("[SETTINGS] Invalid VCS ID provided for activation");
+            return getAllVcs();
+        }
+
+        Optional<Vcs> vcsOptional = vcsRepository.findById(id);
+        if (vcsOptional.isPresent()) {
+            deactivateAllVcs();
+            Vcs vcs = vcsOptional.get();
+            vcs.setActive(true);
+            vcsRepository.save(vcs);
+        } else {
+            log.warn("[SETTINGS] VCS with ID {} not found", id);
+        }
+
+        return getAllVcs();
+    }
+
+    @Override
+    public void deleteVcs(String id) {
+        log.info("[SETTINGS] Delete VCS configuration by id: {}", id);
+        vcsRepository.deleteById(id);
     }
 
     @Override
     public boolean isAvailableForSd() {
-        return vcsRepository.findAll().stream()
-                .findFirst()
+        return findActiveVcs()
                 .map(this::isVcsConfigurationComplete)
                 .orElse(false);
+    }
+
+    private Optional<Vcs> findActiveVcs() {
+        return vcsRepository.findAll().stream()
+                .filter(Vcs::isActive)
+                .findFirst();
+    }
+
+    private @NotNull List<VcsDto> getAllVcs() {
+        return vcsRepository.findAll().stream()
+                .map(vcs -> toVcsDto(vcs, "ui"))
+                .sorted(Comparator.comparing(VcsDto::getCreatedDate, Comparator.nullsLast(Comparator.naturalOrder())))
+                .toList();
+    }
+
+    private VcsDto toVcsDto(Vcs vcs, String platform) {
+        return new VcsDto()
+                .setId(vcs.getUid())
+                .setName(vcs.getName())
+                .setProvider(vcs.getProvider())
+                .setBaseUrl(vcs.getBaseUrl())
+                .setRepository(vcs.getRepository())
+                .setBranch(vcs.getBranch())
+                .setAccessToken(getPlatformValue(platform, vcs.getAccessToken()))
+                .setActive(vcs.isActive())
+                .setCreatedDate(vcs.getCreatedDate());
+    }
+
+    private void deactivateAllVcs() {
+        List<Vcs> allVcs = vcsRepository.findAll();
+        allVcs.forEach(vcs -> vcs.setActive(false));
+        vcsRepository.saveAll(allVcs);
     }
 
     private boolean isVcsConfigurationComplete(Vcs vcs) {
