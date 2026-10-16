@@ -75,8 +75,8 @@ public class IntegrationServiceImpl implements IntegrationService {
     private void updateExistingVcs(Vcs existingVcs, VcsDto vcsDto) {
         log.info("[SETTINGS] Updating existing VCS configuration");
 
-        if (vcsDto.getAccessToken() != null) {
-            existingVcs.setAccessToken(vcsDto.getAccessToken());
+        if (StringUtils.isNotBlank(vcsDto.getAccessToken())) {
+            existingVcs.setAccessToken(vcsDto.getAccessToken().trim());
         }
         if (vcsDto.getRepository() != null) {
             existingVcs.setRepository(vcsDto.getRepository());
