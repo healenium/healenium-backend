@@ -94,11 +94,11 @@ public class IntegrationController {
     }
 
     @PostMapping("/vcs/save")
-    public ResponseEntity<Void> saveVcsCredentials(@Valid @RequestBody VcsDto vcsDto) {
+    public ResponseEntity<List<VcsDto>> saveVcsCredentials(@Valid @RequestBody VcsDto vcsDto) {
         return tenantTx.required(() -> {
             log.info("[SETTINGS] Saving VCS credentials for repository: {}", vcsDto.getRepository());
-            integrationService.saveOrUpdateVcs(vcsDto);
-            return ResponseEntity.ok().build();
+            List<VcsDto> result = integrationService.saveOrUpdateVcs(vcsDto);
+            return ResponseEntity.ok(result);
         });
     }
 
@@ -111,12 +111,37 @@ public class IntegrationController {
         });
     }
 
+    @GetMapping("/vcs/ui")
+    public ResponseEntity<List<VcsDto>> getVcsList() {
+        return tenantTx.required(() -> {
+            log.debug("[Integration] Get vcs list");
+            return ResponseEntity.ok(integrationService.getVcsAll());
+        });
+    }
+
     @GetMapping("/vcs/{platform}")
     public ResponseEntity<VcsDto> getVcs(@PathVariable String platform) {
         return tenantTx.required(() -> {
             log.debug("[Integration] Get vcs, platform: {}", platform);
             VcsDto vcsDto = integrationService.getVcs(platform);
             return ResponseEntity.ok(vcsDto);
+        });
+    }
+
+    @PostMapping("/vcs/activate/{id}")
+    public ResponseEntity<List<VcsDto>> activateVcs(@PathVariable String id) {
+        return tenantTx.required(() -> {
+            log.info("[SETTINGS] Activating VCS with id: {}", id);
+            return ResponseEntity.ok(integrationService.activateVcs(id));
+        });
+    }
+
+    @DeleteMapping("/vcs/delete/{id}")
+    public ResponseEntity<Void> deleteVcs(@PathVariable String id) {
+        return tenantTx.required(() -> {
+            log.info("[SETTINGS] Deleting VCS with id: {}", id);
+            integrationService.deleteVcs(id);
+            return ResponseEntity.ok().build();
         });
     }
 

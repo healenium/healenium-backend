@@ -9,12 +9,18 @@ import java.util.List;
 
 public interface IntegrationService {
 
-    void saveOrUpdateVcs(VcsDto vcsDto);
+    @NotNull List<VcsDto> saveOrUpdateVcs(VcsDto vcsDto);
 
     @NotNull List<LlmDto> saveOrUpdateLlm(LlmDto llmDto);
 
     IntegrationFormDto getSettings(String platform);
     VcsDto getVcs(String platform);
+
+    @NotNull List<VcsDto> getVcsAll();
+
+    @NotNull List<VcsDto> activateVcs(String id);
+
+    void deleteVcs(String id);
 
     boolean isAvailableForSd();
 

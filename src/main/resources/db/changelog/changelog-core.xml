@@ -21,6 +21,7 @@
 	<include file="007_report_version_column.xml" relativeToChangelogFile="true"/>
 	<include file="008_report_name_column.xml" relativeToChangelogFile="true"/>
 	<include file="009_vcs.xml" relativeToChangelogFile="true"/>
+	<include file="017_vcs_provider_base_url.xml" relativeToChangelogFile="true"/>
 	<include file="010_llm.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
