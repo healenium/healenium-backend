@@ -12,15 +12,18 @@ import com.epam.healenium.service.ReportService;
 import com.epam.healenium.service.SelectorService;
 import com.epam.healenium.tenant.TenantTxFacade;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -93,12 +96,19 @@ public class IntegrationController {
         });
     }
 
-    @PostMapping("/vcs/save")
-    public ResponseEntity<List<VcsDto>> saveVcsCredentials(@Valid @RequestBody VcsDto vcsDto) {
+    @PostMapping("/vcs")
+    public ResponseEntity<List<VcsDto>> createVcs(@Valid @RequestBody VcsDto vcsDto) {
         return tenantTx.required(() -> {
-            log.info("[SETTINGS] Saving VCS credentials for repository: {}", vcsDto.getRepository());
-            List<VcsDto> result = integrationService.saveOrUpdateVcs(vcsDto);
-            return ResponseEntity.ok(result);
+            log.info("[SETTINGS] Creating VCS configuration: {}", vcsDto.getName());
+            return ResponseEntity.status(HttpStatus.CREATED).body(integrationService.createVcs(vcsDto));
+        });
+    }
+
+    @PutMapping("/vcs/{id}")
+    public ResponseEntity<List<VcsDto>> updateVcs(@PathVariable String id, @Valid @RequestBody VcsDto vcsDto) {
+        return tenantTx.required(() -> {
+            log.info("[SETTINGS] Updating VCS configuration: {}", id);
+            return ResponseEntity.ok(integrationService.updateVcs(id, vcsDto));
         });
     }
 
@@ -128,15 +138,18 @@ public class IntegrationController {
         });
     }
 
-    @PostMapping("/vcs/activate/{id}")
-    public ResponseEntity<List<VcsDto>> activateVcs(@PathVariable String id) {
+    @PatchMapping("/vcs/{id}")
+    public ResponseEntity<List<VcsDto>> activateVcs(@PathVariable String id, @RequestBody VcsDto vcsDto) {
         return tenantTx.required(() -> {
+            if (vcsDto == null || !vcsDto.isActive()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "active must be true");
+            }
             log.info("[SETTINGS] Activating VCS with id: {}", id);
             return ResponseEntity.ok(integrationService.activateVcs(id));
         });
     }
 
-    @DeleteMapping("/vcs/delete/{id}")
+    @DeleteMapping("/vcs/{id}")
     public ResponseEntity<Void> deleteVcs(@PathVariable String id) {
         return tenantTx.required(() -> {
             log.info("[SETTINGS] Deleting VCS with id: {}", id);
