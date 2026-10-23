@@ -8,7 +8,9 @@ import com.epam.healenium.model.dto.elitea.VcsDto;
 import com.epam.healenium.repository.LlmRepository;
 import com.epam.healenium.repository.VcsRepository;
 import com.epam.healenium.service.IntegrationService;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -31,76 +33,69 @@ public class IntegrationServiceImpl implements IntegrationService {
     private final LlmRepository llmRepository;
 
     @Override
-    public @NotNull List<VcsDto> saveOrUpdateVcs(VcsDto vcsDto) {
-        if (!isVcsDtoValid(vcsDto)) {
-            log.warn("[SETTINGS] Invalid VCS DTO provided, skipping save operation");
-            return getAllVcs();
-        }
-
-        Optional<Vcs> existingVcs = findVcsForSave(vcsDto);
-        String provider = resolveProvider(vcsDto, existingVcs);
-        String baseUrl = resolveBaseUrl(vcsDto, existingVcs);
+    public @NotNull List<VcsDto> createVcs(VcsDto vcsDto) {
+        String name = requireText(vcsDto.getName(), "name is required");
+        requireText(vcsDto.getAccessToken(), "access token is required");
+        String provider = resolveProvider(vcsDto, Optional.empty());
+        String baseUrl = resolveBaseUrl(vcsDto, Optional.empty());
         VcsDto.validateProviderAndBaseUrl(provider, baseUrl);
+        if (findVcsByName(name).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "VCS configuration name already exists");
+        }
 
         deactivateAllVcs();
-        if (existingVcs.isPresent()) {
-            updateExistingVcs(existingVcs.get(), vcsDto);
-        } else {
-            createNewVcs(vcsDto, provider, baseUrl);
-        }
-
+        createNewVcs(vcsDto, name, provider, baseUrl);
         return getAllVcs();
     }
 
-    private boolean isVcsDtoValid(VcsDto vcsDto) {
-        return vcsDto != null && (
-                vcsDto.getRepository() != null ||
-                vcsDto.getAccessToken() != null ||
-                vcsDto.getBranch() != null ||
-                vcsDto.getName() != null ||
-                vcsDto.getProvider() != null ||
-                vcsDto.getBaseUrl() != null
-        );
-    }
+    @Override
+    public @NotNull List<VcsDto> updateVcs(String id, VcsDto vcsDto) {
+        Vcs existingVcs = vcsRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "VCS configuration not found"));
+        String name = requireText(vcsDto.getName(), "name is required");
+        findVcsByName(name)
+                .filter(other -> !other.getUid().equals(existingVcs.getUid()))
+                .ifPresent(other -> {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "VCS configuration name already exists");
+                });
+        String provider = resolveProvider(vcsDto, Optional.of(existingVcs));
+        String baseUrl = resolveBaseUrl(vcsDto, Optional.of(existingVcs));
+        VcsDto.validateProviderAndBaseUrl(provider, baseUrl);
 
-    private Optional<Vcs> findVcsForSave(VcsDto vcsDto) {
-        if (StringUtils.isNotBlank(vcsDto.getName())) {
-            return vcsRepository.findAll().stream()
-                    .filter(vcs -> vcsDto.getName().equals(vcs.getName()))
-                    .findFirst();
-        }
-        return findActiveVcs().or(() -> vcsRepository.findAll().stream().findFirst());
-    }
-
-    private void updateExistingVcs(Vcs existingVcs, VcsDto vcsDto) {
-        log.info("[SETTINGS] Updating existing VCS configuration");
-
-        if (StringUtils.isNotBlank(vcsDto.getAccessToken())) {
-            existingVcs.setAccessToken(vcsDto.getAccessToken().trim());
-        }
+        deactivateAllVcs();
+        existingVcs.setName(name);
+        existingVcs.setProvider(provider);
+        existingVcs.setBaseUrl(baseUrl);
         if (vcsDto.getRepository() != null) {
             existingVcs.setRepository(vcsDto.getRepository());
         }
         if (vcsDto.getBranch() != null) {
             existingVcs.setBranch(vcsDto.getBranch());
         }
-        if (StringUtils.isNotBlank(vcsDto.getProvider())) {
-            existingVcs.setProvider(vcsDto.getProvider());
-        } else if (StringUtils.isBlank(existingVcs.getProvider())) {
-            existingVcs.setProvider(GITHUB);
-        }
-        if (vcsDto.getBaseUrl() != null) {
-            existingVcs.setBaseUrl(StringUtils.trimToNull(vcsDto.getBaseUrl()));
+        if (StringUtils.isNotBlank(vcsDto.getAccessToken())) {
+            existingVcs.setAccessToken(vcsDto.getAccessToken().trim());
         }
         existingVcs.setActive(true);
-
         vcsRepository.save(existingVcs);
+        return getAllVcs();
     }
 
-    private void createNewVcs(VcsDto vcsDto, String provider, String baseUrl) {
+    private Optional<Vcs> findVcsByName(String name) {
+        return vcsRepository.findAll().stream()
+                .filter(vcs -> name.equals(vcs.getName()))
+                .findFirst();
+    }
+
+    private String requireText(String value, String message) {
+        if (StringUtils.isBlank(value)) {
+            throw new IllegalArgumentException(message);
+        }
+        return value.trim();
+    }
+
+    private void createNewVcs(VcsDto vcsDto, String name, String provider, String baseUrl) {
         log.info("[SETTINGS] Creating new VCS configuration");
 
-        String name = StringUtils.isNotBlank(vcsDto.getName()) ? vcsDto.getName() : "github";
         Vcs newVcs = new Vcs()
                 .setUid(generateUid())
                 .setName(name)
@@ -109,7 +104,7 @@ public class IntegrationServiceImpl implements IntegrationService {
                 .setActive(true)
                 .setRepository(vcsDto.getRepository())
                 .setBranch(vcsDto.getBranch())
-                .setAccessToken(vcsDto.getAccessToken());
+                .setAccessToken(vcsDto.getAccessToken().trim());
 
         vcsRepository.save(newVcs);
     }
@@ -218,26 +213,23 @@ public class IntegrationServiceImpl implements IntegrationService {
 
     @Override
     public @NotNull List<VcsDto> activateVcs(String id) {
-        if (id == null || id.trim().isEmpty()) {
-            log.warn("[SETTINGS] Invalid VCS ID provided for activation");
-            return getAllVcs();
+        if (StringUtils.isBlank(id)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "id is required");
         }
 
-        Optional<Vcs> vcsOptional = vcsRepository.findById(id);
-        if (vcsOptional.isPresent()) {
-            deactivateAllVcs();
-            Vcs vcs = vcsOptional.get();
-            vcs.setActive(true);
-            vcsRepository.save(vcs);
-        } else {
-            log.warn("[SETTINGS] VCS with ID {} not found", id);
-        }
-
+        Vcs vcs = vcsRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "VCS configuration not found"));
+        deactivateAllVcs();
+        vcs.setActive(true);
+        vcsRepository.save(vcs);
         return getAllVcs();
     }
 
     @Override
     public void deleteVcs(String id) {
+        if (!vcsRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "VCS configuration not found");
+        }
         log.info("[SETTINGS] Delete VCS configuration by id: {}", id);
         vcsRepository.deleteById(id);
     }

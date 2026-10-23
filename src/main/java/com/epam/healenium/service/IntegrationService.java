@@ -9,7 +9,9 @@ import java.util.List;
 
 public interface IntegrationService {
 
-    @NotNull List<VcsDto> saveOrUpdateVcs(VcsDto vcsDto);
+    @NotNull List<VcsDto> createVcs(VcsDto vcsDto);
+
+    @NotNull List<VcsDto> updateVcs(String id, VcsDto vcsDto);
 
     @NotNull List<LlmDto> saveOrUpdateLlm(LlmDto llmDto);
 
