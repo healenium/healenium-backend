@@ -1,0 +1,32 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   logicalFilePath="changelog/020_llm_protocol_and_model_catalog.xml"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet id="add-llm-protocol-and-base-url" author="healenium">
+        <addColumn tableName="llm">
+            <column name="protocol" type="varchar(16)"/>
+            <column name="base_url" type="varchar(512)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="create-llm-model" author="healenium">
+        <createTable tableName="llm_model">
+            <column name="uid" type="varchar(64)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(264)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="protocol" type="varchar(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="base_url" type="varchar(512)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="llm_model" columnNames="name" constraintName="unique_llm_model_name"/>
+    </changeSet>
+
+</databaseChangeLog>

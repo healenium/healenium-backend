@@ -13,7 +13,9 @@ public interface IntegrationService {
 
     @NotNull List<VcsDto> updateVcs(String id, VcsDto vcsDto);
 
-    @NotNull List<LlmDto> saveOrUpdateLlm(LlmDto llmDto);
+    @NotNull List<LlmDto> createLlm(LlmDto llmDto);
+
+    @NotNull List<LlmDto> updateLlm(String id, LlmDto llmDto);
 
     IntegrationFormDto getSettings(String platform);
     VcsDto getVcs(String platform);
@@ -31,7 +33,6 @@ public interface IntegrationService {
     List<LlmDto> getLlmAll();
 
     List<LlmDto> setActiveLlm(String id);
-    LlmDto getActiveLlm();
 
     void deleteLlm(String id);
 }

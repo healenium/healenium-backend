@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.List;
@@ -124,30 +125,48 @@ public class IntegrationServiceImpl implements IntegrationService {
     }
 
     @Override
-    public @NotNull List<LlmDto> saveOrUpdateLlm(LlmDto llmDto) {
+    public @NotNull List<LlmDto> createLlm(LlmDto llmDto) {
         if (!isLlmDtoValid(llmDto)) {
-            log.warn("[SETTINGS] Invalid LLM DTO provided, skipping save operation");
-            return getAllLlms();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid LLM configuration");
+        }
+        if (StringUtils.isBlank(llmDto.getAccessToken())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Access token cannot be blank");
+        }
+        if (findLlmByName(llmDto.getName()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "LLM configuration name already exists");
         }
 
-        Optional<Llm> existingLlm = findLlmByName(llmDto.getName());
         deactivateAllModels();
-        
-        if (existingLlm.isPresent()) {
-            updateExistingLlm(existingLlm.get(), llmDto);
-        } else {
-            createNewLlm(llmDto);
+        createNewLlm(llmDto);
+        return getAllLlms();
+    }
+
+    @Override
+    public @NotNull List<LlmDto> updateLlm(String id, LlmDto llmDto) {
+        if (!isLlmDtoValid(llmDto)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid LLM configuration");
         }
-        
+        Llm existingLlm = llmRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "LLM configuration not found"));
+        findLlmByName(llmDto.getName())
+                .filter(other -> !other.getUid().equals(existingLlm.getUid()))
+                .ifPresent(other -> {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "LLM configuration name already exists");
+                });
+
+        deactivateAllModels();
+        updateExistingLlm(existingLlm, llmDto);
         return getAllLlms();
     }
 
     private boolean isLlmDtoValid(LlmDto llmDto) {
-        return llmDto != null && 
-               llmDto.getAccessToken() != null && 
-               !llmDto.getAccessToken().trim().isEmpty() &&
-               llmDto.getName() != null && 
-               !llmDto.getName().trim().isEmpty();
+        return llmDto != null
+                && StringUtils.isNotBlank(llmDto.getName())
+                && llmDto.getName().matches("^[a-zA-Z0-9._-]+$")
+                && StringUtils.isNotBlank(llmDto.getProtocol())
+                && llmDto.getProtocol().matches("openai|anthropic|gemini")
+                && StringUtils.isNotBlank(llmDto.getBaseUrl())
+                && llmDto.getBaseUrl().length() <= 512;
     }
 
     private Optional<Llm> findLlmByName(String name) {
@@ -159,10 +178,14 @@ public class IntegrationServiceImpl implements IntegrationService {
     private void updateExistingLlm(Llm existingLlm, LlmDto llmDto) {
         log.info("[SETTINGS] Updating existing LLM: {}", existingLlm.getName());
         
-        existingLlm.setAccessToken(llmDto.getAccessToken())
-                   .setName(llmDto.getName())
-                   .setActive(true); // Always activate when updating
-                   
+        if (StringUtils.isNotBlank(llmDto.getAccessToken())) {
+            existingLlm.setAccessToken(llmDto.getAccessToken());
+        }
+        existingLlm.setName(llmDto.getName())
+                   .setProtocol(llmDto.getProtocol())
+                   .setBaseUrl(llmDto.getBaseUrl())
+                   .setActive(true);
+
         llmRepository.save(existingLlm);
     }
 
@@ -172,6 +195,8 @@ public class IntegrationServiceImpl implements IntegrationService {
         Llm newLlm = new Llm()
                 .setUid(generateUid())
                 .setName(llmDto.getName())
+                .setProtocol(llmDto.getProtocol())
+                .setBaseUrl(llmDto.getBaseUrl())
                 .setAccessToken(llmDto.getAccessToken())
                 .setActive(true);
                 
@@ -281,21 +306,15 @@ public class IntegrationServiceImpl implements IntegrationService {
 
     @Override
     public LlmDto getLlm(String model) {
-        if (isPlatformModel(model)) {
-            return getFirstLlmForPlatform(model);
+        if ("ai".equals(model)) {
+            return llmRepository.findAll().stream()
+                    .filter(Llm::isActive)
+                    .findFirst()
+                    .map(llm -> createLlmDto(llm, "ai", true))
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND, "No active LLM configuration"));
         }
         return getLlmByName(model);
-    }
-
-    private boolean isPlatformModel(String model) {
-        return "ui".equals(model) || "ai".equals(model);
-    }
-
-    private LlmDto getFirstLlmForPlatform(String platform) {
-        return llmRepository.findAll().stream()
-                .findFirst()
-                .map(llm -> createLlmDto(llm, platform, false))
-                .orElse(new LlmDto());
     }
 
     private LlmDto getLlmByName(String modelName) {
@@ -310,7 +329,10 @@ public class IntegrationServiceImpl implements IntegrationService {
         LlmDto llmDto = new LlmDto()
                 .setAccessToken(getPlatformValue(platform, llm.getAccessToken()))
                 .setName(llm.getName())
-                .setActive(llm.isActive());
+                .setProtocol(llm.getProtocol())
+                .setBaseUrl(llm.getBaseUrl())
+                .setActive(llm.isActive())
+                .setCreatedDate(llm.getCreatedDate());
                 
         if (includeId) {
             llmDto.setId(llm.getUid());
@@ -331,13 +353,9 @@ public class IntegrationServiceImpl implements IntegrationService {
             return getAllLlms();
         }
 
-        Optional<Llm> llmOptional = llmRepository.findById(id);
-        if (llmOptional.isPresent()) {
-            activateLlm(llmOptional.get());
-        } else {
-            log.warn("[SETTINGS] LLM with ID {} not found", id);
-        }
-        
+        Llm llm = llmRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "LLM configuration not found"));
+        activateLlm(llm);
         return getAllLlms();
     }
 
@@ -349,36 +367,18 @@ public class IntegrationServiceImpl implements IntegrationService {
     }
 
     @Override
-    public LlmDto getActiveLlm() {
-        Optional<LlmDto> llmOptional = llmRepository.findAll().stream()
-                .filter(Llm::isActive)
-                .map(llm ->
-                        new LlmDto()
-                                .setId(llm.getUid())
-                                .setName(llm.getName())
-                                .setAccessToken(llm.getAccessToken())
-                                .setActive(llm.isActive())
-                                .setCreatedDate(llm.getCreatedDate()))
-                .findFirst();
-        return llmOptional.orElse(new LlmDto());
-    }
-
-    @Override
     public void deleteLlm(String id) {
+        if (!llmRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "LLM configuration not found");
+        }
         log.info("[ELITEA] Delete Llm configuration by id: " + id);
         llmRepository.deleteById(id);
     }
 
     private @NotNull List<LlmDto> getAllLlms() {
         return llmRepository.findAll().stream()
-                .map(llm ->
-                        new LlmDto()
-                                .setId(llm.getUid())
-                                .setName(llm.getName())
-                                .setAccessToken(llm.getAccessToken())
-                                .setActive(llm.isActive())
-                                .setCreatedDate(llm.getCreatedDate()))
-                .sorted(Comparator.comparing(LlmDto::getCreatedDate))
+                .map(llm -> createLlmDto(llm, "ui", true))
+                .sorted(Comparator.comparing(LlmDto::getCreatedDate, Comparator.nullsLast(Comparator.naturalOrder())))
                 .toList();
     }
 

@@ -36,6 +36,12 @@ public class Llm implements TenantAwareEntity {
     @Column(name = "access_token")
     private String accessToken;
 
+    @Column(name = "protocol")
+    private String protocol;
+
+    @Column(name = "base_url")
+    private String baseUrl;
+
     @Column(name = "is_active")
     private boolean isActive;
 

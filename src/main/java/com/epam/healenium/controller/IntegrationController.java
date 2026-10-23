@@ -2,12 +2,14 @@ package com.epam.healenium.controller;
 
 import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.domain.Report;
+import com.epam.healenium.model.dto.LlmModelDto;
 import com.epam.healenium.model.dto.elitea.DedicatedInfo;
 import com.epam.healenium.model.dto.elitea.LlmDto;
 import com.epam.healenium.model.dto.elitea.LocatorPathsDto;
 import com.epam.healenium.model.dto.elitea.VcsDto;
 import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.service.IntegrationService;
+import com.epam.healenium.service.LlmModelService;
 import com.epam.healenium.service.ReportService;
 import com.epam.healenium.service.SelectorService;
 import com.epam.healenium.tenant.TenantTxFacade;
@@ -38,13 +40,15 @@ public class IntegrationController {
     private final ReportRepository reportRepository;
     private final SelectorService selectorService;
     private final IntegrationService integrationService;
+    private final LlmModelService llmModelService;
 
-    public IntegrationController(TenantTxFacade tenantTx, ReportService reportService, ReportRepository reportRepository, SelectorService selectorService, IntegrationService integrationService) {
+    public IntegrationController(TenantTxFacade tenantTx, ReportService reportService, ReportRepository reportRepository, SelectorService selectorService, IntegrationService integrationService, LlmModelService llmModelService) {
         this.tenantTx = tenantTx;
         this.reportService = reportService;
         this.reportRepository = reportRepository;
         this.selectorService = selectorService;
         this.integrationService = integrationService;
+        this.llmModelService = llmModelService;
     }
 
     @GetMapping("/dedicated-info/{reportId}")
@@ -112,12 +116,19 @@ public class IntegrationController {
         });
     }
 
-    @PostMapping("/llm/save")
-    public ResponseEntity<List<LlmDto>> saveLlmCredentials(@Valid @RequestBody LlmDto llmDto) {
+    @PostMapping("/llm")
+    public ResponseEntity<List<LlmDto>> createLlm(@Valid @RequestBody LlmDto llmDto) {
         return tenantTx.required(() -> {
-            log.info("[SETTINGS] Saving LLM credentials for model: {}", llmDto.getName());
-            List<LlmDto> result = integrationService.saveOrUpdateLlm(llmDto);
-            return ResponseEntity.ok(result);
+            log.info("[SETTINGS] Creating LLM configuration: {}", llmDto.getName());
+            return ResponseEntity.status(HttpStatus.CREATED).body(integrationService.createLlm(llmDto));
+        });
+    }
+
+    @PutMapping("/llm/{id}")
+    public ResponseEntity<List<LlmDto>> updateLlm(@PathVariable String id, @Valid @RequestBody LlmDto llmDto) {
+        return tenantTx.required(() -> {
+            log.info("[SETTINGS] Updating LLM configuration: {}", id);
+            return ResponseEntity.ok(integrationService.updateLlm(id, llmDto));
         });
     }
 
@@ -158,48 +169,82 @@ public class IntegrationController {
         });
     }
 
-    @GetMapping("/llm/{platform}")
-    public ResponseEntity<LlmDto> getLlm(@PathVariable String platform) {
+    @GetMapping("/llm/ui")
+    public ResponseEntity<List<LlmDto>> getLlmList() {
         return tenantTx.required(() -> {
-            log.debug("[Integration] Get llm, platform: {}", platform);
-            LlmDto llmDto = integrationService.getLlm(platform);
-            return ResponseEntity.ok(llmDto);
+            log.debug("[Integration] Get llm list");
+            return ResponseEntity.ok(integrationService.getLlmAll());
         });
     }
 
-    @GetMapping("/llm/all")
-    public ResponseEntity<List<LlmDto>> getAllLlms() {
+    @GetMapping("/llm/ai")
+    public ResponseEntity<LlmDto> getLlmForAi() {
         return tenantTx.required(() -> {
-            log.debug("[Integration] Get llm all");
-            List<LlmDto> llmDtos = integrationService.getLlmAll();
-            return ResponseEntity.ok(llmDtos);
+            log.debug("[Integration] Get active llm for ai");
+            return ResponseEntity.ok(integrationService.getLlm("ai"));
         });
     }
 
-    @PostMapping("/llm/activate/{id}")
-    public ResponseEntity<List<LlmDto>> activateLlm(@PathVariable String id) {
+    @PatchMapping("/llm/{id}")
+    public ResponseEntity<List<LlmDto>> activateLlm(@PathVariable String id, @RequestBody LlmDto llmDto) {
         return tenantTx.required(() -> {
+            if (llmDto == null || !llmDto.isActive()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "active must be true");
+            }
             log.info("[SETTINGS] Activating LLM with id: {}", id);
-            List<LlmDto> llmDtos = integrationService.setActiveLlm(id);
-            return ResponseEntity.ok(llmDtos);
+            return ResponseEntity.ok(integrationService.setActiveLlm(id));
         });
     }
 
-    @GetMapping("/llm/active")
-    public ResponseEntity<LlmDto> getActiveLlm() {
-        return tenantTx.required(() -> {
-            log.debug("[Integration] Get llm active");
-            LlmDto activeLlm = integrationService.getActiveLlm();
-            return ResponseEntity.ok(activeLlm);
-        });
-    }
-
-    @DeleteMapping("/llm/delete/{id}")
+    @DeleteMapping("/llm/{id}")
     public ResponseEntity<Void> deleteLlm(@PathVariable String id) {
         return tenantTx.required(() -> {
             log.info("[SETTINGS] Deleting LLM with id: {}", id);
             integrationService.deleteLlm(id);
             return ResponseEntity.ok().build();
+        });
+    }
+
+    @PostMapping("/llm-models")
+    public ResponseEntity<LlmModelDto> createLlmModel(@Valid @RequestBody LlmModelDto dto) {
+        return tenantTx.required(() -> {
+            log.info("[SETTINGS] Creating LLM model: {}", dto.getName());
+            return ResponseEntity.ok(llmModelService.create(dto));
+        });
+    }
+
+    @GetMapping("/llm-models")
+    public ResponseEntity<List<LlmModelDto>> listLlmModels() {
+        return tenantTx.required(() -> ResponseEntity.ok(llmModelService.list()));
+    }
+
+    @GetMapping("/llm-models/{id}")
+    public ResponseEntity<LlmModelDto> getLlmModel(@PathVariable String id) {
+        return tenantTx.required(() -> ResponseEntity.ok(llmModelService.get(id)));
+    }
+
+    @PutMapping("/llm-models/{id}")
+    public ResponseEntity<LlmModelDto> updateLlmModel(@PathVariable String id, @Valid @RequestBody LlmModelDto dto) {
+        return tenantTx.required(() -> {
+            log.info("[SETTINGS] Updating LLM model: {}", id);
+            return ResponseEntity.ok(llmModelService.update(id, dto));
+        });
+    }
+
+    @DeleteMapping("/llm-models/{id}")
+    public ResponseEntity<Void> deleteLlmModel(@PathVariable String id) {
+        return tenantTx.required(() -> {
+            log.info("[SETTINGS] Deleting LLM model: {}", id);
+            llmModelService.delete(id);
+            return ResponseEntity.ok().build();
+        });
+    }
+
+    @PostMapping("/llm-model-import")
+    public ResponseEntity<List<LlmModelDto>> importLlmModels(@Valid @RequestBody List<LlmModelDto> models) {
+        return tenantTx.required(() -> {
+            log.info("[SETTINGS] Importing {} LLM models", models.size());
+            return ResponseEntity.ok(llmModelService.importModels(models));
         });
     }
 
