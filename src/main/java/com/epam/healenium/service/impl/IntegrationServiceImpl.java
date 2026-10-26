@@ -29,7 +29,8 @@ import java.util.UUID;
 @Transactional
 public class IntegrationServiceImpl implements IntegrationService {
 
-    public static final String GITHUB = "github";
+    public static final String ACCESS_AI = "ai";
+    public static final String ACCESS_UI = "ui";
     private final VcsRepository vcsRepository;
     private final LlmRepository llmRepository;
 
@@ -207,26 +208,9 @@ public class IntegrationServiceImpl implements IntegrationService {
     }
 
     @Override
-    public IntegrationFormDto getSettings(String platform) {
-        Optional<Vcs> vcsOptional = findActiveVcs();
-        Optional<Llm> llmOptional = llmRepository.findAll().stream().findFirst();
-
-        IntegrationFormDto integrationFormDto = new IntegrationFormDto();
-        vcsOptional.ifPresent(vcs -> {
-            integrationFormDto.setGitHubAccessToken(getPlatformValue(platform, vcs.getAccessToken()));
-            integrationFormDto.setGitHubRepository(vcs.getRepository());
-            integrationFormDto.setGitHubBranch(vcs.getBranch());
-        });
-        llmOptional.ifPresent(llm -> {
-            integrationFormDto.setEliteaToken(getPlatformValue(platform, llm.getAccessToken()));
-        });
-        return integrationFormDto;
-    }
-
-    @Override
-    public VcsDto getVcs(String platform) {
+    public VcsDto getActiveVcs() {
         return findActiveVcs()
-                .map(vcs -> toVcsDto(vcs, platform))
+                .map(vcs -> toVcsDto(vcs, ACCESS_AI))
                 .orElse(new VcsDto());
     }
 
@@ -260,9 +244,13 @@ public class IntegrationServiceImpl implements IntegrationService {
 
     @Override
     public boolean isAvailableForSd() {
-        return findActiveVcs()
+        boolean activeVcs = findActiveVcs()
                 .map(this::isVcsConfigurationComplete)
                 .orElse(false);
+        boolean activeLlm = findActiveLlm()
+                .map(this::isLlmConfigurationComplete)
+                .orElse(false);
+        return activeVcs && activeLlm;
     }
 
     private Optional<Vcs> findActiveVcs() {
@@ -273,12 +261,12 @@ public class IntegrationServiceImpl implements IntegrationService {
 
     private @NotNull List<VcsDto> getAllVcs() {
         return vcsRepository.findAll().stream()
-                .map(vcs -> toVcsDto(vcs, "ui"))
+                .map(vcs -> toVcsDto(vcs, ACCESS_UI))
                 .sorted(Comparator.comparing(VcsDto::getCreatedDate, Comparator.nullsLast(Comparator.naturalOrder())))
                 .toList();
     }
 
-    private VcsDto toVcsDto(Vcs vcs, String platform) {
+    private VcsDto toVcsDto(Vcs vcs, String accessLevel) {
         return new VcsDto()
                 .setId(vcs.getUid())
                 .setName(vcs.getName())
@@ -286,7 +274,7 @@ public class IntegrationServiceImpl implements IntegrationService {
                 .setBaseUrl(vcs.getBaseUrl())
                 .setRepository(vcs.getRepository())
                 .setBranch(vcs.getBranch())
-                .setAccessToken(getPlatformValue(platform, vcs.getAccessToken()))
+                .setAccessToken(getPlatformValue(accessLevel, vcs.getAccessToken()))
                 .setActive(vcs.isActive())
                 .setCreatedDate(vcs.getCreatedDate());
     }
@@ -303,25 +291,25 @@ public class IntegrationServiceImpl implements IntegrationService {
                 && !StringUtils.isEmpty(vcs.getBranch());
     }
 
-    @Override
-    public LlmDto getLlm(String model) {
-        if ("ai".equals(model)) {
-            return llmRepository.findAll().stream()
-                    .filter(Llm::isActive)
-                    .findFirst()
-                    .map(llm -> createLlmDto(llm, "ai", true))
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.NOT_FOUND, "No active LLM configuration"));
-        }
-        return getLlmByName(model);
+    private boolean isLlmConfigurationComplete(Llm llm) {
+        return !StringUtils.isEmpty(llm.getAccessToken())
+                && !StringUtils.isEmpty(llm.getProtocol())
+                && !StringUtils.isEmpty(llm.getBaseUrl())
+                && !StringUtils.isEmpty(llm.getName());
     }
 
-    private LlmDto getLlmByName(String modelName) {
+    @Override
+    public LlmDto getActiveLlm() {
+            return findActiveLlm()
+                    .map(llm -> createLlmDto(llm, ACCESS_AI, true))
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND, "No active LLM configuration"));
+    }
+
+    private Optional<Llm> findActiveLlm() {
         return llmRepository.findAll().stream()
-                .filter(llm -> llm.getName().equals(modelName))
-                .findFirst()
-                .map(llm -> createLlmDto(llm, modelName, true))
-                .orElse(new LlmDto());
+                .filter(Llm::isActive)
+                .findFirst();
     }
 
     private LlmDto createLlmDto(Llm llm, String platform, boolean includeId) {
@@ -376,7 +364,7 @@ public class IntegrationServiceImpl implements IntegrationService {
 
     private @NotNull List<LlmDto> getAllLlms() {
         return llmRepository.findAll().stream()
-                .map(llm -> createLlmDto(llm, "ui", true))
+                .map(llm -> createLlmDto(llm, ACCESS_UI, true))
                 .sorted(Comparator.comparing(LlmDto::getCreatedDate, Comparator.nullsLast(Comparator.naturalOrder())))
                 .toList();
     }
@@ -388,12 +376,12 @@ public class IntegrationServiceImpl implements IntegrationService {
         llmRepository.saveAll(allLlms);
     }
 
-    private String getPlatformValue(String platform, String value) {
+    private String getPlatformValue(String accessLevel, String value) {
         if (StringUtils.isEmpty(value)) {
             return value;
         }
         
-        if (!"ai".equals(platform) && value.length() > 6) {
+        if (!ACCESS_AI.equals(accessLevel) && value.length() > 6) {
             String prefix = value.substring(0, 3);
             String suffix = value.substring(value.length() - 3);
             return prefix + "*****" + suffix;

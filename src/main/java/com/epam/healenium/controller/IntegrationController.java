@@ -56,6 +56,7 @@ public class IntegrationController {
         return tenantTx.required(() -> {
             log.debug("[Integration] Get dedicated-info, reportId: {}", reportId);
             if (reportId == null || reportId.trim().isEmpty()) {
+                log.warn("[Integration] Get dedicated-info rejected: Report ID cannot be null or empty");
                 throw new IllegalArgumentException("Report ID cannot be null or empty");
             }
 
@@ -79,16 +80,19 @@ public class IntegrationController {
     public ResponseEntity<DedicatedInfo> saveLocatorPaths(@PathVariable String reportId, 
                                                          @Valid @RequestBody List<LocatorPathsDto> detectionPaths) {
         return tenantTx.required(() -> {
-            log.info("[SETTINGS] Saving locator paths for report: {}, paths: {}", 
-                    reportId, detectionPaths.stream().map(LocatorPathsDto::getSelectedPath).toList());
-
             if (reportId == null || reportId.trim().isEmpty()) {
+                log.warn("[SETTINGS] Saving locator paths rejected: Report ID cannot be null or empty");
                 throw new IllegalArgumentException("Report ID cannot be null or empty");
             }
 
             if (detectionPaths.isEmpty()) {
+                log.warn("[SETTINGS] Saving locator paths rejected for report {}: Detection paths cannot be null or empty", reportId);
                 throw new IllegalArgumentException("Detection paths cannot be null or empty");
             }
+
+            log.info("[SETTINGS] Saving locator paths for report: {}", reportId);
+            log.debug("[SETTINGS] Locator paths for report {}: {}",
+                    reportId, detectionPaths.stream().map(LocatorPathsDto::getSelectedPath).toList());
 
             selectorService.saveLocatorPaths(detectionPaths, reportId);
             List<HealingResult> invalidSelectorClass = reportService.getDedicatedInfo(reportId);
@@ -116,6 +120,43 @@ public class IntegrationController {
         });
     }
 
+    @GetMapping("/vcs/all")
+    public ResponseEntity<List<VcsDto>> getVcsList() {
+        return tenantTx.required(() -> {
+            log.debug("[SETTINGS] Get vcs list");
+            return ResponseEntity.ok(integrationService.getVcsAll());
+        });
+    }
+
+    @GetMapping("/vcs/active")
+    public ResponseEntity<VcsDto> getVcsActive() {
+        return tenantTx.required(() -> {
+            log.debug("[SETTINGS] Get active vcs for ai");
+            return ResponseEntity.ok(integrationService.getActiveVcs());
+        });
+    }
+
+    @PatchMapping("/vcs/{id}")
+    public ResponseEntity<List<VcsDto>> activateVcs(@PathVariable String id, @RequestBody VcsDto vcsDto) {
+        return tenantTx.required(() -> {
+            if (vcsDto == null || !vcsDto.isActive()) {
+                log.warn("[SETTINGS] Activating VCS rejected for id {}: active must be true", id);
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "active must be true");
+            }
+            log.info("[SETTINGS] Activating VCS with id: {}", id);
+            return ResponseEntity.ok(integrationService.activateVcs(id));
+        });
+    }
+
+    @DeleteMapping("/vcs/{id}")
+    public ResponseEntity<Void> deleteVcs(@PathVariable String id) {
+        return tenantTx.required(() -> {
+            log.info("[SETTINGS] Deleting VCS with id: {}", id);
+            integrationService.deleteVcs(id);
+            return ResponseEntity.ok().build();
+        });
+    }
+
     @PostMapping("/llm")
     public ResponseEntity<List<LlmDto>> createLlm(@Valid @RequestBody LlmDto llmDto) {
         return tenantTx.required(() -> {
@@ -132,56 +173,19 @@ public class IntegrationController {
         });
     }
 
-    @GetMapping("/vcs/ui")
-    public ResponseEntity<List<VcsDto>> getVcsList() {
-        return tenantTx.required(() -> {
-            log.debug("[Integration] Get vcs list");
-            return ResponseEntity.ok(integrationService.getVcsAll());
-        });
-    }
-
-    @GetMapping("/vcs/{platform}")
-    public ResponseEntity<VcsDto> getVcs(@PathVariable String platform) {
-        return tenantTx.required(() -> {
-            log.debug("[Integration] Get vcs, platform: {}", platform);
-            VcsDto vcsDto = integrationService.getVcs(platform);
-            return ResponseEntity.ok(vcsDto);
-        });
-    }
-
-    @PatchMapping("/vcs/{id}")
-    public ResponseEntity<List<VcsDto>> activateVcs(@PathVariable String id, @RequestBody VcsDto vcsDto) {
-        return tenantTx.required(() -> {
-            if (vcsDto == null || !vcsDto.isActive()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "active must be true");
-            }
-            log.info("[SETTINGS] Activating VCS with id: {}", id);
-            return ResponseEntity.ok(integrationService.activateVcs(id));
-        });
-    }
-
-    @DeleteMapping("/vcs/{id}")
-    public ResponseEntity<Void> deleteVcs(@PathVariable String id) {
-        return tenantTx.required(() -> {
-            log.info("[SETTINGS] Deleting VCS with id: {}", id);
-            integrationService.deleteVcs(id);
-            return ResponseEntity.ok().build();
-        });
-    }
-// get all
-    @GetMapping("/llm/ui")
+    @GetMapping("/llm/all")
     public ResponseEntity<List<LlmDto>> getLlmList() {
         return tenantTx.required(() -> {
-            log.info("[SETTINGS] Get llm list");
+            log.debug("[SETTINGS] Get llm list");
             return ResponseEntity.ok(integrationService.getLlmAll());
         });
     }
-// get active
-    @GetMapping("/llm/ai")
-    public ResponseEntity<LlmDto> getLlmForAi() {
+
+    @GetMapping("/llm/active")
+    public ResponseEntity<LlmDto> getLlmActive() {
         return tenantTx.required(() -> {
-            log.info("[SETTINGS] Get active llm for ai");
-            return ResponseEntity.ok(integrationService.getLlm("ai"));
+            log.debug("[SETTINGS] Get active llm for ai");
+            return ResponseEntity.ok(integrationService.getActiveLlm());
         });
     }
 
@@ -189,6 +193,7 @@ public class IntegrationController {
     public ResponseEntity<List<LlmDto>> activateLlm(@PathVariable String id, @RequestBody LlmDto llmDto) {
         return tenantTx.required(() -> {
             if (llmDto == null || !llmDto.isActive()) {
+                log.warn("[SETTINGS] Activating LLM rejected for id {}: active must be true", id);
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "active must be true");
             }
             log.info("[SETTINGS] Activating LLM with id: {}", id);
@@ -207,8 +212,10 @@ public class IntegrationController {
 
     @GetMapping("/llm-models")
     public ResponseEntity<List<LlmModelDto>> listLlmModels() {
-        log.info("[SETTINGS] Get llm-models for ui");
-        return tenantTx.required(() -> ResponseEntity.ok(llmModelService.list()));
+        return tenantTx.required(() -> {
+            log.debug("[SETTINGS] Get llm-models for ui");
+            return ResponseEntity.ok(llmModelService.list());
+        });
     }
 
 }

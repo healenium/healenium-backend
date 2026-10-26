@@ -1,6 +1,5 @@
 package com.epam.healenium.service;
 
-import com.epam.healenium.model.dto.elitea.IntegrationFormDto;
 import com.epam.healenium.model.dto.elitea.LlmDto;
 import com.epam.healenium.model.dto.elitea.VcsDto;
 import org.jetbrains.annotations.NotNull;
@@ -17,8 +16,7 @@ public interface IntegrationService {
 
     @NotNull List<LlmDto> updateLlm(String id, LlmDto llmDto);
 
-    IntegrationFormDto getSettings(String platform);
-    VcsDto getVcs(String platform);
+    VcsDto getActiveVcs();
 
     @NotNull List<VcsDto> getVcsAll();
 
@@ -28,7 +26,7 @@ public interface IntegrationService {
 
     boolean isAvailableForSd();
 
-    LlmDto getLlm(String platform);
+    LlmDto getActiveLlm();
 
     List<LlmDto> getLlmAll();
 
