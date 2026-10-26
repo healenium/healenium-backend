@@ -11,22 +11,4 @@
         </addColumn>
     </changeSet>
 
-    <changeSet id="create-llm-model" author="healenium">
-        <createTable tableName="llm_model">
-            <column name="uid" type="varchar(64)">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="name" type="varchar(264)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="protocol" type="varchar(16)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="base_url" type="varchar(512)">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-        <addUniqueConstraint tableName="llm_model" columnNames="name" constraintName="unique_llm_model_name"/>
-    </changeSet>
-
 </databaseChangeLog>

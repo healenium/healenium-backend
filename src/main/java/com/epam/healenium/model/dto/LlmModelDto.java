@@ -11,8 +11,6 @@ import javax.validation.constraints.Size;
 @Accessors(chain = true)
 public class LlmModelDto {
 
-    private String id;
-
     @NotBlank(message = "LLM model name cannot be blank")
     private String name;
 

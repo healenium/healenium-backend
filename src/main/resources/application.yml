@@ -6,6 +6,8 @@ server:
   forward-headers-strategy: framework
 
 spring:
+  config:
+    import: "classpath:llm-models.yaml,optional:file:/etc/healenium/llm-models.yaml"
   profiles:
     # pro, free
     default: ${PROFILE:free}

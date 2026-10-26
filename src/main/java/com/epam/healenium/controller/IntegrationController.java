@@ -168,19 +168,19 @@ public class IntegrationController {
             return ResponseEntity.ok().build();
         });
     }
-
+// get all
     @GetMapping("/llm/ui")
     public ResponseEntity<List<LlmDto>> getLlmList() {
         return tenantTx.required(() -> {
-            log.debug("[Integration] Get llm list");
+            log.info("[SETTINGS] Get llm list");
             return ResponseEntity.ok(integrationService.getLlmAll());
         });
     }
-
+// get active
     @GetMapping("/llm/ai")
     public ResponseEntity<LlmDto> getLlmForAi() {
         return tenantTx.required(() -> {
-            log.debug("[Integration] Get active llm for ai");
+            log.info("[SETTINGS] Get active llm for ai");
             return ResponseEntity.ok(integrationService.getLlm("ai"));
         });
     }
@@ -205,47 +205,10 @@ public class IntegrationController {
         });
     }
 
-    @PostMapping("/llm-models")
-    public ResponseEntity<LlmModelDto> createLlmModel(@Valid @RequestBody LlmModelDto dto) {
-        return tenantTx.required(() -> {
-            log.info("[SETTINGS] Creating LLM model: {}", dto.getName());
-            return ResponseEntity.ok(llmModelService.create(dto));
-        });
-    }
-
     @GetMapping("/llm-models")
     public ResponseEntity<List<LlmModelDto>> listLlmModels() {
+        log.info("[SETTINGS] Get llm-models for ui");
         return tenantTx.required(() -> ResponseEntity.ok(llmModelService.list()));
-    }
-
-    @GetMapping("/llm-models/{id}")
-    public ResponseEntity<LlmModelDto> getLlmModel(@PathVariable String id) {
-        return tenantTx.required(() -> ResponseEntity.ok(llmModelService.get(id)));
-    }
-
-    @PutMapping("/llm-models/{id}")
-    public ResponseEntity<LlmModelDto> updateLlmModel(@PathVariable String id, @Valid @RequestBody LlmModelDto dto) {
-        return tenantTx.required(() -> {
-            log.info("[SETTINGS] Updating LLM model: {}", id);
-            return ResponseEntity.ok(llmModelService.update(id, dto));
-        });
-    }
-
-    @DeleteMapping("/llm-models/{id}")
-    public ResponseEntity<Void> deleteLlmModel(@PathVariable String id) {
-        return tenantTx.required(() -> {
-            log.info("[SETTINGS] Deleting LLM model: {}", id);
-            llmModelService.delete(id);
-            return ResponseEntity.ok().build();
-        });
-    }
-
-    @PostMapping("/llm-model-import")
-    public ResponseEntity<List<LlmModelDto>> importLlmModels(@Valid @RequestBody List<LlmModelDto> models) {
-        return tenantTx.required(() -> {
-            log.info("[SETTINGS] Importing {} LLM models", models.size());
-            return ResponseEntity.ok(llmModelService.importModels(models));
-        });
     }
 
 }
