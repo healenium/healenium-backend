@@ -162,7 +162,6 @@ public class IntegrationServiceImpl implements IntegrationService {
     private boolean isLlmDtoValid(LlmDto llmDto) {
         return llmDto != null
                 && StringUtils.isNotBlank(llmDto.getName())
-                && llmDto.getName().matches("^[a-zA-Z0-9._-]+$")
                 && StringUtils.isNotBlank(llmDto.getProtocol())
                 && llmDto.getProtocol().matches("openai|anthropic|gemini")
                 && StringUtils.isNotBlank(llmDto.getBaseUrl())

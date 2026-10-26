@@ -14,7 +14,6 @@ public class LlmDto {
     private String id;
     
     @NotBlank(message = "LLM name cannot be blank")
-    @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "LLM name contains invalid characters")
     private String name;
 
     @NotBlank(message = "Protocol cannot be blank")

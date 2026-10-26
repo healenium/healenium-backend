@@ -96,9 +96,6 @@ public class LlmModelService {
         if (dto == null || dto.getName() == null || dto.getName().isBlank()) {
             throw new IllegalArgumentException("LLM model name cannot be blank");
         }
-        if (!dto.getName().matches("^[a-zA-Z0-9._-]+$")) {
-            throw new IllegalArgumentException("LLM model name contains invalid characters");
-        }
         if (dto.getProtocol() == null || dto.getProtocol().isBlank()) {
             throw new IllegalArgumentException("Protocol cannot be blank");
         }
