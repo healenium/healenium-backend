@@ -39,7 +39,7 @@ public class IntegrationServiceImpl implements IntegrationService {
         String name = requireText(vcsDto.getName(), "name is required");
         requireText(vcsDto.getAccessToken(), "access token is required");
         String provider = resolveProvider(vcsDto, Optional.empty());
-        String baseUrl = resolveBaseUrl(vcsDto, Optional.empty());
+        String baseUrl = resolveBaseUrl(vcsDto, Optional.empty(), provider);
         VcsDto.validateProviderAndBaseUrl(provider, baseUrl);
         if (findVcsByName(name).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "VCS configuration name already exists");
@@ -61,7 +61,7 @@ public class IntegrationServiceImpl implements IntegrationService {
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "VCS configuration name already exists");
                 });
         String provider = resolveProvider(vcsDto, Optional.of(existingVcs));
-        String baseUrl = resolveBaseUrl(vcsDto, Optional.of(existingVcs));
+        String baseUrl = resolveBaseUrl(vcsDto, Optional.of(existingVcs), provider);
         VcsDto.validateProviderAndBaseUrl(provider, baseUrl);
 
         deactivateAllVcs();
@@ -118,11 +118,25 @@ public class IntegrationServiceImpl implements IntegrationService {
         return existingVcs.map(Vcs::getProvider).filter(StringUtils::isNotBlank).orElse("github");
     }
 
-    private String resolveBaseUrl(VcsDto vcsDto, Optional<Vcs> existingVcs) {
-        if (vcsDto.getBaseUrl() != null) {
-            return StringUtils.trimToNull(vcsDto.getBaseUrl());
+    private String resolveBaseUrl(VcsDto vcsDto, Optional<Vcs> existingVcs, String provider) {
+        String submitted = StringUtils.trimToNull(vcsDto.getBaseUrl());
+        if (submitted != null) {
+            return submitted;
         }
-        return existingVcs.map(Vcs::getBaseUrl).orElse(null);
+        String stored = existingVcs.map(Vcs::getBaseUrl).map(StringUtils::trimToNull).orElse(null);
+        if (vcsDto.getBaseUrl() == null && stored != null) {
+            return stored;
+        }
+        return defaultBaseUrl(provider);
+    }
+
+    private String defaultBaseUrl(String provider) {
+        return switch (provider) {
+            case "gitlab" -> "https://gitlab.com";
+            case "azure-devops" -> "https://dev.azure.com/myorg";
+            case "gitea" -> "https://gitea.example.com";
+            default -> "https://api.github.com";
+        };
     }
 
     @Override
