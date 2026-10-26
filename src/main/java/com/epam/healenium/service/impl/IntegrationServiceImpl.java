@@ -257,14 +257,17 @@ public class IntegrationServiceImpl implements IntegrationService {
     }
 
     @Override
-    public boolean isAvailableForSd() {
-        boolean activeVcs = findActiveVcs()
+    public boolean hasActiveGit() {
+        return findActiveVcs()
                 .map(this::isVcsConfigurationComplete)
                 .orElse(false);
-        boolean activeLlm = findActiveLlm()
+    }
+
+    @Override
+    public boolean hasActiveGenAI() {
+        return findActiveLlm()
                 .map(this::isLlmConfigurationComplete)
                 .orElse(false);
-        return activeVcs && activeLlm;
     }
 
     private Optional<Vcs> findActiveVcs() {

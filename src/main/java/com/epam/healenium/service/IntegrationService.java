@@ -24,7 +24,9 @@ public interface IntegrationService {
 
     void deleteVcs(String id);
 
-    boolean isAvailableForSd();
+    boolean hasActiveGit();
+
+    boolean hasActiveGenAI();
 
     LlmDto getActiveLlm();
 

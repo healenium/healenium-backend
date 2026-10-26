@@ -6,6 +6,8 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class DedicatedInfo {
-    private boolean availableForSd;
-    private boolean availableForMr;
+    private boolean hasActiveGit;
+    private boolean hasActiveGenAI;
+    private boolean hasRecords;
+    private boolean noHealingResult;
 }

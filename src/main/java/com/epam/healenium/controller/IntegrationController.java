@@ -1,6 +1,5 @@
 package com.epam.healenium.controller;
 
-import com.epam.healenium.model.domain.HealingResult;
 import com.epam.healenium.model.domain.Report;
 import com.epam.healenium.model.dto.LlmModelDto;
 import com.epam.healenium.model.dto.elitea.DedicatedInfo;
@@ -60,19 +59,7 @@ public class IntegrationController {
                 throw new IllegalArgumentException("Report ID cannot be null or empty");
             }
 
-            boolean hasRecords = reportRepository.findById(reportId)
-                    .map(Report::getRecordWrapper)
-                    .map(wrapper -> !wrapper.getRecords().isEmpty())
-                    .orElse(false);
-
-            boolean availableForSd = integrationService.isAvailableForSd() && hasRecords;
-            boolean availableForMr = availableForSd && reportService.getDedicatedInfo(reportId).isEmpty();
-
-            DedicatedInfo dedicatedInfo = new DedicatedInfo()
-                    .setAvailableForSd(availableForSd)
-                    .setAvailableForMr(availableForMr);
-
-            return ResponseEntity.ok(dedicatedInfo);
+            return ResponseEntity.ok(dedicatedInfo(reportId));
         });
     }
 
@@ -95,13 +82,20 @@ public class IntegrationController {
                     reportId, detectionPaths.stream().map(LocatorPathsDto::getSelectedPath).toList());
 
             selectorService.saveLocatorPaths(detectionPaths, reportId);
-            List<HealingResult> invalidSelectorClass = reportService.getDedicatedInfo(reportId);
-
-            DedicatedInfo dedicatedInfo = new DedicatedInfo()
-                    .setAvailableForMr(invalidSelectorClass.isEmpty());
-
-            return ResponseEntity.ok(dedicatedInfo);
+            return ResponseEntity.ok(dedicatedInfo(reportId));
         });
+    }
+
+    private DedicatedInfo dedicatedInfo(String reportId) {
+        boolean hasRecords = reportRepository.findById(reportId)
+                .map(Report::getRecordWrapper)
+                .map(wrapper -> !wrapper.getRecords().isEmpty())
+                .orElse(false);
+        return new DedicatedInfo()
+                .setHasActiveGit(integrationService.hasActiveGit())
+                .setHasActiveGenAI(integrationService.hasActiveGenAI())
+                .setHasRecords(hasRecords)
+                .setNoHealingResult(reportService.getDedicatedInfo(reportId).isEmpty());
     }
 
     @PostMapping("/vcs")
