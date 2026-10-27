@@ -14,7 +14,7 @@ import com.epam.healenium.model.dto.ReferenceElementsDto;
 import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
-import com.epam.healenium.model.dto.elitea.LocatorPathsDto;
+import com.epam.healenium.model.dto.LocatorPathsDto;
 import com.epam.healenium.model.wrapper.RecordWrapper;
 import com.epam.healenium.repository.HealingRepository;
 import com.epam.healenium.repository.HealingResultRepository;

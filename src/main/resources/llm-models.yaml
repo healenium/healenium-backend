@@ -1,0 +1,32 @@
+healenium:
+  llm-models:
+    - model: gpt-5.1-codex
+      protocol: openai
+      base-url: https://api.openai.com/
+    - model: deepseek-coder-v2
+      protocol: openai
+      base-url: https://api.deepseek.com/
+    - model: grok-code-fast-1
+      protocol: openai
+      base-url: https://api.x.ai/v1
+    - model: grok-4.7
+      protocol: openai
+      base-url: https://api.x.ai/v1
+    - model: codellama-7b
+      protocol: openai
+      base-url: https://api.llama.com/compat/v1/
+    - model: llama-3.1-70b-instruct
+      protocol: openai
+      base-url: https://api.llama.com/compat/v1/
+    - model: claude-sonnet-4-5
+      protocol: anthropic
+      base-url: https://api.anthropic.com
+    - model: claude-opus-4-5
+      protocol: anthropic
+      base-url: https://api.anthropic.com
+    - model: gemini-3.8-flash
+      protocol: gemini
+      base-url: https://generativelanguage.googleapis.com
+    - model: gemini-3.7-flash
+      protocol: gemini
+      base-url: https://generativelanguage.googleapis.com

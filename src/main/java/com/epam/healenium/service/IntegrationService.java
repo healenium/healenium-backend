@@ -1,8 +1,7 @@
 package com.epam.healenium.service;
 
-import com.epam.healenium.model.dto.elitea.IntegrationFormDto;
-import com.epam.healenium.model.dto.elitea.LlmDto;
-import com.epam.healenium.model.dto.elitea.VcsDto;
+import com.epam.healenium.model.dto.LlmDto;
+import com.epam.healenium.model.dto.VcsDto;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -13,10 +12,11 @@ public interface IntegrationService {
 
     @NotNull List<VcsDto> updateVcs(String id, VcsDto vcsDto);
 
-    @NotNull List<LlmDto> saveOrUpdateLlm(LlmDto llmDto);
+    @NotNull List<LlmDto> createLlm(LlmDto llmDto);
 
-    IntegrationFormDto getSettings(String platform);
-    VcsDto getVcs(String platform);
+    @NotNull List<LlmDto> updateLlm(String id, LlmDto llmDto);
+
+    VcsDto getActiveVcs();
 
     @NotNull List<VcsDto> getVcsAll();
 
@@ -24,14 +24,15 @@ public interface IntegrationService {
 
     void deleteVcs(String id);
 
-    boolean isAvailableForSd();
+    boolean hasActiveGit();
 
-    LlmDto getLlm(String platform);
+    boolean hasActiveGenAI();
+
+    LlmDto getActiveLlm();
 
     List<LlmDto> getLlmAll();
 
     List<LlmDto> setActiveLlm(String id);
-    LlmDto getActiveLlm();
 
     void deleteLlm(String id);
 }
