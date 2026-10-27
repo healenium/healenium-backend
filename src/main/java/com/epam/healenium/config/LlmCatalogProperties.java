@@ -4,12 +4,15 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 @ConfigurationProperties("healenium")
 @Validated
 public class LlmCatalogProperties {
@@ -17,18 +20,16 @@ public class LlmCatalogProperties {
     @Valid
     private List<Model> llmModels = new ArrayList<>();
 
-    public List<Model> getLlmModels() {
-        return llmModels;
-    }
-
     public void setLlmModels(List<Model> llmModels) {
         this.llmModels = llmModels != null ? llmModels : new ArrayList<>();
     }
 
+    @Setter
+    @Getter
     public static class Model {
 
         @NotBlank
-        private String name;
+        private String model;
 
         @NotBlank
         @Pattern(regexp = "openai|anthropic|gemini")
@@ -38,28 +39,5 @@ public class LlmCatalogProperties {
         @Size(max = 512)
         private String baseUrl;
 
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getProtocol() {
-            return protocol;
-        }
-
-        public void setProtocol(String protocol) {
-            this.protocol = protocol;
-        }
-
-        public String getBaseUrl() {
-            return baseUrl;
-        }
-
-        public void setBaseUrl(String baseUrl) {
-            this.baseUrl = baseUrl;
-        }
     }
 }

@@ -1,4 +1,4 @@
-package com.epam.healenium.model.dto.elitea;
+package com.epam.healenium.model.dto;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

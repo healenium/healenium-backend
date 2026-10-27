@@ -1,13 +1,20 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   logicalFilePath="changelog/020_llm_protocol_and_model_catalog.xml"
+                   logicalFilePath="changelog/020_llm_protocol_and_model.xml"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
     <changeSet id="add-llm-protocol-and-base-url" author="healenium">
         <addColumn tableName="llm">
-            <column name="protocol" type="varchar(16)"/>
-            <column name="base_url" type="varchar(512)"/>
+            <column name="protocol" type="varchar(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="base_url" type="varchar(512)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="model" type="varchar(264)">
+                <constraints nullable="false"/>
+            </column>
         </addColumn>
     </changeSet>
 

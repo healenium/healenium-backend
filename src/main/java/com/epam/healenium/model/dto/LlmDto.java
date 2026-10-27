@@ -1,11 +1,11 @@
-package com.epam.healenium.model.dto.elitea;
+package com.epam.healenium.model.dto;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Data
@@ -15,6 +15,9 @@ public class LlmDto {
     
     @NotBlank(message = "LLM name cannot be blank")
     private String name;
+
+    @NotBlank(message = "Model cannot be blank")
+    private String model;
 
     @NotBlank(message = "Protocol cannot be blank")
     @Pattern(regexp = "openai|anthropic|gemini", message = "Protocol must be openai, anthropic, or gemini")

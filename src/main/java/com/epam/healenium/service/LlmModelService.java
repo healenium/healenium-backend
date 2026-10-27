@@ -2,6 +2,7 @@ package com.epam.healenium.service;
 
 import com.epam.healenium.config.LlmCatalogProperties;
 import com.epam.healenium.model.dto.LlmModelDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Service
 @EnableConfigurationProperties(LlmCatalogProperties.class)
 public class LlmModelService {
@@ -30,20 +32,28 @@ public class LlmModelService {
         List<LlmModelDto> models = new ArrayList<>();
         Set<String> names = new HashSet<>();
         for (LlmCatalogProperties.Model entry : catalog.getLlmModels()) {
-            if (entry == null || !isHttpUrl(entry.getBaseUrl())) {
-                String name = entry == null ? null : entry.getName();
-                throw new IllegalStateException("LLM model catalog entry has an invalid base URL: " + name);
+            if (validEntry(entry, names)) {
+                models.add(new LlmModelDto()
+                        .setModel(entry.getModel())
+                        .setProtocol(entry.getProtocol())
+                        .setBaseUrl(entry.getBaseUrl()));
             }
-            if (!names.add(entry.getName())) {
-                throw new IllegalStateException("Duplicate LLM model name: " + entry.getName());
-            }
-            models.add(new LlmModelDto()
-                    .setName(entry.getName())
-                    .setProtocol(entry.getProtocol())
-                    .setBaseUrl(entry.getBaseUrl()));
         }
-        models.sort(Comparator.comparing(LlmModelDto::getName, Comparator.nullsLast(String::compareTo)));
+        models.sort(Comparator.comparing(LlmModelDto::getModel, Comparator.nullsLast(String::compareTo)));
         return models;
+    }
+
+    private static boolean validEntry(LlmCatalogProperties.Model entry, Set<String> names) {
+        if (!isHttpUrl(entry.getBaseUrl())) {
+            log.warn("Skipping LLM model catalog entry with an invalid base URL: {}, {}",
+                    entry.getModel(), entry.getBaseUrl());
+            return false;
+        }
+        if (!names.add(entry.getModel())) {
+            log.warn("Skipping duplicate LLM model catalog entry: {}", entry.getModel());
+            return false;
+        }
+        return true;
     }
 
     private static boolean isHttpUrl(String value) {

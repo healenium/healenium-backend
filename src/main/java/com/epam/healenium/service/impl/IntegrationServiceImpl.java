@@ -2,9 +2,8 @@ package com.epam.healenium.service.impl;
 
 import com.epam.healenium.model.domain.Llm;
 import com.epam.healenium.model.domain.Vcs;
-import com.epam.healenium.model.dto.elitea.IntegrationFormDto;
-import com.epam.healenium.model.dto.elitea.LlmDto;
-import com.epam.healenium.model.dto.elitea.VcsDto;
+import com.epam.healenium.model.dto.LlmDto;
+import com.epam.healenium.model.dto.VcsDto;
 import com.epam.healenium.repository.LlmRepository;
 import com.epam.healenium.repository.VcsRepository;
 import com.epam.healenium.service.IntegrationService;
@@ -16,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.List;
@@ -141,8 +139,9 @@ public class IntegrationServiceImpl implements IntegrationService {
 
     @Override
     public @NotNull List<LlmDto> createLlm(LlmDto llmDto) {
-        if (!isLlmDtoValid(llmDto)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid LLM configuration");
+        String validationError = llmDtoError(llmDto);
+        if (validationError != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, validationError);
         }
         if (StringUtils.isBlank(llmDto.getAccessToken())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Access token cannot be blank");
@@ -158,8 +157,9 @@ public class IntegrationServiceImpl implements IntegrationService {
 
     @Override
     public @NotNull List<LlmDto> updateLlm(String id, LlmDto llmDto) {
-        if (!isLlmDtoValid(llmDto)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid LLM configuration");
+        String validationError = llmDtoError(llmDto);
+        if (validationError != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, validationError);
         }
         Llm existingLlm = llmRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "LLM configuration not found"));
@@ -174,13 +174,29 @@ public class IntegrationServiceImpl implements IntegrationService {
         return getAllLlms();
     }
 
-    private boolean isLlmDtoValid(LlmDto llmDto) {
-        return llmDto != null
-                && StringUtils.isNotBlank(llmDto.getName())
-                && StringUtils.isNotBlank(llmDto.getProtocol())
-                && llmDto.getProtocol().matches("openai|anthropic|gemini")
-                && StringUtils.isNotBlank(llmDto.getBaseUrl())
-                && llmDto.getBaseUrl().length() <= 512;
+    private String llmDtoError(LlmDto llmDto) {
+        if (llmDto == null) {
+            return "Invalid LLM configuration";
+        }
+        if (StringUtils.isBlank(llmDto.getName())) {
+            return "LLM name cannot be blank";
+        }
+        if (StringUtils.isBlank(llmDto.getModel())) {
+            return "Model cannot be blank";
+        }
+        if (StringUtils.isBlank(llmDto.getProtocol())) {
+            return "Protocol cannot be blank";
+        }
+        if (!llmDto.getProtocol().matches("openai|anthropic|gemini")) {
+            return "Protocol must be openai, anthropic, or gemini";
+        }
+        if (StringUtils.isBlank(llmDto.getBaseUrl())) {
+            return "Base URL cannot be blank";
+        }
+        if (llmDto.getBaseUrl().length() > 512) {
+            return "Base URL must be at most 512 characters";
+        }
+        return null;
     }
 
     private Optional<Llm> findLlmByName(String name) {
@@ -196,6 +212,7 @@ public class IntegrationServiceImpl implements IntegrationService {
             existingLlm.setAccessToken(llmDto.getAccessToken());
         }
         existingLlm.setName(llmDto.getName())
+                   .setModel(llmDto.getModel())
                    .setProtocol(llmDto.getProtocol())
                    .setBaseUrl(llmDto.getBaseUrl())
                    .setActive(true);
@@ -209,6 +226,7 @@ public class IntegrationServiceImpl implements IntegrationService {
         Llm newLlm = new Llm()
                 .setUid(generateUid())
                 .setName(llmDto.getName())
+                .setModel(llmDto.getModel())
                 .setProtocol(llmDto.getProtocol())
                 .setBaseUrl(llmDto.getBaseUrl())
                 .setAccessToken(llmDto.getAccessToken())
@@ -312,13 +330,14 @@ public class IntegrationServiceImpl implements IntegrationService {
         return !StringUtils.isEmpty(llm.getAccessToken())
                 && !StringUtils.isEmpty(llm.getProtocol())
                 && !StringUtils.isEmpty(llm.getBaseUrl())
-                && !StringUtils.isEmpty(llm.getName());
+                && !StringUtils.isEmpty(llm.getName())
+                && !StringUtils.isEmpty(llm.getModel());
     }
 
     @Override
     public LlmDto getActiveLlm() {
             return findActiveLlm()
-                    .map(llm -> createLlmDto(llm, ACCESS_AI, true))
+                    .map(llm -> createLlmDto(llm, ACCESS_AI))
                     .orElseThrow(() -> new ResponseStatusException(
                             HttpStatus.NOT_FOUND, "No active LLM configuration"));
     }
@@ -329,20 +348,16 @@ public class IntegrationServiceImpl implements IntegrationService {
                 .findFirst();
     }
 
-    private LlmDto createLlmDto(Llm llm, String platform, boolean includeId) {
-        LlmDto llmDto = new LlmDto()
-                .setAccessToken(getPlatformValue(platform, llm.getAccessToken()))
+    private LlmDto createLlmDto(Llm llm, String accessLevel) {
+        return new LlmDto()
+                .setId(llm.getUid())
+                .setAccessToken(getPlatformValue(accessLevel, llm.getAccessToken()))
                 .setName(llm.getName())
+                .setModel(llm.getModel())
                 .setProtocol(llm.getProtocol())
                 .setBaseUrl(llm.getBaseUrl())
                 .setActive(llm.isActive())
                 .setCreatedDate(llm.getCreatedDate());
-                
-        if (includeId) {
-            llmDto.setId(llm.getUid());
-        }
-        
-        return llmDto;
     }
 
     @Override
@@ -381,7 +396,7 @@ public class IntegrationServiceImpl implements IntegrationService {
 
     private @NotNull List<LlmDto> getAllLlms() {
         return llmRepository.findAll().stream()
-                .map(llm -> createLlmDto(llm, ACCESS_UI, true))
+                .map(llm -> createLlmDto(llm, ACCESS_UI))
                 .sorted(Comparator.comparing(LlmDto::getCreatedDate, Comparator.nullsLast(Comparator.naturalOrder())))
                 .toList();
     }

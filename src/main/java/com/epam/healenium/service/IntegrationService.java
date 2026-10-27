@@ -1,7 +1,7 @@
 package com.epam.healenium.service;
 
-import com.epam.healenium.model.dto.elitea.LlmDto;
-import com.epam.healenium.model.dto.elitea.VcsDto;
+import com.epam.healenium.model.dto.LlmDto;
+import com.epam.healenium.model.dto.VcsDto;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

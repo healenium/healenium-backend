@@ -2,10 +2,10 @@ package com.epam.healenium.controller;
 
 import com.epam.healenium.model.domain.Report;
 import com.epam.healenium.model.dto.LlmModelDto;
-import com.epam.healenium.model.dto.elitea.DedicatedInfo;
-import com.epam.healenium.model.dto.elitea.LlmDto;
-import com.epam.healenium.model.dto.elitea.LocatorPathsDto;
-import com.epam.healenium.model.dto.elitea.VcsDto;
+import com.epam.healenium.model.dto.DedicatedInfo;
+import com.epam.healenium.model.dto.LlmDto;
+import com.epam.healenium.model.dto.LocatorPathsDto;
+import com.epam.healenium.model.dto.VcsDto;
 import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.service.IntegrationService;
 import com.epam.healenium.service.LlmModelService;
@@ -15,7 +15,9 @@ import com.epam.healenium.tenant.TenantTxFacade;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,8 +28,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -210,6 +214,35 @@ public class IntegrationController {
             log.debug("[SETTINGS] Get llm-models for ui");
             return ResponseEntity.ok(llmModelService.list());
         });
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleArgument(IllegalArgumentException ex) {
+        String message = ex.getMessage() == null || ex.getMessage().isBlank()
+                ? "Invalid configuration"
+                : ex.getMessage();
+        return ResponseEntity.badRequest().body(Map.of("error_message", message));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> handleStatus(ResponseStatusException ex) {
+        String message = ex.getReason() == null || ex.getReason().isBlank()
+                ? ex.getStatusCode().toString()
+                : ex.getReason();
+        return ResponseEntity.status(ex.getStatusCode()).body(Map.of("error_message", message));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleInvalid(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getDefaultMessage())
+                .filter(text -> text != null && !text.isBlank())
+                .distinct()
+                .collect(Collectors.joining(" "));
+        if (message.isBlank()) {
+            message = "Invalid configuration";
+        }
+        return ResponseEntity.badRequest().body(Map.of("error_message", message));
     }
 
 }

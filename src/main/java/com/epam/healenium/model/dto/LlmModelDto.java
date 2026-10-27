@@ -11,8 +11,8 @@ import javax.validation.constraints.Size;
 @Accessors(chain = true)
 public class LlmModelDto {
 
-    @NotBlank(message = "LLM model name cannot be blank")
-    private String name;
+    @NotBlank(message = "Model cannot be blank")
+    private String model;
 
     @NotBlank(message = "Protocol cannot be blank")
     @Pattern(regexp = "openai|anthropic|gemini", message = "Protocol must be openai, anthropic, or gemini")
