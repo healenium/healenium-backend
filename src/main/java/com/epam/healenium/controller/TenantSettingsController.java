@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/healenium/v1/tenant/settings")
+@RequestMapping("/healenium/tenant/settings")
 @RequiredArgsConstructor
 public class TenantSettingsController {
 

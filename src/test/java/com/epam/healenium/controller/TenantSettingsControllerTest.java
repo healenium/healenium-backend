@@ -49,7 +49,7 @@ class TenantSettingsControllerTest {
 
         when(tenantSettingsService.getSettings()).thenReturn(dto);
 
-        mockMvc.perform(get("/healenium/v1/tenant/settings"))
+        mockMvc.perform(get("/healenium/tenant/settings"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tenantId").value(tenantId.toString()))
                 .andExpect(jsonPath("$.healEnabled").value(true))
@@ -71,7 +71,7 @@ class TenantSettingsControllerTest {
 
         when(tenantSettingsService.updateSettings(any(TenantSettingsDto.class))).thenReturn(response);
 
-        mockMvc.perform(put("/healenium/v1/tenant/settings")
+        mockMvc.perform(put("/healenium/tenant/settings")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonPayload))
                 .andExpect(status().isOk())
