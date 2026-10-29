@@ -17,5 +17,8 @@ public class TenantSettingsDto {
     private Integer recoveryTries;
     private Double scoreCap;
     private String healedType;
+    private Boolean keySelectorUrl;
+    private Boolean collectMetrics;
+    private Boolean findElementsAutoHealing;
     private LocalDateTime updatedAt;
 }

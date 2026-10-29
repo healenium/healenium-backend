@@ -53,10 +53,20 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
         if (request.getHealedType() != null) {
             settings.setHealedType(normalizeHealedType(request.getHealedType()));
         }
+        if (request.getKeySelectorUrl() != null) {
+            settings.setKeySelectorUrl(request.getKeySelectorUrl());
+        }
+        if (request.getCollectMetrics() != null) {
+            settings.setCollectMetrics(request.getCollectMetrics());
+        }
+        if (request.getFindElementsAutoHealing() != null) {
+            settings.setFindElementsAutoHealing(request.getFindElementsAutoHealing());
+        }
 
         Settings saved = settingsRepository.save(settings);
-        log.info("[Settings] Updated settings for tenant {}: healEnabled={}, recoveryTries={}, scoreCap={}, healedType={}",
-                tenantId, saved.getHealEnabled(), saved.getRecoveryTries(), saved.getScoreCap(), saved.getHealedType());
+        log.info("[Settings] Updated settings for tenant {}: healEnabled={}, recoveryTries={}, scoreCap={}, healedType={}, keySelectorUrl={}, collectMetrics={}, findElementsAutoHealing={}",
+                tenantId, saved.getHealEnabled(), saved.getRecoveryTries(), saved.getScoreCap(), saved.getHealedType(),
+                saved.getKeySelectorUrl(), saved.getCollectMetrics(), saved.getFindElementsAutoHealing());
         return toDto(saved);
     }
 
@@ -98,6 +108,9 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
                 .setRecoveryTries(entity.getRecoveryTries())
                 .setScoreCap(entity.getScoreCap())
                 .setHealedType(entity.getHealedType())
+                .setKeySelectorUrl(entity.getKeySelectorUrl())
+                .setCollectMetrics(entity.getCollectMetrics())
+                .setFindElementsAutoHealing(entity.getFindElementsAutoHealing())
                 .setUpdatedAt(entity.getUpdatedAt());
     }
 
@@ -107,6 +120,9 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
                 .setHealEnabled(true)
                 .setRecoveryTries(dynamicSettings.getRecoveryTries() > 0 ? dynamicSettings.getRecoveryTries() : 1)
                 .setScoreCap(dynamicSettings.getScoreCap() > 0 ? dynamicSettings.getScoreCap() : 0.60)
-                .setHealedType(normalizeHealedType(Objects.requireNonNullElse(dynamicSettings.getSelectorType(), "css")));
+                .setHealedType(normalizeHealedType(Objects.requireNonNullElse(dynamicSettings.getSelectorType(), "css")))
+                .setKeySelectorUrl(dynamicSettings.isKeySelectorUrl())
+                .setCollectMetrics(dynamicSettings.isCollectMetrics())
+                .setFindElementsAutoHealing(dynamicSettings.isFindElementsAutoHealing());
     }
 }

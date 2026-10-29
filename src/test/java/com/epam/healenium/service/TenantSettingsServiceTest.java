@@ -53,7 +53,10 @@ class TenantSettingsServiceTest {
                 .setHealEnabled(false)
                 .setRecoveryTries(3)
                 .setScoreCap(0.75)
-                .setHealedType("xpath");
+                .setHealedType("xpath")
+                .setKeySelectorUrl(true)
+                .setCollectMetrics(false)
+                .setFindElementsAutoHealing(true);
 
         when(settingsRepository.findByTenantId(tenantId)).thenReturn(Optional.of(entity));
 
@@ -65,6 +68,9 @@ class TenantSettingsServiceTest {
         assertEquals(3, result.getRecoveryTries());
         assertEquals(0.75, result.getScoreCap());
         assertEquals("xpath", result.getHealedType());
+        assertTrue(result.getKeySelectorUrl());
+        assertFalse(result.getCollectMetrics());
+        assertTrue(result.getFindElementsAutoHealing());
     }
 
     @Test
@@ -93,7 +99,10 @@ class TenantSettingsServiceTest {
                 .setHealEnabled(false)
                 .setRecoveryTries(2)
                 .setScoreCap(0.85)
-                .setHealedType("xpath");
+                .setHealedType("xpath")
+                .setKeySelectorUrl(true)
+                .setCollectMetrics(false)
+                .setFindElementsAutoHealing(true);
 
         TenantSettingsDto updated = service.updateSettings(request);
 
@@ -103,12 +112,18 @@ class TenantSettingsServiceTest {
         assertEquals(2, updated.getRecoveryTries());
         assertEquals(0.85, updated.getScoreCap());
         assertEquals("xpath", updated.getHealedType());
+        assertTrue(updated.getKeySelectorUrl());
+        assertFalse(updated.getCollectMetrics());
+        assertTrue(updated.getFindElementsAutoHealing());
 
         ArgumentCaptor<Settings> captor = ArgumentCaptor.forClass(Settings.class);
         verify(settingsRepository).save(captor.capture());
         Settings saved = captor.getValue();
         assertEquals(tenantId, saved.getTenantId());
         assertEquals("xpath", saved.getHealedType());
+        assertTrue(saved.getKeySelectorUrl());
+        assertFalse(saved.getCollectMetrics());
+        assertTrue(saved.getFindElementsAutoHealing());
     }
 
     @Test

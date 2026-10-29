@@ -44,6 +44,15 @@ public class Settings implements TenantAwareEntity {
     @Column(name = "healed_type", nullable = false, length = 20)
     private String healedType = "css";
 
+    @Column(name = "key_selector_url", nullable = false)
+    private Boolean keySelectorUrl = false;
+
+    @Column(name = "collect_metrics", nullable = false)
+    private Boolean collectMetrics = true;
+
+    @Column(name = "find_elements_auto_healing", nullable = false)
+    private Boolean findElementsAutoHealing = false;
+
     @Column(name = "created_at")
     @CreationTimestamp
     private LocalDateTime createdAt;
