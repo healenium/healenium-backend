@@ -29,6 +29,4 @@
 	<include file="012_multitenancy_rls.xml" relativeToChangelogFile="true"/>
 	<include file="015_rls_nullif_tenant.xml" relativeToChangelogFile="true"/>
 	<include file="020_settings.xml" relativeToChangelogFile="true"/>
-	<include file="021_settings_bottom_list.xml" relativeToChangelogFile="true"/>
-
 </databaseChangeLog>

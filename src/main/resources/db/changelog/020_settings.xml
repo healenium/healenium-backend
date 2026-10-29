@@ -13,6 +13,9 @@
                 recovery_tries INT NOT NULL DEFAULT 1,
                 score_cap NUMERIC(3, 2) NOT NULL DEFAULT 0.60,
                 healed_type VARCHAR(20) NOT NULL DEFAULT 'css',
+                key_selector_url BOOLEAN NOT NULL DEFAULT FALSE,
+                collect_metrics BOOLEAN NOT NULL DEFAULT TRUE,
+                find_elements_auto_healing BOOLEAN NOT NULL DEFAULT FALSE,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
