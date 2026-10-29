@@ -7,10 +7,10 @@ import com.epam.healenium.repository.SettingsRepository;
 import com.epam.healenium.service.TenantSettingsService;
 import com.epam.healenium.tenant.TenantContext;
 import com.epam.healenium.tenant.TenantFilter;
+import com.epam.healenium.tenant.TenantTxFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -22,52 +22,55 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
 
     private final SettingsRepository settingsRepository;
     private final DynamicSettings dynamicSettings;
+    private final TenantTxFacade tenantTx;
 
     @Override
-    @Transactional(readOnly = true)
     public TenantSettingsDto getSettings() {
-        UUID tenantId = resolveTenantId();
-        return settingsRepository.findByTenantId(tenantId)
-                .map(this::toDto)
-                .orElseGet(() -> buildDefaultDto(tenantId));
+        return tenantTx.required(() -> {
+            UUID tenantId = resolveTenantId();
+            return settingsRepository.findByTenantId(tenantId)
+                    .map(this::toDto)
+                    .orElseGet(() -> buildDefaultDto(tenantId));
+        });
     }
 
     @Override
-    @Transactional
     public TenantSettingsDto updateSettings(TenantSettingsDto request) {
         validateRequest(request);
-        UUID tenantId = resolveTenantId();
+        return tenantTx.required(() -> {
+            UUID tenantId = resolveTenantId();
 
-        Settings settings = settingsRepository.findByTenantId(tenantId)
-                .orElseGet(() -> new Settings().setTenantId(tenantId));
+            Settings settings = settingsRepository.findByTenantId(tenantId)
+                    .orElseGet(() -> new Settings().setTenantId(tenantId));
 
-        if (request.getHealEnabled() != null) {
-            settings.setHealEnabled(request.getHealEnabled());
-        }
-        if (request.getRecoveryTries() != null) {
-            settings.setRecoveryTries(request.getRecoveryTries());
-        }
-        if (request.getScoreCap() != null) {
-            settings.setScoreCap(request.getScoreCap());
-        }
-        if (request.getHealedType() != null) {
-            settings.setHealedType(normalizeHealedType(request.getHealedType()));
-        }
-        if (request.getKeySelectorUrl() != null) {
-            settings.setKeySelectorUrl(request.getKeySelectorUrl());
-        }
-        if (request.getCollectMetrics() != null) {
-            settings.setCollectMetrics(request.getCollectMetrics());
-        }
-        if (request.getFindElementsAutoHealing() != null) {
-            settings.setFindElementsAutoHealing(request.getFindElementsAutoHealing());
-        }
+            if (request.getHealEnabled() != null) {
+                settings.setHealEnabled(request.getHealEnabled());
+            }
+            if (request.getRecoveryTries() != null) {
+                settings.setRecoveryTries(request.getRecoveryTries());
+            }
+            if (request.getScoreCap() != null) {
+                settings.setScoreCap(request.getScoreCap());
+            }
+            if (request.getHealedType() != null) {
+                settings.setHealedType(normalizeHealedType(request.getHealedType()));
+            }
+            if (request.getKeySelectorUrl() != null) {
+                settings.setKeySelectorUrl(request.getKeySelectorUrl());
+            }
+            if (request.getCollectMetrics() != null) {
+                settings.setCollectMetrics(request.getCollectMetrics());
+            }
+            if (request.getFindElementsAutoHealing() != null) {
+                settings.setFindElementsAutoHealing(request.getFindElementsAutoHealing());
+            }
 
-        Settings saved = settingsRepository.save(settings);
-        log.info("[Settings] Updated settings for tenant {}: healEnabled={}, recoveryTries={}, scoreCap={}, healedType={}, keySelectorUrl={}, collectMetrics={}, findElementsAutoHealing={}",
-                tenantId, saved.getHealEnabled(), saved.getRecoveryTries(), saved.getScoreCap(), saved.getHealedType(),
-                saved.getKeySelectorUrl(), saved.getCollectMetrics(), saved.getFindElementsAutoHealing());
-        return toDto(saved);
+            Settings saved = settingsRepository.save(settings);
+            log.info("[Settings] Updated settings for tenant {}: healEnabled={}, recoveryTries={}, scoreCap={}, healedType={}, keySelectorUrl={}, collectMetrics={}, findElementsAutoHealing={}",
+                    tenantId, saved.getHealEnabled(), saved.getRecoveryTries(), saved.getScoreCap(), saved.getHealedType(),
+                    saved.getKeySelectorUrl(), saved.getCollectMetrics(), saved.getFindElementsAutoHealing());
+            return toDto(saved);
+        });
     }
 
     private UUID resolveTenantId() {

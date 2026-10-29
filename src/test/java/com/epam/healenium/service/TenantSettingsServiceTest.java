@@ -6,6 +6,7 @@ import com.epam.healenium.model.dto.TenantSettingsDto;
 import com.epam.healenium.repository.SettingsRepository;
 import com.epam.healenium.service.impl.TenantSettingsServiceImpl;
 import com.epam.healenium.tenant.TenantContext;
+import com.epam.healenium.tenant.TenantTxFacade;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,13 +32,25 @@ class TenantSettingsServiceTest {
     @Mock
     private DynamicSettings dynamicSettings;
 
+    private final TenantTxFacade tenantTx = new TenantTxFacade() {
+        @Override
+        public <T> T required(Supplier<T> supplier) {
+            return supplier.get();
+        }
+
+        @Override
+        public void required(Runnable runnable) {
+            runnable.run();
+        }
+    };
+
     private TenantSettingsServiceImpl service;
 
     private final UUID tenantId = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
-        service = new TenantSettingsServiceImpl(settingsRepository, dynamicSettings);
+        service = new TenantSettingsServiceImpl(settingsRepository, dynamicSettings, tenantTx);
         TenantContext.setTenantId(tenantId);
     }
 
