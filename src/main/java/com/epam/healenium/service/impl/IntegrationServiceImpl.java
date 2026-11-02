@@ -2,9 +2,8 @@ package com.epam.healenium.service.impl;
 
 import com.epam.healenium.model.domain.Llm;
 import com.epam.healenium.model.domain.Vcs;
-import com.epam.healenium.model.dto.elitea.IntegrationFormDto;
-import com.epam.healenium.model.dto.elitea.LlmDto;
-import com.epam.healenium.model.dto.elitea.VcsDto;
+import com.epam.healenium.model.dto.LlmDto;
+import com.epam.healenium.model.dto.VcsDto;
 import com.epam.healenium.repository.LlmRepository;
 import com.epam.healenium.repository.VcsRepository;
 import com.epam.healenium.service.IntegrationService;
@@ -28,7 +27,8 @@ import java.util.UUID;
 @Transactional
 public class IntegrationServiceImpl implements IntegrationService {
 
-    public static final String GITHUB = "github";
+    public static final String ACCESS_AI = "ai";
+    public static final String ACCESS_UI = "ui";
     private final VcsRepository vcsRepository;
     private final LlmRepository llmRepository;
 
@@ -37,7 +37,7 @@ public class IntegrationServiceImpl implements IntegrationService {
         String name = requireText(vcsDto.getName(), "name is required");
         requireText(vcsDto.getAccessToken(), "access token is required");
         String provider = resolveProvider(vcsDto, Optional.empty());
-        String baseUrl = resolveBaseUrl(vcsDto, Optional.empty());
+        String baseUrl = resolveBaseUrl(vcsDto, Optional.empty(), provider);
         VcsDto.validateProviderAndBaseUrl(provider, baseUrl);
         if (findVcsByName(name).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "VCS configuration name already exists");
@@ -59,7 +59,7 @@ public class IntegrationServiceImpl implements IntegrationService {
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "VCS configuration name already exists");
                 });
         String provider = resolveProvider(vcsDto, Optional.of(existingVcs));
-        String baseUrl = resolveBaseUrl(vcsDto, Optional.of(existingVcs));
+        String baseUrl = resolveBaseUrl(vcsDto, Optional.of(existingVcs), provider);
         VcsDto.validateProviderAndBaseUrl(provider, baseUrl);
 
         deactivateAllVcs();
@@ -116,38 +116,87 @@ public class IntegrationServiceImpl implements IntegrationService {
         return existingVcs.map(Vcs::getProvider).filter(StringUtils::isNotBlank).orElse("github");
     }
 
-    private String resolveBaseUrl(VcsDto vcsDto, Optional<Vcs> existingVcs) {
-        if (vcsDto.getBaseUrl() != null) {
-            return StringUtils.trimToNull(vcsDto.getBaseUrl());
+    private String resolveBaseUrl(VcsDto vcsDto, Optional<Vcs> existingVcs, String provider) {
+        String submitted = StringUtils.trimToNull(vcsDto.getBaseUrl());
+        if (submitted != null) {
+            return submitted;
         }
-        return existingVcs.map(Vcs::getBaseUrl).orElse(null);
+        String stored = existingVcs.map(Vcs::getBaseUrl).map(StringUtils::trimToNull).orElse(null);
+        if (vcsDto.getBaseUrl() == null && stored != null) {
+            return stored;
+        }
+        return defaultBaseUrl(provider);
+    }
+
+    private String defaultBaseUrl(String provider) {
+        return switch (provider) {
+            case "gitlab" -> "https://gitlab.com";
+            case "azure-devops" -> "https://dev.azure.com/myorg";
+            case "gitea" -> "https://gitea.example.com";
+            default -> "https://api.github.com";
+        };
     }
 
     @Override
-    public @NotNull List<LlmDto> saveOrUpdateLlm(LlmDto llmDto) {
-        if (!isLlmDtoValid(llmDto)) {
-            log.warn("[SETTINGS] Invalid LLM DTO provided, skipping save operation");
-            return getAllLlms();
+    public @NotNull List<LlmDto> createLlm(LlmDto llmDto) {
+        String validationError = llmDtoError(llmDto);
+        if (validationError != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, validationError);
+        }
+        if (StringUtils.isBlank(llmDto.getAccessToken())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Access token cannot be blank");
+        }
+        if (findLlmByName(llmDto.getName()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "LLM configuration name already exists");
         }
 
-        Optional<Llm> existingLlm = findLlmByName(llmDto.getName());
         deactivateAllModels();
-        
-        if (existingLlm.isPresent()) {
-            updateExistingLlm(existingLlm.get(), llmDto);
-        } else {
-            createNewLlm(llmDto);
-        }
-        
+        createNewLlm(llmDto);
         return getAllLlms();
     }
 
-    private boolean isLlmDtoValid(LlmDto llmDto) {
-        return llmDto != null && 
-               llmDto.getAccessToken() != null && 
-               !llmDto.getAccessToken().trim().isEmpty() &&
-               llmDto.getName() != null && 
-               !llmDto.getName().trim().isEmpty();
+    @Override
+    public @NotNull List<LlmDto> updateLlm(String id, LlmDto llmDto) {
+        String validationError = llmDtoError(llmDto);
+        if (validationError != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, validationError);
+        }
+        Llm existingLlm = llmRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "LLM configuration not found"));
+        findLlmByName(llmDto.getName())
+                .filter(other -> !other.getUid().equals(existingLlm.getUid()))
+                .ifPresent(other -> {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "LLM configuration name already exists");
+                });
+
+        deactivateAllModels();
+        updateExistingLlm(existingLlm, llmDto);
+        return getAllLlms();
+    }
+
+    private String llmDtoError(LlmDto llmDto) {
+        if (llmDto == null) {
+            return "Invalid LLM configuration";
+        }
+        if (StringUtils.isBlank(llmDto.getName())) {
+            return "LLM name cannot be blank";
+        }
+        if (StringUtils.isBlank(llmDto.getModel())) {
+            return "Model cannot be blank";
+        }
+        if (StringUtils.isBlank(llmDto.getProtocol())) {
+            return "Protocol cannot be blank";
+        }
+        if (!llmDto.getProtocol().matches("openai|anthropic|gemini")) {
+            return "Protocol must be openai, anthropic, or gemini";
+        }
+        if (StringUtils.isBlank(llmDto.getBaseUrl())) {
+            return "Base URL cannot be blank";
+        }
+        if (llmDto.getBaseUrl().length() > 512) {
+            return "Base URL must be at most 512 characters";
+        }
+        return null;
     }
 
     private Optional<Llm> findLlmByName(String name) {
@@ -159,10 +208,15 @@ public class IntegrationServiceImpl implements IntegrationService {
     private void updateExistingLlm(Llm existingLlm, LlmDto llmDto) {
         log.info("[SETTINGS] Updating existing LLM: {}", existingLlm.getName());
         
-        existingLlm.setAccessToken(llmDto.getAccessToken())
-                   .setName(llmDto.getName())
-                   .setActive(true); // Always activate when updating
-                   
+        if (StringUtils.isNotBlank(llmDto.getAccessToken())) {
+            existingLlm.setAccessToken(llmDto.getAccessToken());
+        }
+        existingLlm.setName(llmDto.getName())
+                   .setModel(llmDto.getModel())
+                   .setProtocol(llmDto.getProtocol())
+                   .setBaseUrl(llmDto.getBaseUrl())
+                   .setActive(true);
+
         llmRepository.save(existingLlm);
     }
 
@@ -172,6 +226,9 @@ public class IntegrationServiceImpl implements IntegrationService {
         Llm newLlm = new Llm()
                 .setUid(generateUid())
                 .setName(llmDto.getName())
+                .setModel(llmDto.getModel())
+                .setProtocol(llmDto.getProtocol())
+                .setBaseUrl(llmDto.getBaseUrl())
                 .setAccessToken(llmDto.getAccessToken())
                 .setActive(true);
                 
@@ -183,26 +240,9 @@ public class IntegrationServiceImpl implements IntegrationService {
     }
 
     @Override
-    public IntegrationFormDto getSettings(String platform) {
-        Optional<Vcs> vcsOptional = findActiveVcs();
-        Optional<Llm> llmOptional = llmRepository.findAll().stream().findFirst();
-
-        IntegrationFormDto integrationFormDto = new IntegrationFormDto();
-        vcsOptional.ifPresent(vcs -> {
-            integrationFormDto.setGitHubAccessToken(getPlatformValue(platform, vcs.getAccessToken()));
-            integrationFormDto.setGitHubRepository(vcs.getRepository());
-            integrationFormDto.setGitHubBranch(vcs.getBranch());
-        });
-        llmOptional.ifPresent(llm -> {
-            integrationFormDto.setEliteaToken(getPlatformValue(platform, llm.getAccessToken()));
-        });
-        return integrationFormDto;
-    }
-
-    @Override
-    public VcsDto getVcs(String platform) {
+    public VcsDto getActiveVcs() {
         return findActiveVcs()
-                .map(vcs -> toVcsDto(vcs, platform))
+                .map(vcs -> toVcsDto(vcs, ACCESS_AI))
                 .orElse(new VcsDto());
     }
 
@@ -235,9 +275,16 @@ public class IntegrationServiceImpl implements IntegrationService {
     }
 
     @Override
-    public boolean isAvailableForSd() {
+    public boolean hasActiveGit() {
         return findActiveVcs()
                 .map(this::isVcsConfigurationComplete)
+                .orElse(false);
+    }
+
+    @Override
+    public boolean hasActiveGenAI() {
+        return findActiveLlm()
+                .map(this::isLlmConfigurationComplete)
                 .orElse(false);
     }
 
@@ -249,12 +296,12 @@ public class IntegrationServiceImpl implements IntegrationService {
 
     private @NotNull List<VcsDto> getAllVcs() {
         return vcsRepository.findAll().stream()
-                .map(vcs -> toVcsDto(vcs, "ui"))
+                .map(vcs -> toVcsDto(vcs, ACCESS_UI))
                 .sorted(Comparator.comparing(VcsDto::getCreatedDate, Comparator.nullsLast(Comparator.naturalOrder())))
                 .toList();
     }
 
-    private VcsDto toVcsDto(Vcs vcs, String platform) {
+    private VcsDto toVcsDto(Vcs vcs, String accessLevel) {
         return new VcsDto()
                 .setId(vcs.getUid())
                 .setName(vcs.getName())
@@ -262,7 +309,7 @@ public class IntegrationServiceImpl implements IntegrationService {
                 .setBaseUrl(vcs.getBaseUrl())
                 .setRepository(vcs.getRepository())
                 .setBranch(vcs.getBranch())
-                .setAccessToken(getPlatformValue(platform, vcs.getAccessToken()))
+                .setAccessToken(getPlatformValue(accessLevel, vcs.getAccessToken()))
                 .setActive(vcs.isActive())
                 .setCreatedDate(vcs.getCreatedDate());
     }
@@ -279,44 +326,38 @@ public class IntegrationServiceImpl implements IntegrationService {
                 && !StringUtils.isEmpty(vcs.getBranch());
     }
 
+    private boolean isLlmConfigurationComplete(Llm llm) {
+        return !StringUtils.isEmpty(llm.getAccessToken())
+                && !StringUtils.isEmpty(llm.getProtocol())
+                && !StringUtils.isEmpty(llm.getBaseUrl())
+                && !StringUtils.isEmpty(llm.getName())
+                && !StringUtils.isEmpty(llm.getModel());
+    }
+
     @Override
-    public LlmDto getLlm(String model) {
-        if (isPlatformModel(model)) {
-            return getFirstLlmForPlatform(model);
-        }
-        return getLlmByName(model);
+    public LlmDto getActiveLlm() {
+            return findActiveLlm()
+                    .map(llm -> createLlmDto(llm, ACCESS_AI))
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND, "No active LLM configuration"));
     }
 
-    private boolean isPlatformModel(String model) {
-        return "ui".equals(model) || "ai".equals(model);
-    }
-
-    private LlmDto getFirstLlmForPlatform(String platform) {
+    private Optional<Llm> findActiveLlm() {
         return llmRepository.findAll().stream()
-                .findFirst()
-                .map(llm -> createLlmDto(llm, platform, false))
-                .orElse(new LlmDto());
+                .filter(Llm::isActive)
+                .findFirst();
     }
 
-    private LlmDto getLlmByName(String modelName) {
-        return llmRepository.findAll().stream()
-                .filter(llm -> llm.getName().equals(modelName))
-                .findFirst()
-                .map(llm -> createLlmDto(llm, modelName, true))
-                .orElse(new LlmDto());
-    }
-
-    private LlmDto createLlmDto(Llm llm, String platform, boolean includeId) {
-        LlmDto llmDto = new LlmDto()
-                .setAccessToken(getPlatformValue(platform, llm.getAccessToken()))
+    private LlmDto createLlmDto(Llm llm, String accessLevel) {
+        return new LlmDto()
+                .setId(llm.getUid())
+                .setAccessToken(getPlatformValue(accessLevel, llm.getAccessToken()))
                 .setName(llm.getName())
-                .setActive(llm.isActive());
-                
-        if (includeId) {
-            llmDto.setId(llm.getUid());
-        }
-        
-        return llmDto;
+                .setModel(llm.getModel())
+                .setProtocol(llm.getProtocol())
+                .setBaseUrl(llm.getBaseUrl())
+                .setActive(llm.isActive())
+                .setCreatedDate(llm.getCreatedDate());
     }
 
     @Override
@@ -331,13 +372,9 @@ public class IntegrationServiceImpl implements IntegrationService {
             return getAllLlms();
         }
 
-        Optional<Llm> llmOptional = llmRepository.findById(id);
-        if (llmOptional.isPresent()) {
-            activateLlm(llmOptional.get());
-        } else {
-            log.warn("[SETTINGS] LLM with ID {} not found", id);
-        }
-        
+        Llm llm = llmRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "LLM configuration not found"));
+        activateLlm(llm);
         return getAllLlms();
     }
 
@@ -349,36 +386,18 @@ public class IntegrationServiceImpl implements IntegrationService {
     }
 
     @Override
-    public LlmDto getActiveLlm() {
-        Optional<LlmDto> llmOptional = llmRepository.findAll().stream()
-                .filter(Llm::isActive)
-                .map(llm ->
-                        new LlmDto()
-                                .setId(llm.getUid())
-                                .setName(llm.getName())
-                                .setAccessToken(llm.getAccessToken())
-                                .setActive(llm.isActive())
-                                .setCreatedDate(llm.getCreatedDate()))
-                .findFirst();
-        return llmOptional.orElse(new LlmDto());
-    }
-
-    @Override
     public void deleteLlm(String id) {
+        if (!llmRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "LLM configuration not found");
+        }
         log.info("[ELITEA] Delete Llm configuration by id: " + id);
         llmRepository.deleteById(id);
     }
 
     private @NotNull List<LlmDto> getAllLlms() {
         return llmRepository.findAll().stream()
-                .map(llm ->
-                        new LlmDto()
-                                .setId(llm.getUid())
-                                .setName(llm.getName())
-                                .setAccessToken(llm.getAccessToken())
-                                .setActive(llm.isActive())
-                                .setCreatedDate(llm.getCreatedDate()))
-                .sorted(Comparator.comparing(LlmDto::getCreatedDate))
+                .map(llm -> createLlmDto(llm, ACCESS_UI))
+                .sorted(Comparator.comparing(LlmDto::getCreatedDate, Comparator.nullsLast(Comparator.naturalOrder())))
                 .toList();
     }
 
@@ -389,12 +408,12 @@ public class IntegrationServiceImpl implements IntegrationService {
         llmRepository.saveAll(allLlms);
     }
 
-    private String getPlatformValue(String platform, String value) {
+    private String getPlatformValue(String accessLevel, String value) {
         if (StringUtils.isEmpty(value)) {
             return value;
         }
         
-        if (!"ai".equals(platform) && value.length() > 6) {
+        if (!ACCESS_AI.equals(accessLevel) && value.length() > 6) {
             String prefix = value.substring(0, 3);
             String suffix = value.substring(value.length() - 3);
             return prefix + "*****" + suffix;
