@@ -4,7 +4,7 @@
                    logicalFilePath="changelog/020_settings.xml"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
-    <changeSet author="alex" id="020-create-settings-table">
+    <changeSet author="alex" id="021-create-settings-table">
         <sql splitStatements="false" endDelimiter=";">
             CREATE TABLE IF NOT EXISTS settings (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
