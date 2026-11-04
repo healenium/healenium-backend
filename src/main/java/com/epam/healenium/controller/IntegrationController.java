@@ -212,7 +212,7 @@ public class IntegrationController {
     public ResponseEntity<List<LlmModelDto>> listLlmModels() {
         return tenantTx.required(() -> {
             log.debug("[SETTINGS] Get llm-models for ui");
-            return ResponseEntity.ok(llmModelService.list());
+            return ResponseEntity.ok(llmModelService.getModels());
         });
     }
 

@@ -8,9 +8,6 @@ server:
 spring:
   config:
     import: "classpath:llm-models.yaml,optional:file:/etc/healenium/llm-models.yaml"
-  profiles:
-    # pro, free
-    default: ${PROFILE:free}
   banner:
     location: /images/banner.txt
   servlet.multipart:
