@@ -21,6 +21,7 @@ import java.util.Map;
 public class SettingServiceImpl implements SettingService {
 
     private final DynamicSettings dynamicSettings;
+    private final com.epam.healenium.service.TenantSettingsService tenantSettingsService;
 
     private static final List<String> VALID_LOG_LEVELS = Arrays.asList("ERROR", "WARN", "INFO", "DEBUG", "TRACE");
     private static final String HEALENIUM_LOGGER = "com.epam.healenium";
@@ -157,26 +158,38 @@ public class SettingServiceImpl implements SettingService {
                     break;
                 case KEY_SELECTOR_URL:
                     boolean keySelectorUrlSuccess = setKeySelectorUrl(Boolean.parseBoolean(value));
+                    tenantSettingsService.updateSettings(new com.epam.healenium.model.dto.TenantSettingsDto()
+                            .setKeySelectorUrl(Boolean.parseBoolean(value)));
                     result.put("success", keySelectorUrlSuccess);
                     break;
                 case COLLECT_METRICS:
                     boolean collectMetricsSuccess = setCollectMetrics(Boolean.parseBoolean(value));
+                    tenantSettingsService.updateSettings(new com.epam.healenium.model.dto.TenantSettingsDto()
+                            .setCollectMetrics(Boolean.parseBoolean(value)));
                     result.put("success", collectMetricsSuccess);
                     break;
                 case FIND_ELEMENTS_AUTO_HEALING:
                     boolean findElementsAutoHealingSuccess = setFindElementsAutoHealing(Boolean.parseBoolean(value));
+                    tenantSettingsService.updateSettings(new com.epam.healenium.model.dto.TenantSettingsDto()
+                            .setFindElementsAutoHealing(Boolean.parseBoolean(value)));
                     result.put("success", findElementsAutoHealingSuccess);
                     break;
                 case SCORE_CAP:
                     boolean scoreCapSuccess = setScoreCap(Double.parseDouble(value));
+                    tenantSettingsService.updateSettings(new com.epam.healenium.model.dto.TenantSettingsDto()
+                            .setScoreCap(Double.parseDouble(value)));
                     result.put("success", scoreCapSuccess);
                     break;
                 case SELECTOR_TYPE:
                     boolean selectorTypeSuccess = setSelectorType(value);
+                    tenantSettingsService.updateSettings(new com.epam.healenium.model.dto.TenantSettingsDto()
+                            .setHealedType(value));
                     result.put("success", selectorTypeSuccess);
                     break;
                 case RECOVERY_TRIES:
                     boolean recoveryTriesSuccess = setRecoveryTries(Integer.parseInt(value));
+                    tenantSettingsService.updateSettings(new com.epam.healenium.model.dto.TenantSettingsDto()
+                            .setRecoveryTries(Integer.parseInt(value)));
                     result.put("success", recoveryTriesSuccess);
                     break;
                 default:
@@ -197,14 +210,15 @@ public class SettingServiceImpl implements SettingService {
     
     @Override
     public Map<String, Object> getAllSettings() {
+        com.epam.healenium.model.dto.TenantSettingsDto ts = tenantSettingsService.getSettings();
         Map<String, Object> settings = new HashMap<>();
         settings.put(LOG_LEVEL, System.getProperty("HLM_LOG_LEVEL", "INFO"));
-        settings.put(KEY_SELECTOR_URL, dynamicSettings.isKeySelectorUrl());
-        settings.put(COLLECT_METRICS, dynamicSettings.isCollectMetrics());
-        settings.put(FIND_ELEMENTS_AUTO_HEALING, dynamicSettings.isFindElementsAutoHealing());
-        settings.put(SCORE_CAP, dynamicSettings.getScoreCap());
-        settings.put(SELECTOR_TYPE, dynamicSettings.getSelectorType());
-        settings.put(RECOVERY_TRIES, dynamicSettings.getRecoveryTries());
+        settings.put(KEY_SELECTOR_URL, ts.getKeySelectorUrl() != null ? ts.getKeySelectorUrl() : dynamicSettings.isKeySelectorUrl());
+        settings.put(COLLECT_METRICS, ts.getCollectMetrics() != null ? ts.getCollectMetrics() : dynamicSettings.isCollectMetrics());
+        settings.put(FIND_ELEMENTS_AUTO_HEALING, ts.getFindElementsAutoHealing() != null ? ts.getFindElementsAutoHealing() : dynamicSettings.isFindElementsAutoHealing());
+        settings.put(SCORE_CAP, ts.getScoreCap() != null ? ts.getScoreCap() : dynamicSettings.getScoreCap());
+        settings.put(SELECTOR_TYPE, ts.getHealedType() != null ? ts.getHealedType() : dynamicSettings.getSelectorType());
+        settings.put(RECOVERY_TRIES, ts.getRecoveryTries() != null ? ts.getRecoveryTries() : dynamicSettings.getRecoveryTries());
         return settings;
     }
 

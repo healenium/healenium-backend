@@ -45,19 +45,40 @@ public class SelectorServiceImpl implements SelectorService {
     private final HealingRepository healingRepository;
     private final HealingResultRepository healingResultRepository;
     private final ReportRepository reportRepository;
+    private final com.epam.healenium.service.TenantSettingsService tenantSettingsService;
+
+    private boolean isKeySelectorUrl() {
+        if (tenantSettingsService != null) {
+            com.epam.healenium.model.dto.TenantSettingsDto settings = tenantSettingsService.getSettings();
+            if (settings != null && settings.getKeySelectorUrl() != null) {
+                return settings.getKeySelectorUrl();
+            }
+        }
+        return dynamicSettings.isKeySelectorUrl();
+    }
+
+    private boolean isFindElementsAutoHealing() {
+        if (tenantSettingsService != null) {
+            com.epam.healenium.model.dto.TenantSettingsDto settings = tenantSettingsService.getSettings();
+            if (settings != null && settings.getFindElementsAutoHealing() != null) {
+                return settings.getFindElementsAutoHealing();
+            }
+        }
+        return dynamicSettings.isFindElementsAutoHealing();
+    }
 
     @Override
     public void saveSelector(SelectorRequestDto request) {
-        String id = selectorIdStrategy.getSelectorId(request.getLocator(), request.getUrl(), request.getCommand(), dynamicSettings.isKeySelectorUrl());
+        String id = selectorIdStrategy.getSelectorId(request.getLocator(), request.getUrl(), request.getCommand(), isKeySelectorUrl());
         Optional<Selector> existSelector = selectorRepository.findById(id);
-        final Selector selector = selectorMapper.toSelector(request, id, existSelector, dynamicSettings.isFindElementsAutoHealing());
+        final Selector selector = selectorMapper.toSelector(request, id, existSelector, isFindElementsAutoHealing());
         selectorRepository.save(selector);
         log.debug("[Save Elements] Selector: {}", selector);
     }
 
     @Override
     public ReferenceElementsDto getReferenceElements(RequestDto dto) {
-        String selectorId = selectorIdStrategy.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), dynamicSettings.isKeySelectorUrl());
+        String selectorId = selectorIdStrategy.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), isKeySelectorUrl());
         Optional<Selector> optionalSelector = selectorRepository.findById(selectorId);
         List<List<Node>> paths = optionalSelector
                 .map(t -> t.getNodePathWrapper().getNodePath())
@@ -88,8 +109,8 @@ public class SelectorServiceImpl implements SelectorService {
             configSelectorDto
                     .setDisableHealingElementDto(selectorMapper.toSelectorDto(disableHealingElement))
                     .setEnableHealingElementsDto(selectorMapper.toSelectorDto(enableHealingElements))
-                    .setUrlForKey(dynamicSettings.isKeySelectorUrl())
-                    .setFindElementsAutoHealing(dynamicSettings.isFindElementsAutoHealing());
+                    .setUrlForKey(isKeySelectorUrl())
+                    .setFindElementsAutoHealing(isFindElementsAutoHealing());
             return configSelectorDto;
         });
     }
@@ -211,7 +232,7 @@ public class SelectorServiceImpl implements SelectorService {
                 }
             }
             String selectorId = selectorIdStrategy.getSelectorId(sourceSelector.getLocator().getValue(), sourceSelector.getUrl(),
-                    targetSelector.getCommand(), dynamicSettings.isKeySelectorUrl());
+                    targetSelector.getCommand(), isKeySelectorUrl());
             if (sourceSelector.getUid().equals(selectorId)) {
                 continue;
             }

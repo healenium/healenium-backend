@@ -49,6 +49,27 @@ public class HealingServiceImpl implements HealingService {
     private final ReportService reportService;
     private final HealingMapper healingMapper;
     private final AmazonRestService amazonRestService;
+    private final com.epam.healenium.service.TenantSettingsService tenantSettingsService;
+
+    private boolean isKeySelectorUrl() {
+        if (tenantSettingsService != null) {
+            com.epam.healenium.model.dto.TenantSettingsDto settings = tenantSettingsService.getSettings();
+            if (settings != null && settings.getKeySelectorUrl() != null) {
+                return settings.getKeySelectorUrl();
+            }
+        }
+        return dynamicSettings.isKeySelectorUrl();
+    }
+
+    private boolean isCollectMetrics() {
+        if (tenantSettingsService != null) {
+            com.epam.healenium.model.dto.TenantSettingsDto settings = tenantSettingsService.getSettings();
+            if (settings != null && settings.getCollectMetrics() != null) {
+                return settings.getCollectMetrics();
+            }
+        }
+        return dynamicSettings.isCollectMetrics();
+    }
 
     private final List<Set<SelectorComponent>> selectorDetailLevels = Collections.unmodifiableList(TEMP);
 
@@ -79,7 +100,7 @@ public class HealingServiceImpl implements HealingService {
         // add report record
         String sessionKey = Utils.getSessionKey(headers);
         reportService.createReportRecord(selectedResult, healing, sessionKey, dto.getScreenshot());
-        if (dynamicSettings.isCollectMetrics()) {
+        if (isCollectMetrics()) {
             pushMetrics(dto.getMetrics(), headers, selectedResult, dto.getUrl());
         }
     }
@@ -111,7 +132,7 @@ public class HealingServiceImpl implements HealingService {
 
     @Override
     public Set<HealingResultDto> getHealingResults(RequestDto dto) {
-        String selectorId = selectorIdStrategy.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), dynamicSettings.isKeySelectorUrl());
+        String selectorId = selectorIdStrategy.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), isKeySelectorUrl());
         log.debug("[Get Healing Result] Selector ID: {}", selectorId);
         return healingRepository.findBySelectorId(selectorId).stream()
                 .flatMap(it -> healingMapper.modelToResultDto(it.getResults()).stream())
@@ -125,7 +146,7 @@ public class HealingServiceImpl implements HealingService {
             HealingResult healingResult = healingResultOptional.get();
             healingResult.setSuccessHealing(dto.isSuccessHealing());
             resultRepository.save(healingResult);
-            if (dynamicSettings.isCollectMetrics()) {
+            if (isCollectMetrics()) {
                 moveMetrics(dto, healingResult);
             }
         }
@@ -133,7 +154,7 @@ public class HealingServiceImpl implements HealingService {
 
     private Healing getHealing(HealingRequestDto dto) {
         // build selector key
-        String selectorId = selectorIdStrategy.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), dynamicSettings.isKeySelectorUrl());
+        String selectorId = selectorIdStrategy.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), isKeySelectorUrl());
         // build healing key
         String healingId = Utils.buildHealingKey(selectorId, dto.getPageContent());
         return healingRepository.findById(healingId).orElseGet(() -> {
