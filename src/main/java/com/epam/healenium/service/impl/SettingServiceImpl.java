@@ -3,7 +3,9 @@ package com.epam.healenium.service.impl;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import com.epam.healenium.config.DynamicSettings;
+import com.epam.healenium.model.dto.TenantSettingsDto;
 import com.epam.healenium.service.SettingService;
+import com.epam.healenium.service.TenantSettingsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
@@ -21,7 +23,7 @@ import java.util.Map;
 public class SettingServiceImpl implements SettingService {
 
     private final DynamicSettings dynamicSettings;
-    private final com.epam.healenium.service.TenantSettingsService tenantSettingsService;
+    private final TenantSettingsService tenantSettingsService;
 
     private static final List<String> VALID_LOG_LEVELS = Arrays.asList("ERROR", "WARN", "INFO", "DEBUG", "TRACE");
     private static final String HEALENIUM_LOGGER = "com.epam.healenium";
@@ -31,6 +33,7 @@ public class SettingServiceImpl implements SettingService {
     private static final String FIND_ELEMENTS_AUTO_HEALING = "FIND_ELEMENTS_AUTO_HEALING";
     private static final String SCORE_CAP = "SCORE_CAP";
     private static final String SELECTOR_TYPE = "SELECTOR_TYPE";
+    private static final String HEALED_TYPE = "HEALED_TYPE";
     private static final String RECOVERY_TRIES = "RECOVERY_TRIES";
     private static final String LOG_LEVEL = "LOG_LEVEL";
 
@@ -157,40 +160,40 @@ public class SettingServiceImpl implements SettingService {
                     result.put("success", logLevelSuccess);
                     break;
                 case KEY_SELECTOR_URL:
-                    boolean keySelectorUrlSuccess = setKeySelectorUrl(Boolean.parseBoolean(value));
-                    tenantSettingsService.updateSettings(new com.epam.healenium.model.dto.TenantSettingsDto()
-                            .setKeySelectorUrl(Boolean.parseBoolean(value)));
-                    result.put("success", keySelectorUrlSuccess);
+                    boolean keySelectorUrl = Boolean.parseBoolean(value);
+                    setKeySelectorUrl(keySelectorUrl);
+                    tenantSettingsService.updateSettings(new TenantSettingsDto().setKeySelectorUrl(keySelectorUrl));
+                    result.put("success", true);
                     break;
                 case COLLECT_METRICS:
-                    boolean collectMetricsSuccess = setCollectMetrics(Boolean.parseBoolean(value));
-                    tenantSettingsService.updateSettings(new com.epam.healenium.model.dto.TenantSettingsDto()
-                            .setCollectMetrics(Boolean.parseBoolean(value)));
-                    result.put("success", collectMetricsSuccess);
+                    boolean collectMetrics = Boolean.parseBoolean(value);
+                    setCollectMetrics(collectMetrics);
+                    tenantSettingsService.updateSettings(new TenantSettingsDto().setCollectMetrics(collectMetrics));
+                    result.put("success", true);
                     break;
                 case FIND_ELEMENTS_AUTO_HEALING:
-                    boolean findElementsAutoHealingSuccess = setFindElementsAutoHealing(Boolean.parseBoolean(value));
-                    tenantSettingsService.updateSettings(new com.epam.healenium.model.dto.TenantSettingsDto()
-                            .setFindElementsAutoHealing(Boolean.parseBoolean(value)));
-                    result.put("success", findElementsAutoHealingSuccess);
+                    boolean autoHealing = Boolean.parseBoolean(value);
+                    setFindElementsAutoHealing(autoHealing);
+                    tenantSettingsService.updateSettings(new TenantSettingsDto().setFindElementsAutoHealing(autoHealing));
+                    result.put("success", true);
                     break;
                 case SCORE_CAP:
-                    boolean scoreCapSuccess = setScoreCap(Double.parseDouble(value));
-                    tenantSettingsService.updateSettings(new com.epam.healenium.model.dto.TenantSettingsDto()
-                            .setScoreCap(Double.parseDouble(value)));
-                    result.put("success", scoreCapSuccess);
+                    double scoreCap = Double.parseDouble(value);
+                    setScoreCap(scoreCap);
+                    tenantSettingsService.updateSettings(new TenantSettingsDto().setScoreCap(scoreCap));
+                    result.put("success", true);
                     break;
                 case SELECTOR_TYPE:
-                    boolean selectorTypeSuccess = setSelectorType(value);
-                    tenantSettingsService.updateSettings(new com.epam.healenium.model.dto.TenantSettingsDto()
-                            .setHealedType(value));
-                    result.put("success", selectorTypeSuccess);
+                case HEALED_TYPE:
+                    setSelectorType(value);
+                    tenantSettingsService.updateSettings(new TenantSettingsDto().setHealedType(value));
+                    result.put("success", true);
                     break;
                 case RECOVERY_TRIES:
-                    boolean recoveryTriesSuccess = setRecoveryTries(Integer.parseInt(value));
-                    tenantSettingsService.updateSettings(new com.epam.healenium.model.dto.TenantSettingsDto()
-                            .setRecoveryTries(Integer.parseInt(value)));
-                    result.put("success", recoveryTriesSuccess);
+                    int tries = Integer.parseInt(value);
+                    setRecoveryTries(tries);
+                    tenantSettingsService.updateSettings(new TenantSettingsDto().setRecoveryTries(tries));
+                    result.put("success", true);
                     break;
                 default:
                     log.warn("Unknown setting key: {}", key);
@@ -210,7 +213,7 @@ public class SettingServiceImpl implements SettingService {
     
     @Override
     public Map<String, Object> getAllSettings() {
-        com.epam.healenium.model.dto.TenantSettingsDto ts = tenantSettingsService.getSettings();
+        TenantSettingsDto ts = tenantSettingsService.getSettings();
         Map<String, Object> settings = new HashMap<>();
         settings.put(LOG_LEVEL, System.getProperty("HLM_LOG_LEVEL", "INFO"));
         settings.put(KEY_SELECTOR_URL, ts.getKeySelectorUrl() != null ? ts.getKeySelectorUrl() : dynamicSettings.isKeySelectorUrl());
@@ -224,7 +227,7 @@ public class SettingServiceImpl implements SettingService {
 
     private boolean isValidSelectorType(String selectorType) {
         return StringUtils.hasText(selectorType)
-                && ("cssSelector".equals(selectorType) || "xpath".equals(selectorType));
+                && ("css".equalsIgnoreCase(selectorType) || "cssSelector".equalsIgnoreCase(selectorType) || "xpath".equalsIgnoreCase(selectorType));
     }
 
     /**

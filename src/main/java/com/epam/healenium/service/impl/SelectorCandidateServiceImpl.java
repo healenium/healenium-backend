@@ -11,6 +11,7 @@ import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorCandidate;
 import com.epam.healenium.rest.AiComponentClient;
 import com.epam.healenium.service.SelectorCandidateService;
+import com.epam.healenium.service.TenantSettingsService;
 import com.epam.healenium.treecomparing.HeuristicNodeDistance;
 import com.epam.healenium.treecomparing.JsoupHTMLParser;
 import com.epam.healenium.treecomparing.LCSPathDistance;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 public class SelectorCandidateServiceImpl implements SelectorCandidateService {
     private final DynamicSettings dynamicSettings;
     private final AiComponentClient aiComponentClient;
+    private final TenantSettingsService tenantSettingsService;
 
     public static final String PLAYWRIGHT_LOCATOR_TYPE = "locator";
     private static final String XPATH_SELECTOR_TYPE = "xpath";
@@ -91,7 +93,7 @@ public class SelectorCandidateServiceImpl implements SelectorCandidateService {
         AbstractMap.SimpleImmutableEntry<Integer, Map<Double,
                 List<AbstractMap.SimpleImmutableEntry<Node, Integer>>>> scoresToNodes =
                 pathFinder.findScoresToNodes(new Path(path.toArray(new Node[0])), destination);
-        List<Scored<Node>> scores = pathFinder.getSortedNodes(scoresToNodes.getValue(), 1000, dynamicSettings.getScoreCap());
+        List<Scored<Node>> scores = pathFinder.getSortedNodes(scoresToNodes.getValue(), 1000, tenantSettingsService.getScoreCap());
         log.debug("List<Scored<Node>> scores size: {}", scores.size());
 
         List<HealingCandidateMetaData> candidateMetaData = getAllHealingCandidateMetaData(scoresToNodes);
@@ -99,7 +101,7 @@ public class SelectorCandidateServiceImpl implements SelectorCandidateService {
         List<ElementCandidate> candidates = scores.stream()
                 .map(scored -> toElementCandidate(scored, ref, locatorType))
                 .filter(Objects::nonNull)
-                .limit(dynamicSettings.getRecoveryTries())
+                .limit(tenantSettingsService.getRecoveryTries())
                 .collect(Collectors.toCollection(ArrayList::new));
         return new SelectorCandidate()
                 .setElementCandidates(candidates)
@@ -126,7 +128,7 @@ public class SelectorCandidateServiceImpl implements SelectorCandidateService {
 
     protected ElementCandidate toElementCandidate(Scored<Node> node, ReferenceElementsDto ref, String locatorType) {
         List<Locator> locators;
-        if (XPATH_SELECTOR_TYPE.equals(dynamicSettings.getSelectorType()) && !TenantContext.isReadOnly()) {
+        if (XPATH_SELECTOR_TYPE.equalsIgnoreCase(tenantSettingsService.getHealedType()) && !TenantContext.isReadOnly()) {
             locators = aiComponentClient.generateXPath(node.getValue())
                     .filter(StringUtils::hasText)
                     .map(xpath -> List.of(new Locator(xpath, XPATH_SELECTOR_TYPE)))

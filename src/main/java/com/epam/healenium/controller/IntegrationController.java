@@ -210,10 +210,8 @@ public class IntegrationController {
 
     @GetMapping("/llm-models")
     public ResponseEntity<List<LlmModelDto>> listLlmModels() {
-        return tenantTx.required(() -> {
-            log.debug("[SETTINGS] Get llm-models for ui");
-            return ResponseEntity.ok(llmModelService.getModels());
-        });
+        log.debug("[SETTINGS] Get llm-models for ui");
+        return ResponseEntity.ok(llmModelService.getModels());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

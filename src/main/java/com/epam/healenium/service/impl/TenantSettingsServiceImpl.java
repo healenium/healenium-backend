@@ -8,10 +8,13 @@ import com.epam.healenium.service.TenantSettingsService;
 import com.epam.healenium.tenant.TenantContext;
 import com.epam.healenium.tenant.TenantFilter;
 import com.epam.healenium.tenant.TenantTxFacade;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -24,22 +27,26 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
     private final DynamicSettings dynamicSettings;
     private final TenantTxFacade tenantTx;
 
+    private final Cache<UUID, TenantSettingsDto> settingsCache = Caffeine.newBuilder()
+            .maximumSize(10_000)
+            .expireAfterWrite(Duration.ofMinutes(2))
+            .build();
+
     @Override
     public TenantSettingsDto getSettings() {
-        return tenantTx.required(() -> {
-            UUID tenantId = resolveTenantId();
-            return settingsRepository.findByTenantId(tenantId)
-                    .map(this::toDto)
-                    .orElseGet(() -> buildDefaultDto(tenantId));
-        });
+        UUID tenantId = resolveTenantId();
+        return settingsCache.get(tenantId, id -> tenantTx.required(() ->
+                settingsRepository.findByTenantId(id)
+                        .map(this::toDto)
+                        .orElseGet(() -> buildDefaultDto(id))
+        ));
     }
 
     @Override
     public TenantSettingsDto updateSettings(TenantSettingsDto request) {
         validateRequest(request);
-        return tenantTx.required(() -> {
-            UUID tenantId = resolveTenantId();
-
+        UUID tenantId = resolveTenantId();
+        TenantSettingsDto updated = tenantTx.required(() -> {
             Settings settings = settingsRepository.findByTenantId(tenantId)
                     .orElseGet(() -> new Settings().setTenantId(tenantId));
 
@@ -71,6 +78,8 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
                     saved.getKeySelectorUrl(), saved.getCollectMetrics(), saved.getFindElementsAutoHealing());
             return toDto(saved);
         });
+        settingsCache.put(tenantId, updated);
+        return updated;
     }
 
     private UUID resolveTenantId() {
@@ -97,6 +106,9 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
     }
 
     private String normalizeHealedType(String type) {
+        if (type == null) {
+            return "css";
+        }
         String trimmed = type.trim().toLowerCase();
         if ("cssselector".equals(trimmed)) {
             return "css";

@@ -165,4 +165,63 @@ class TenantSettingsServiceTest {
         assertThrows(IllegalArgumentException.class, () ->
                 service.updateSettings(new TenantSettingsDto().setHealedType("invalid_type")));
     }
+
+    @Test
+    void testSettingsCacheAvoidsRepeatedDbHits() {
+        Settings entity = new Settings()
+                .setId(UUID.randomUUID())
+                .setTenantId(tenantId)
+                .setHealEnabled(true)
+                .setRecoveryTries(2)
+                .setScoreCap(0.70)
+                .setHealedType("xpath")
+                .setKeySelectorUrl(true)
+                .setCollectMetrics(true)
+                .setFindElementsAutoHealing(false);
+
+        when(settingsRepository.findByTenantId(tenantId)).thenReturn(Optional.of(entity));
+
+        // First call populates cache
+        TenantSettingsDto first = service.getSettings();
+        // Second call hits cache
+        TenantSettingsDto second = service.getSettings();
+
+        assertEquals(first, second);
+        verify(settingsRepository, times(1)).findByTenantId(tenantId);
+
+        // Convenience methods also hit the cache
+        assertTrue(service.isKeySelectorUrl());
+        assertTrue(service.isCollectMetrics());
+        assertFalse(service.isFindElementsAutoHealing());
+        assertTrue(service.isHealEnabled());
+        assertEquals("xpath", service.getHealedType());
+        assertEquals(0.70, service.getScoreCap(), 0.001);
+        assertEquals(2, service.getRecoveryTries());
+
+        verify(settingsRepository, times(1)).findByTenantId(tenantId);
+    }
+
+    @Test
+    void testCacheUpdatedAfterSettingsUpdate() {
+        Settings initial = new Settings()
+                .setTenantId(tenantId)
+                .setScoreCap(0.60)
+                .setHealedType("css");
+
+        when(settingsRepository.findByTenantId(tenantId)).thenReturn(Optional.of(initial));
+        assertEquals(0.60, service.getScoreCap(), 0.001);
+
+        Settings updatedEntity = new Settings()
+                .setTenantId(tenantId)
+                .setScoreCap(0.90)
+                .setHealedType("xpath");
+        when(settingsRepository.save(any(Settings.class))).thenReturn(updatedEntity);
+
+        service.updateSettings(new TenantSettingsDto().setScoreCap(0.90).setHealedType("xpath"));
+
+        // Subsequent getScoreCap should return new cached value without hitting findByTenantId again
+        assertEquals(0.90, service.getScoreCap(), 0.001);
+        assertEquals("xpath", service.getHealedType());
+        verify(settingsRepository, times(2)).findByTenantId(tenantId);
+    }
 }

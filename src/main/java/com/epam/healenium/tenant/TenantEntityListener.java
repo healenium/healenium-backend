@@ -10,9 +10,6 @@ import java.util.UUID;
  */
 public class TenantEntityListener {
 
-    public static final UUID DEFAULT_TENANT_ID = TenantFilter.DEFAULT_TENANT_ID;
-    public static final UUID FREE_TENANT_ID = DEFAULT_TENANT_ID;
-
     @PrePersist
     public void prePersist(Object entity) {
         if (!(entity instanceof TenantAwareEntity tenantAware)) {
@@ -28,6 +25,6 @@ public class TenantEntityListener {
             return;
         }
 
-        tenantAware.setTenantId(DEFAULT_TENANT_ID);
+        tenantAware.setTenantId(TenantFilter.DEFAULT_TENANT_ID);
     }
 }
