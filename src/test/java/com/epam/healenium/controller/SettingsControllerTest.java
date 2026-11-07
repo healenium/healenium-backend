@@ -47,7 +47,7 @@ class SettingsControllerTest {
     }
 
     @Test
-    void testGetSettingsAtNewEndpoint() throws Exception {
+    void testGetSettings() throws Exception {
         TenantSettingsDto dto = new TenantSettingsDto()
                 .setTenantId(tenantId)
                 .setHealEnabled(true)
@@ -79,27 +79,7 @@ class SettingsControllerTest {
     }
 
     @Test
-    void testGetSettingsAtLegacyEndpoint() throws Exception {
-        TenantSettingsDto dto = new TenantSettingsDto()
-                .setTenantId(tenantId)
-                .setHealEnabled(false)
-                .setRecoveryTries(1)
-                .setScoreCap(0.7)
-                .setHealedType("css");
-
-        when(tenantSettingsService.getSettings()).thenReturn(dto);
-
-        mockMvc.perform(get("/healenium/tenant/settings"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.tenantId").value(tenantId.toString()))
-                .andExpect(jsonPath("$.healEnabled").value(false))
-                .andExpect(jsonPath("$.recoveryTries").value(1))
-                .andExpect(jsonPath("$.scoreCap").value(0.7))
-                .andExpect(jsonPath("$.healedType").value("css"));
-    }
-
-    @Test
-    void testPutSettingsAtNewEndpoint() throws Exception {
+    void testPutSettings() throws Exception {
         String jsonPayload = "{\"healEnabled\":false,\"recoveryTries\":3,\"scoreCap\":0.70,\"healedType\":\"css\"}";
 
         TenantSettingsDto response = new TenantSettingsDto()
@@ -120,25 +100,6 @@ class SettingsControllerTest {
                 .andExpect(jsonPath("$.recoveryTries").value(3))
                 .andExpect(jsonPath("$.scoreCap").value(0.70))
                 .andExpect(jsonPath("$.healedType").value("css"));
-    }
-
-    @Test
-    void testPutSettingsAtLegacyEndpoint() throws Exception {
-        String jsonPayload = "{\"healEnabled\":true,\"recoveryTries\":5}";
-
-        TenantSettingsDto response = new TenantSettingsDto()
-                .setTenantId(tenantId)
-                .setHealEnabled(true)
-                .setRecoveryTries(5);
-
-        when(tenantSettingsService.updateSettings(any(TenantSettingsDto.class))).thenReturn(response);
-
-        mockMvc.perform(put("/healenium/tenant/settings")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonPayload))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.healEnabled").value(true))
-                .andExpect(jsonPath("$.recoveryTries").value(5));
     }
 
     @Test

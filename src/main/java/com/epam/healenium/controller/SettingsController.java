@@ -18,7 +18,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping({"/healenium/settings", "/healenium/tenant/settings"})
+@RequestMapping("/healenium/settings")
 @RequiredArgsConstructor
 public class SettingsController {
 
