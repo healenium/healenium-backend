@@ -21,6 +21,26 @@ configurations.configureEach {
             details.useVersion('7.3.0.Final')
             details.because('Jackson3JsonFormatMapper + tools.jackson alignment for Spring Boot 4')
         }
+        if (details.requested.group == 'org.springframework') {
+            details.useVersion('7.0.9')
+            details.because('Fix CVE-2026-47884, CVE-2026-47890, CVE-2026-47892')
+        }
+        if (details.requested.group == 'org.apache.tomcat.embed') {
+            details.useVersion('11.0.25')
+            details.because('Fix CVE-2026-68525, CVE-2026-65182, CVE-2026-65637, CVE-2026-65905, CVE-2026-55276')
+        }
+        if (details.requested.group == 'io.netty') {
+            details.useVersion('4.2.17.Final')
+            details.because('Fix CVE-2026-75595')
+        }
+        if (details.requested.group == 'tools.jackson.core') {
+            details.useVersion('3.1.8')
+            details.because('Fix Jackson HIGH CVEs')
+        }
+        if (details.requested.group == 'org.apache.httpcomponents.core5') {
+            details.useVersion('5.4.4')
+            details.because('Fix httpcore5 HIGH CVEs')
+        }
     }
 }
 
@@ -43,23 +63,24 @@ dependencies {
     implementation 'com.vladmihalcea:hibernate-types-52:2.7.0'
     implementation 'javax.validation:validation-api:2.0.1.Final'
     implementation 'org.yaml:snakeyaml:2.0'
-    implementation 'com.google.guava:guava:32.1.1-jre'
+    implementation 'com.google.guava:guava:33.8.0-jre'
+    implementation 'org.jsoup:jsoup:1.24.1'
     implementation 'com.github.ben-manes.caffeine:caffeine'
     implementation 'com.epam.healenium:tree-comparing:0.4.14'
     implementation 'org.seleniumhq.selenium:selenium-java:4.25.0'
     compileOnly 'org.projectlombok:lombok:1.18.36'
+    compileOnly 'org.jetbrains:annotations:24.1.0'
     implementation 'org.mapstruct:mapstruct:1.3.1.Final'
-    implementation group: 'io.netty', name: 'netty-handler', version: '4.1.125.Final'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.16'
     implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.5.16'
-    implementation("io.netty:netty-codec-http:4.2.16.Final")
-    implementation("io.netty:netty-codec-compression:4.2.16.Final")
-    implementation("io.netty:netty-handler:4.2.16.Final")
-    implementation("io.netty:netty-codec-http3:4.2.16.Final")
+    implementation("io.netty:netty-codec-http:4.2.17.Final")
+    implementation("io.netty:netty-codec-compression:4.2.17.Final")
+    implementation("io.netty:netty-handler:4.2.17.Final")
+    implementation("io.netty:netty-codec-http3:4.2.17.Final")
 
 
 
-    implementation 'org.testcontainers:junit-jupiter:1.19.3'
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.3'
     implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.26.0'
     implementation 'commons-io:commons-io:2.15.1'
     testImplementation 'org.testcontainers:postgresql:1.19.3'
