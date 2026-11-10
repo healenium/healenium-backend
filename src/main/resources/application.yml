@@ -101,7 +101,7 @@ logging:
 
 # Healenium healing settings (env aliases used by docker-compose)
 healenium:
-  selector-type: ${SELECTOR_TYPE:cssSelector}
+  selector-type: ${SELECTOR_TYPE:css}
   score-cap: ${SCORE_CAP:.6}
   recovery-tries: ${RECOVERY_TRIES:1}
   ai:

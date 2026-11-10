@@ -18,5 +18,9 @@ public class RequestDto {
     private String url;
     @ToString.Exclude
     private String pageContent;
+    /** Per-run overrides. A missing or invalid value falls back to the tenant settings. */
+    private String healedType;
+    private Double scoreCap;
+    private Integer recoveryTries;
 
 }

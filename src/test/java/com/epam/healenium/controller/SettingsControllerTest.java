@@ -1,7 +1,6 @@
 package com.epam.healenium.controller;
 
 import com.epam.healenium.model.dto.TenantSettingsDto;
-import com.epam.healenium.service.SettingService;
 import com.epam.healenium.service.TenantSettingsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,9 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 class SettingsControllerTest {
-
-    @Mock
-    private SettingService settingService;
 
     @Mock
     private TenantSettingsService tenantSettingsService;
@@ -105,7 +101,7 @@ class SettingsControllerTest {
     @Test
     void testPostUpdateWithJsonBody() throws Exception {
         String jsonPayload = "{\"key\":\"SCORE_CAP\",\"value\":\"0.8\"}";
-        when(settingService.updateSetting(eq("SCORE_CAP"), eq("0.8")))
+        when(tenantSettingsService.updateSetting(eq("SCORE_CAP"), eq("0.8")))
                 .thenReturn(Collections.singletonMap("success", true));
 
         mockMvc.perform(post("/healenium/settings/update")
@@ -114,12 +110,12 @@ class SettingsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(settingService).updateSetting("SCORE_CAP", "0.8");
+        verify(tenantSettingsService).updateSetting("SCORE_CAP", "0.8");
     }
 
     @Test
     void testPostUpdateWithQueryParams() throws Exception {
-        when(settingService.updateSetting(eq("SCORE_CAP"), eq("0.85")))
+        when(tenantSettingsService.updateSetting(eq("SCORE_CAP"), eq("0.85")))
                 .thenReturn(Collections.singletonMap("success", true));
 
         mockMvc.perform(post("/healenium/settings/update")
@@ -128,7 +124,7 @@ class SettingsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(settingService).updateSetting("SCORE_CAP", "0.85");
+        verify(tenantSettingsService).updateSetting("SCORE_CAP", "0.85");
     }
 }
 
