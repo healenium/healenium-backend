@@ -25,8 +25,8 @@ public class DynamicSettings {
     @Value("${healenium.score-cap:.6}")
     private double scoreCap;
 
-    // Selector type must be 'cssSelector' or 'xpath'
-    @Value("${healenium.selector-type:cssSelector}")
+    // Selector type must be 'css' or 'xpath'
+    @Value("${healenium.selector-type:css}")
     private String selectorType;
 
     @Value("${healenium.recovery-tries:1}")

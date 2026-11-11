@@ -1,8 +1,7 @@
 package com.epam.healenium.controller;
 
 import com.epam.healenium.model.dto.TenantSettingsDto;
-import com.epam.healenium.service.SettingService;
-import com.epam.healenium.service.TenantSettingsService;
+import com.epam.healenium.service.SettingsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,10 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SettingsControllerTest {
 
     @Mock
-    private SettingService settingService;
-
-    @Mock
-    private TenantSettingsService tenantSettingsService;
+    private SettingsService settingsService;
 
     @InjectMocks
     private SettingsController controller;
@@ -58,7 +54,7 @@ class SettingsControllerTest {
                 .setCollectMetrics(true)
                 .setFindElementsAutoHealing(false);
 
-        when(tenantSettingsService.getSettings()).thenReturn(dto);
+        when(settingsService.getSettings()).thenReturn(dto);
 
         mockMvc.perform(get("/healenium/settings"))
                 .andExpect(status().isOk())
@@ -89,7 +85,7 @@ class SettingsControllerTest {
                 .setScoreCap(0.70)
                 .setHealedType("css");
 
-        when(tenantSettingsService.updateSettings(any(TenantSettingsDto.class))).thenReturn(response);
+        when(settingsService.updateSettings(any(TenantSettingsDto.class))).thenReturn(response);
 
         mockMvc.perform(put("/healenium/settings")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -105,7 +101,7 @@ class SettingsControllerTest {
     @Test
     void testPostUpdateWithJsonBody() throws Exception {
         String jsonPayload = "{\"key\":\"SCORE_CAP\",\"value\":\"0.8\"}";
-        when(settingService.updateSetting(eq("SCORE_CAP"), eq("0.8")))
+        when(settingsService.updateSetting(eq("SCORE_CAP"), eq("0.8")))
                 .thenReturn(Collections.singletonMap("success", true));
 
         mockMvc.perform(post("/healenium/settings/update")
@@ -114,12 +110,12 @@ class SettingsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(settingService).updateSetting("SCORE_CAP", "0.8");
+        verify(settingsService).updateSetting("SCORE_CAP", "0.8");
     }
 
     @Test
     void testPostUpdateWithQueryParams() throws Exception {
-        when(settingService.updateSetting(eq("SCORE_CAP"), eq("0.85")))
+        when(settingsService.updateSetting(eq("SCORE_CAP"), eq("0.85")))
                 .thenReturn(Collections.singletonMap("success", true));
 
         mockMvc.perform(post("/healenium/settings/update")
@@ -128,7 +124,7 @@ class SettingsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(settingService).updateSetting("SCORE_CAP", "0.85");
+        verify(settingsService).updateSetting("SCORE_CAP", "0.85");
     }
 }
 

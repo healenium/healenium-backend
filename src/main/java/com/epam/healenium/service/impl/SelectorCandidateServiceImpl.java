@@ -9,9 +9,10 @@ import com.epam.healenium.model.dto.HealingCandidateMetaData;
 import com.epam.healenium.model.dto.ReferenceElementsDto;
 import com.epam.healenium.model.dto.RequestDto;
 import com.epam.healenium.model.dto.SelectorCandidate;
+import com.epam.healenium.model.dto.SettingsOverride;
 import com.epam.healenium.rest.AiComponentClient;
 import com.epam.healenium.service.SelectorCandidateService;
-import com.epam.healenium.service.TenantSettingsService;
+import com.epam.healenium.service.SettingsService;
 import com.epam.healenium.treecomparing.HeuristicNodeDistance;
 import com.epam.healenium.treecomparing.JsoupHTMLParser;
 import com.epam.healenium.treecomparing.LCSPathDistance;
@@ -45,7 +46,7 @@ import java.util.stream.Collectors;
 public class SelectorCandidateServiceImpl implements SelectorCandidateService {
     private final DynamicSettings dynamicSettings;
     private final AiComponentClient aiComponentClient;
-    private final TenantSettingsService tenantSettingsService;
+    private final SettingsService settingsService;
 
     public static final String PLAYWRIGHT_LOCATOR_TYPE = "locator";
     private static final String XPATH_SELECTOR_TYPE = "xpath";
@@ -75,12 +76,24 @@ public class SelectorCandidateServiceImpl implements SelectorCandidateService {
     }
 
     @Override
-    public List<SelectorCandidate> getCandidates(RequestDto dto, ReferenceElementsDto ref) {
+    public List<SelectorCandidate> getCandidates(RequestDto dto, ReferenceElementsDto ref, SettingsOverride override) {
         Node destination = parseTree(dto.getPageContent());
+        CandidateSettings settings = resolveSettings(override);
 
         return ref.getPaths().stream()
-                .map(path -> findSelectorCandidate(path, destination, ref, dto.getLocatorType()))
+                .map(path -> findSelectorCandidate(path, destination, ref, dto.getLocatorType(), settings))
                 .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private CandidateSettings resolveSettings(SettingsOverride override) {
+        SettingsOverride o = override != null ? override : SettingsOverride.NONE;
+        return new CandidateSettings(
+                o.scoreCap() != null ? o.scoreCap() : settingsService.getScoreCap(),
+                o.recoveryTries() != null ? o.recoveryTries() : settingsService.getRecoveryTries(),
+                o.healedType() != null ? o.healedType() : settingsService.getHealedType());
+    }
+
+    private record CandidateSettings(double scoreCap, int recoveryTries, String healedType) {
     }
 
     private static Node parseTree(String tree) {
@@ -88,20 +101,20 @@ public class SelectorCandidateServiceImpl implements SelectorCandidateService {
     }
 
     private SelectorCandidate findSelectorCandidate(List<Node> path, Node destination, ReferenceElementsDto ref,
-                                                    String locatorType) {
+                                                    String locatorType, CandidateSettings settings) {
         PathFinder pathFinder = new PathFinder(new LCSPathDistance(), new HeuristicNodeDistance());
         AbstractMap.SimpleImmutableEntry<Integer, Map<Double,
                 List<AbstractMap.SimpleImmutableEntry<Node, Integer>>>> scoresToNodes =
                 pathFinder.findScoresToNodes(new Path(path.toArray(new Node[0])), destination);
-        List<Scored<Node>> scores = pathFinder.getSortedNodes(scoresToNodes.getValue(), 1000, tenantSettingsService.getScoreCap());
+        List<Scored<Node>> scores = pathFinder.getSortedNodes(scoresToNodes.getValue(), 1000, settings.scoreCap());
         log.debug("List<Scored<Node>> scores size: {}", scores.size());
 
         List<HealingCandidateMetaData> candidateMetaData = getAllHealingCandidateMetaData(scoresToNodes);
 
         List<ElementCandidate> candidates = scores.stream()
-                .map(scored -> toElementCandidate(scored, ref, locatorType))
+                .map(scored -> toElementCandidate(scored, ref, locatorType, settings.healedType()))
                 .filter(Objects::nonNull)
-                .limit(tenantSettingsService.getRecoveryTries())
+                .limit(settings.recoveryTries())
                 .collect(Collectors.toCollection(ArrayList::new));
         return new SelectorCandidate()
                 .setElementCandidates(candidates)
@@ -126,9 +139,10 @@ public class SelectorCandidateServiceImpl implements SelectorCandidateService {
                 .toList();
     }
 
-    protected ElementCandidate toElementCandidate(Scored<Node> node, ReferenceElementsDto ref, String locatorType) {
+    protected ElementCandidate toElementCandidate(Scored<Node> node, ReferenceElementsDto ref, String locatorType,
+                                                  String healedType) {
         List<Locator> locators;
-        if (XPATH_SELECTOR_TYPE.equalsIgnoreCase(tenantSettingsService.getHealedType()) && !TenantContext.isReadOnly()) {
+        if (XPATH_SELECTOR_TYPE.equalsIgnoreCase(healedType) && !TenantContext.isReadOnly()) {
             locators = aiComponentClient.generateXPath(node.getValue())
                     .filter(StringUtils::hasText)
                     .map(xpath -> List.of(new Locator(xpath, XPATH_SELECTOR_TYPE)))

@@ -12,6 +12,7 @@ import com.epam.healenium.model.dto.SelectorCandidate;
 import com.epam.healenium.model.dto.SelectorDto;
 import com.epam.healenium.model.dto.SelectorRequestDto;
 import com.epam.healenium.model.dto.SessionDto;
+import com.epam.healenium.model.dto.SettingsOverride;
 import com.epam.healenium.service.HealingService;
 import com.epam.healenium.service.SelectorCandidateService;
 import com.epam.healenium.service.SelectorService;
@@ -49,7 +50,8 @@ public class HealingController {
     private final SelectorService selectorService;
     private final SelectorCandidateService selectorCandidateService;
 
-    public HealingController(TenantTxFacade tenantTx, HealingService healingService, SelectorService selectorService, SelectorCandidateService selectorCandidateService) {
+    public HealingController(TenantTxFacade tenantTx, HealingService healingService, SelectorService selectorService,
+                             SelectorCandidateService selectorCandidateService) {
         this.tenantTx = tenantTx;
         this.healingService = healingService;
         this.selectorService = selectorService;
@@ -215,12 +217,13 @@ public class HealingController {
 
     @PostMapping("/selector-candidates")
     public ResponseEntity<List<SelectorCandidate>> getElementCandidates(@RequestBody RequestDto dto) {
+        SettingsOverride override = SettingsOverride.from(dto.getHealedType(), dto.getScoreCap(), dto.getRecoveryTries());
         return tenantTx.required(() -> {
-            log.debug("[Get Selector Candidates] Request: {})", dto);
+            log.debug("[Get Selector Candidates] Request: {}), override: {}", dto, override);
 
             ReferenceElementsDto referenceElements = selectorService.getReferenceElements(dto);
             if (selectorCandidateService.validateReference(referenceElements)) {
-                List<SelectorCandidate> candidates = selectorCandidateService.getCandidates(dto, referenceElements);
+                List<SelectorCandidate> candidates = selectorCandidateService.getCandidates(dto, referenceElements, override);
                 log.info("[Get Selector Candidates] Candidates: {})", candidates);
                 return ResponseEntity.ok(candidates);
             } else {
