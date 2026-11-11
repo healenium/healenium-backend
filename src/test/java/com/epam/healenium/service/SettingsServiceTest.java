@@ -4,7 +4,7 @@ import com.epam.healenium.config.DynamicSettings;
 import com.epam.healenium.model.domain.Settings;
 import com.epam.healenium.model.dto.TenantSettingsDto;
 import com.epam.healenium.repository.SettingsRepository;
-import com.epam.healenium.service.impl.TenantSettingsServiceImpl;
+import com.epam.healenium.service.impl.SettingsServiceImpl;
 import com.epam.healenium.tenant.TenantContext;
 import com.epam.healenium.tenant.TenantTxFacade;
 import org.junit.jupiter.api.AfterEach;
@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class TenantSettingsServiceTest {
+class SettingsServiceTest {
 
     @Mock
     private SettingsRepository settingsRepository;
@@ -44,13 +44,13 @@ class TenantSettingsServiceTest {
         }
     };
 
-    private TenantSettingsServiceImpl service;
+    private SettingsServiceImpl service;
 
     private final UUID tenantId = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
-        service = new TenantSettingsServiceImpl(settingsRepository, dynamicSettings, tenantTx);
+        service = new SettingsServiceImpl(settingsRepository, dynamicSettings, tenantTx);
         TenantContext.setTenantId(tenantId);
     }
 

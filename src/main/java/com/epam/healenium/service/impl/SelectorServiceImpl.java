@@ -21,7 +21,7 @@ import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.ReportRepository;
 import com.epam.healenium.repository.SelectorRepository;
 import com.epam.healenium.service.SelectorService;
-import com.epam.healenium.service.TenantSettingsService;
+import com.epam.healenium.service.SettingsService;
 import com.epam.healenium.service.selector.SelectorIdStrategy;
 import com.epam.healenium.treecomparing.Node;
 import com.epam.healenium.tenant.TenantTxFacade;
@@ -46,20 +46,20 @@ public class SelectorServiceImpl implements SelectorService {
     private final HealingRepository healingRepository;
     private final HealingResultRepository healingResultRepository;
     private final ReportRepository reportRepository;
-    private final TenantSettingsService tenantSettingsService;
+    private final SettingsService settingsService;
 
     @Override
     public void saveSelector(SelectorRequestDto request) {
-        String id = selectorIdStrategy.getSelectorId(request.getLocator(), request.getUrl(), request.getCommand(), tenantSettingsService.isKeySelectorUrl());
+        String id = selectorIdStrategy.getSelectorId(request.getLocator(), request.getUrl(), request.getCommand(), settingsService.isKeySelectorUrl());
         Optional<Selector> existSelector = selectorRepository.findById(id);
-        final Selector selector = selectorMapper.toSelector(request, id, existSelector, tenantSettingsService.isFindElementsAutoHealing());
+        final Selector selector = selectorMapper.toSelector(request, id, existSelector, settingsService.isFindElementsAutoHealing());
         selectorRepository.save(selector);
         log.debug("[Save Elements] Selector: {}", selector);
     }
 
     @Override
     public ReferenceElementsDto getReferenceElements(RequestDto dto) {
-        String selectorId = selectorIdStrategy.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), tenantSettingsService.isKeySelectorUrl());
+        String selectorId = selectorIdStrategy.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), settingsService.isKeySelectorUrl());
         Optional<Selector> optionalSelector = selectorRepository.findById(selectorId);
         List<List<Node>> paths = optionalSelector
                 .map(t -> t.getNodePathWrapper().getNodePath())
@@ -90,8 +90,8 @@ public class SelectorServiceImpl implements SelectorService {
             configSelectorDto
                     .setDisableHealingElementDto(selectorMapper.toSelectorDto(disableHealingElement))
                     .setEnableHealingElementsDto(selectorMapper.toSelectorDto(enableHealingElements))
-                    .setUrlForKey(tenantSettingsService.isKeySelectorUrl())
-                    .setFindElementsAutoHealing(tenantSettingsService.isFindElementsAutoHealing());
+                    .setUrlForKey(settingsService.isKeySelectorUrl())
+                    .setFindElementsAutoHealing(settingsService.isFindElementsAutoHealing());
             return configSelectorDto;
         });
     }
@@ -213,7 +213,7 @@ public class SelectorServiceImpl implements SelectorService {
                 }
             }
             String selectorId = selectorIdStrategy.getSelectorId(sourceSelector.getLocator().getValue(), sourceSelector.getUrl(),
-                    targetSelector.getCommand(), tenantSettingsService.isKeySelectorUrl());
+                    targetSelector.getCommand(), settingsService.isKeySelectorUrl());
             if (sourceSelector.getUid().equals(selectorId)) {
                 continue;
             }

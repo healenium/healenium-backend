@@ -6,7 +6,7 @@ import com.epam.healenium.config.DynamicSettings;
 import com.epam.healenium.model.domain.Settings;
 import com.epam.healenium.model.dto.TenantSettingsDto;
 import com.epam.healenium.repository.SettingsRepository;
-import com.epam.healenium.service.TenantSettingsService;
+import com.epam.healenium.service.SettingsService;
 import com.epam.healenium.tenant.TenantContext;
 import com.epam.healenium.tenant.TenantFilter;
 import com.epam.healenium.tenant.TenantTxFacade;
@@ -26,7 +26,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TenantSettingsServiceImpl implements TenantSettingsService {
+public class SettingsServiceImpl implements SettingsService {
 
     private static final List<String> VALID_LOG_LEVELS = List.of("ERROR", "WARN", "INFO", "DEBUG", "TRACE");
     private static final String HEALENIUM_LOGGER = "com.epam.healenium";

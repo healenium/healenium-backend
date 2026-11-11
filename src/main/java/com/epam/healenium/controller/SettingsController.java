@@ -1,7 +1,7 @@
 package com.epam.healenium.controller;
 
 import com.epam.healenium.model.dto.TenantSettingsDto;
-import com.epam.healenium.service.TenantSettingsService;
+import com.epam.healenium.service.SettingsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SettingsController {
 
-    private final TenantSettingsService tenantSettingsService;
+    private final SettingsService settingsService;
 
     /**
      * Get settings for the current tenant or default values if not configured yet.
@@ -34,7 +34,7 @@ public class SettingsController {
     @GetMapping
     public ResponseEntity<@NotNull TenantSettingsDto> getSettings() {
         log.debug("[Settings] GET request");
-        TenantSettingsDto settings = tenantSettingsService.getSettings();
+        TenantSettingsDto settings = settingsService.getSettings();
         return ResponseEntity.ok(settings);
     }
 
@@ -47,7 +47,7 @@ public class SettingsController {
     @PutMapping
     public ResponseEntity<@NotNull TenantSettingsDto> updateSettings(@RequestBody TenantSettingsDto request) {
         log.debug("[Settings] PUT request: {}", request);
-        TenantSettingsDto updated = tenantSettingsService.updateSettings(request);
+        TenantSettingsDto updated = settingsService.updateSettings(request);
         return ResponseEntity.ok(updated);
     }
 
@@ -67,7 +67,7 @@ public class SettingsController {
         String key = (request != null && request.containsKey("key")) ? request.get("key") : paramKey;
         String value = (request != null && request.containsKey("value")) ? request.get("value") : paramValue;
         log.debug("[Settings] Update: key={}, value={}", key, value);
-        Map<String, Object> result = tenantSettingsService.updateSetting(key, value);
+        Map<String, Object> result = settingsService.updateSetting(key, value);
 
         return ResponseEntity.ok(result);
     }

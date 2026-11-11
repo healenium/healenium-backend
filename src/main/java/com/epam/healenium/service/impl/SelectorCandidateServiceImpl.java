@@ -12,7 +12,7 @@ import com.epam.healenium.model.dto.SelectorCandidate;
 import com.epam.healenium.model.dto.SettingsOverride;
 import com.epam.healenium.rest.AiComponentClient;
 import com.epam.healenium.service.SelectorCandidateService;
-import com.epam.healenium.service.TenantSettingsService;
+import com.epam.healenium.service.SettingsService;
 import com.epam.healenium.treecomparing.HeuristicNodeDistance;
 import com.epam.healenium.treecomparing.JsoupHTMLParser;
 import com.epam.healenium.treecomparing.LCSPathDistance;
@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 public class SelectorCandidateServiceImpl implements SelectorCandidateService {
     private final DynamicSettings dynamicSettings;
     private final AiComponentClient aiComponentClient;
-    private final TenantSettingsService tenantSettingsService;
+    private final SettingsService settingsService;
 
     public static final String PLAYWRIGHT_LOCATOR_TYPE = "locator";
     private static final String XPATH_SELECTOR_TYPE = "xpath";
@@ -88,9 +88,9 @@ public class SelectorCandidateServiceImpl implements SelectorCandidateService {
     private CandidateSettings resolveSettings(SettingsOverride override) {
         SettingsOverride o = override != null ? override : SettingsOverride.NONE;
         return new CandidateSettings(
-                o.scoreCap() != null ? o.scoreCap() : tenantSettingsService.getScoreCap(),
-                o.recoveryTries() != null ? o.recoveryTries() : tenantSettingsService.getRecoveryTries(),
-                o.healedType() != null ? o.healedType() : tenantSettingsService.getHealedType());
+                o.scoreCap() != null ? o.scoreCap() : settingsService.getScoreCap(),
+                o.recoveryTries() != null ? o.recoveryTries() : settingsService.getRecoveryTries(),
+                o.healedType() != null ? o.healedType() : settingsService.getHealedType());
     }
 
     private record CandidateSettings(double scoreCap, int recoveryTries, String healedType) {

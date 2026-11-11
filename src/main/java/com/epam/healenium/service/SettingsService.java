@@ -4,7 +4,7 @@ import com.epam.healenium.model.dto.TenantSettingsDto;
 
 import java.util.Map;
 
-public interface TenantSettingsService {
+public interface SettingsService {
 
     /**
      * Get settings for the current tenant or default values if not configured.
