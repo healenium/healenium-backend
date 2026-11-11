@@ -6,14 +6,9 @@ import java.util.UUID;
 
 /**
  * Sets {@code tenant_id} on insert.
- * <ul>
- *   <li>Pro: requires {@link TenantContext} (or pre-set tenantId on entity).</li>
- *   <li>Free: falls back to {@link #FREE_TENANT_ID} when context is absent.</li>
- * </ul>
+ * Uses {@link TenantContext#getTenantId()} or falls back to {@link TenantFilter#DEFAULT_TENANT_ID}.
  */
 public class TenantEntityListener {
-
-    public static final UUID FREE_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
     @PrePersist
     public void prePersist(Object entity) {
@@ -30,10 +25,6 @@ public class TenantEntityListener {
             return;
         }
 
-        if (TenantEdition.isPro()) {
-            throw new IllegalStateException(
-                    "Tenant is not set in TenantContext for entity: " + entity.getClass().getName());
-        }
-        tenantAware.setTenantId(FREE_TENANT_ID);
+        tenantAware.setTenantId(TenantFilter.DEFAULT_TENANT_ID);
     }
 }
