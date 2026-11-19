@@ -2,6 +2,7 @@ package com.epam.healenium.service;
 
 import com.epam.healenium.config.LlmCatalogProperties;
 import com.epam.healenium.model.dto.LlmModelDto;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.util.Set;
 
 @Slf4j
 @Service
+@Getter
 @EnableConfigurationProperties(LlmCatalogProperties.class)
 public class LlmModelService {
 
@@ -22,10 +24,6 @@ public class LlmModelService {
 
     public LlmModelService(LlmCatalogProperties catalog) {
         this.models = List.copyOf(load(catalog));
-    }
-
-    public List<LlmModelDto> list() {
-        return models;
     }
 
     private static List<LlmModelDto> load(LlmCatalogProperties catalog) {

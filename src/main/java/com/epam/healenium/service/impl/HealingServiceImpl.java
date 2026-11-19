@@ -15,6 +15,7 @@ import com.epam.healenium.repository.SelectorRepository;
 import com.epam.healenium.rest.AmazonRestService;
 import com.epam.healenium.service.HealingService;
 import com.epam.healenium.service.ReportService;
+import com.epam.healenium.service.SettingsService;
 import com.epam.healenium.service.selector.SelectorIdStrategy;
 import com.epam.healenium.specification.HealingSpecBuilder;
 import com.epam.healenium.treecomparing.*;
@@ -49,6 +50,7 @@ public class HealingServiceImpl implements HealingService {
     private final ReportService reportService;
     private final HealingMapper healingMapper;
     private final AmazonRestService amazonRestService;
+    private final SettingsService settingsService;
 
     private final List<Set<SelectorComponent>> selectorDetailLevels = Collections.unmodifiableList(TEMP);
 
@@ -79,7 +81,7 @@ public class HealingServiceImpl implements HealingService {
         // add report record
         String sessionKey = Utils.getSessionKey(headers);
         reportService.createReportRecord(selectedResult, healing, sessionKey, dto.getScreenshot());
-        if (dynamicSettings.isCollectMetrics()) {
+        if (settingsService.isCollectMetrics()) {
             pushMetrics(dto.getMetrics(), headers, selectedResult, dto.getUrl());
         }
     }
@@ -111,7 +113,7 @@ public class HealingServiceImpl implements HealingService {
 
     @Override
     public Set<HealingResultDto> getHealingResults(RequestDto dto) {
-        String selectorId = selectorIdStrategy.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), dynamicSettings.isKeySelectorUrl());
+        String selectorId = selectorIdStrategy.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), settingsService.isKeySelectorUrl());
         log.debug("[Get Healing Result] Selector ID: {}", selectorId);
         return healingRepository.findBySelectorId(selectorId).stream()
                 .flatMap(it -> healingMapper.modelToResultDto(it.getResults()).stream())
@@ -125,7 +127,7 @@ public class HealingServiceImpl implements HealingService {
             HealingResult healingResult = healingResultOptional.get();
             healingResult.setSuccessHealing(dto.isSuccessHealing());
             resultRepository.save(healingResult);
-            if (dynamicSettings.isCollectMetrics()) {
+            if (settingsService.isCollectMetrics()) {
                 moveMetrics(dto, healingResult);
             }
         }
@@ -133,7 +135,7 @@ public class HealingServiceImpl implements HealingService {
 
     private Healing getHealing(HealingRequestDto dto) {
         // build selector key
-        String selectorId = selectorIdStrategy.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), dynamicSettings.isKeySelectorUrl());
+        String selectorId = selectorIdStrategy.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), settingsService.isKeySelectorUrl());
         // build healing key
         String healingId = Utils.buildHealingKey(selectorId, dto.getPageContent());
         return healingRepository.findById(healingId).orElseGet(() -> {
@@ -222,7 +224,7 @@ public class HealingServiceImpl implements HealingService {
         PathFinder pathFinder = new PathFinder(new LCSPathDistance(), new HeuristicNodeDistance());
         AbstractMap.SimpleImmutableEntry<Integer, Map<Double, List<AbstractMap.SimpleImmutableEntry<Node, Integer>>>> scoresToNodes =
                 pathFinder.findScoresToNodes(new Path(paths.toArray(new Node[0])), destination);
-        List<Scored<Node>> scoreds = pathFinder.getSortedNodes(scoresToNodes.getValue(), 1000, dynamicSettings.getScoreCap());
+        List<Scored<Node>> scoreds = pathFinder.getSortedNodes(scoresToNodes.getValue(), 1000, settingsService.getScoreCap());
 
         List<By> healedElements = scoreds.stream()
                 .map(node -> toLocator(node, referenceElements))

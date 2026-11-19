@@ -9,6 +9,7 @@ import com.epam.healenium.repository.HealingResultRepository;
 import com.epam.healenium.repository.SelectorRepository;
 import com.epam.healenium.service.HealingService;
 import com.epam.healenium.service.SelectorService;
+import com.epam.healenium.tenant.TenantTxFacade;
 import com.epam.healenium.treecomparing.Node;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
@@ -20,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.util.StreamUtils;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -31,7 +31,6 @@ import java.util.*;
 @Testcontainers
 @AutoConfigureMockMvc
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@ActiveProfiles("free")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class TestSaveLocators extends TestContainersInitializer {
@@ -44,6 +43,7 @@ public class TestSaveLocators extends TestContainersInitializer {
     private final SelectorRepository selectorRepository;
     private final HealingRepository healingRepository;
     private final HealingResultRepository healingResultRepository;
+    private final TenantTxFacade tenantTx;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -70,20 +70,22 @@ public class TestSaveLocators extends TestContainersInitializer {
 
     @AfterEach
     public void cleanUp() {
-        healingResultRepository.deleteAll();
-        healingRepository.deleteAll();
-        selectorRepository.deleteAll();
+        tenantTx.required(() -> {
+            healingResultRepository.deleteAll();
+            healingRepository.deleteAll();
+            selectorRepository.deleteAll();
+        });
     }
 
     @Test
     public void testSelectorRequestSaved() {
-        selectorService.saveSelector(selectorRequest);
-        Assertions.assertEquals(1, selectorRepository.count());
+        tenantTx.required(() -> selectorService.saveSelector(selectorRequest));
+        Assertions.assertEquals(1L, tenantTx.required(() -> selectorRepository.count()));
     }
 
     @Test
     public void testSaveLocatorHealing() throws IOException {
-        selectorService.saveSelector(selectorRequest);
+        tenantTx.required(() -> selectorService.saveSelector(selectorRequest));
 
         HealingResultDto healingResultDto = new HealingResultDto();
         healingResultDto.setLocator(new Locator("//div[@title='inner2']", "xpath"));
@@ -106,9 +108,9 @@ public class TestSaveLocators extends TestContainersInitializer {
         headers.put("hostproject", getClass().getName());
         headers.put("instance", RestAssured.DEFAULT_URI);
 
-        healingService.saveHealing(dto, headers);
-        Assertions.assertEquals(1, healingRepository.count());
-        Assertions.assertEquals(1, healingResultRepository.count());
+        tenantTx.required(() -> healingService.saveHealing(dto, headers));
+        Assertions.assertEquals(1L, tenantTx.required(() -> healingRepository.count()));
+        Assertions.assertEquals(1L, tenantTx.required(() -> healingResultRepository.count()));
     }
 
     @Test
