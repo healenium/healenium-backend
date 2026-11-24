@@ -27,7 +27,10 @@ public interface SelectorMapper {
         element.setUrl(dto.getUrl());
         element.setLocator(new Locator(dto.getLocator(), dto.getType()));
         element.setNodePathWrapper(new NodePathWrapper(dto.getNodePath()));
-        element.setCreatedDate(LocalDateTime.now());
+        element.setCreatedDate(existSelector
+                .map(Selector::getCreatedDate)
+                .orElseGet(LocalDateTime::now));
+        existSelector.ifPresent(s -> element.setTenantId(s.getTenantId()));
         element.setEnableHealing(existSelector
                 .map(Selector::getEnableHealing)
                 .orElseGet(() -> findElementsAutoHealing || "findElement".equals(dto.getCommand())));
