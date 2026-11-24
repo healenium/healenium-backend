@@ -39,7 +39,7 @@ services:
       - healenium
 
   selector-imitator:
-    image: healenium/hlm-selector-imitator:1.3
+    image: healenium/hlm-selector-imitator:1.6
     container_name: selector-imitator
     restart: on-failure
     ports:
