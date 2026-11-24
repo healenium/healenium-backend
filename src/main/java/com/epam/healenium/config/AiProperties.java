@@ -8,7 +8,7 @@ import java.time.Duration;
 public class AiProperties {
 
     /**
-     * Base URL of healenium-ai (e.g. http://hlm-ai:6565).
+     * Base URL of healenium-ai (e.g. http://healenium-ai:6565).
      */
     private String baseUrl = "http://localhost:6565";
 
