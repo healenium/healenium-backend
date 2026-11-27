@@ -11,13 +11,15 @@ import lombok.experimental.UtilityClass;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
+import java.util.UUID;
 
 
 @UtilityClass
 public class HealingSpecBuilder {
 
-    public Specification<Healing> buildSpec(RequestDto filter){
-        Specification<Healing> spec = Specification.where((Specification<Healing>) null);
+    public Specification<Healing> buildSpec(RequestDto filter, List<UUID> keyIds){
+        Specification<Healing> spec = Specification.unrestricted();
 
         if(StringUtils.hasText(filter.getLocator())){
             spec = spec.and(HealingSpecifications.hasLocator(filter.getLocator()));
@@ -29,6 +31,10 @@ public class HealingSpecBuilder {
 
         if(StringUtils.hasText(filter.getClassName())){
             spec = spec.and(HealingSpecifications.hasClass(filter.getClassName()));
+        }
+
+        if(keyIds != null){
+            spec = spec.and(HealingSpecifications.hasKeyIdIn(keyIds));
         }
         return spec;
     }
@@ -49,6 +55,10 @@ public class HealingSpecBuilder {
                 Join<Healing, Selector> selector = JpaTools.getJoin(root, Healing_.selector);
                 return cb.equal(selector.get(Selector_.methodName), methodName);
             };
+        }
+
+        public static Specification<Healing> hasKeyIdIn(final List<UUID> keyIds){
+            return (root, query, cb) -> root.get(Healing_.keyId).in(keyIds);
         }
 
         public static Specification<Healing> hasLocator(final String locator){

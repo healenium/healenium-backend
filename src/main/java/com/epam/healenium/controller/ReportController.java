@@ -4,6 +4,7 @@ import com.epam.healenium.model.dto.RecordDto;
 import com.epam.healenium.model.dto.ReportDto;
 import com.epam.healenium.service.ReportService;
 import com.epam.healenium.tenant.TenantTxFacade;
+import com.epam.healenium.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -23,6 +24,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -100,10 +102,12 @@ public class ReportController {
     public List<ReportDto> getAllReports(
             @RequestParam(required = false, defaultValue = "false") boolean hideEmpty,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) String keyIds) {
+        List<UUID> keyIdFilter = Utils.parseKeyIds(keyIds);
         return tenantTx.required(() -> {
             log.debug("[Report] Get all, hideEmpty: {}", hideEmpty);
-            return reportService.getAllReports(hideEmpty, startDate, endDate);
+            return reportService.getAllReports(hideEmpty, startDate, endDate, keyIdFilter);
         });
     }
 
@@ -112,20 +116,24 @@ public class ReportController {
             @RequestParam(required = false, defaultValue = "false") boolean hideEmpty,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
-            @RequestParam(required = false, defaultValue = "day") String groupLevel) {
+            @RequestParam(required = false, defaultValue = "day") String groupLevel,
+            @RequestParam(required = false) String keyIds) {
+        List<UUID> keyIdFilter = Utils.parseKeyIds(keyIds);
         return tenantTx.required(() -> {
             log.debug("[Report] Get grouped-by-time, hideEmpty: {}", hideEmpty);
-            return reportService.getReportsGroupedByTime(hideEmpty, startDate, endDate, groupLevel);
+            return reportService.getReportsGroupedByTime(hideEmpty, startDate, endDate, groupLevel, keyIdFilter);
         });
     }
 
     @GetMapping("/aggregated")
     public RecordDto getAggregatedReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) String keyIds) {
+        List<UUID> keyIdFilter = Utils.parseKeyIds(keyIds);
         return tenantTx.required(() -> {
             log.debug("[Report] Get aggregated {}, {}", startDate, endDate);
-            return reportService.generateAggregatedReport(startDate, endDate);
+            return reportService.generateAggregatedReport(startDate, endDate, keyIdFilter);
         });
     }
 

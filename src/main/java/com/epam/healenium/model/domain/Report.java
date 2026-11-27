@@ -4,6 +4,7 @@ import com.epam.healenium.converter.RecordWrapperConverter;
 import com.epam.healenium.model.wrapper.RecordWrapper;
 import com.epam.healenium.tenant.TenantAwareEntity;
 import com.epam.healenium.tenant.TenantEntityListener;
+import com.epam.healenium.tenant.KeyIdEntityListener;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -28,7 +29,7 @@ import java.util.UUID;
 @Accessors(chain = true)
 @Data
 @Entity
-@EntityListeners(TenantEntityListener.class)
+@EntityListeners({TenantEntityListener.class, KeyIdEntityListener.class})
 @Table(name = "report")
 public class Report implements TenantAwareEntity {
 
@@ -54,5 +55,8 @@ public class Report implements TenantAwareEntity {
 
     @Column(name = "name")
     private String name;
+
+    @Column(name = "key_id", updatable = false)
+    private UUID keyId;
 
 }

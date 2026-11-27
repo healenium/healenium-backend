@@ -31,4 +31,5 @@
     <include file="017_vcs_provider_base_url.xml" relativeToChangelogFile="true"/>
     <include file="020_llm_protocol_and_model.xml" relativeToChangelogFile="true"/>
 	<include file="021_settings.xml" relativeToChangelogFile="true"/>
+	<include file="022_key_id.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

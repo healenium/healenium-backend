@@ -23,6 +23,15 @@ public class TenantConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
+    public FilterRegistrationBean<KeyIdFilter> keyIdFilterRegistration() {
+        FilterRegistrationBean<KeyIdFilter> bean = new FilterRegistrationBean<>();
+        bean.setFilter(new KeyIdFilter());
+        bean.setOrder(Ordered.LOWEST_PRECEDENCE - 10);
+        bean.addUrlPatterns("/*");
+        return bean;
+    }
+
+    @Bean
     public TrialReadOnlyInterceptor trialReadOnlyInterceptor() {
         return new TrialReadOnlyInterceptor();
     }

@@ -3,6 +3,7 @@ package com.epam.healenium.model.domain;
 import com.epam.healenium.model.Locator;
 import com.epam.healenium.tenant.TenantAwareEntity;
 import com.epam.healenium.tenant.TenantEntityListener;
+import com.epam.healenium.tenant.KeyIdEntityListener;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -31,7 +32,7 @@ import java.util.UUID;
 @Setter
 @lombok.experimental.Accessors(chain = true)
 @Entity
-@EntityListeners(TenantEntityListener.class)
+@EntityListeners({TenantEntityListener.class, KeyIdEntityListener.class})
 @Table(name = "healing_result")
 public class HealingResult implements TenantAwareEntity {
 
@@ -63,5 +64,8 @@ public class HealingResult implements TenantAwareEntity {
     @Column(name = "create_date")
     @CreationTimestamp
     private LocalDateTime createDate;
+
+    @Column(name = "key_id", updatable = false)
+    private UUID keyId;
 
 }

@@ -210,22 +210,24 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<ReportDto> getAllReports() {
-        return getAllReports(false, null, null);
+        return getAllReports(false, null, null, null);
     }
 
     @Override
     public List<ReportDto> getAllReports(boolean hideEmpty) {
-        return getAllReports(hideEmpty, null, null);
+        return getAllReports(hideEmpty, null, null, null);
     }
 
     @Override
-    public List<ReportDto> getAllReports(boolean hideEmpty, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<ReportDto> getAllReports(boolean hideEmpty, LocalDateTime startDate, LocalDateTime endDate, List<UUID> keyIds) {
         List<Report> all;
 
         if (startDate != null && endDate != null) {
-            all = reportRepository.findByCreatedDateBetweenOrderByCreatedDateDesc(startDate, endDate);
-        } else {
+            all = findBetween(startDate, endDate, keyIds);
+        } else if (keyIds == null) {
             all = reportRepository.findAllByOrderByCreatedDateDesc();
+        } else {
+            all = reportRepository.findByKeyIdInOrderByCreatedDateDesc(keyIds);
         }
 
         if (hideEmpty) {
@@ -239,8 +241,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public Map<String, List<ReportDto>> getReportsGroupedByTime(boolean hideEmpty, LocalDateTime startDate, LocalDateTime endDate, String groupLevel) {
-        List<Report> allReports = reportRepository.findByCreatedDateBetweenOrderByCreatedDateDesc(startDate, endDate);
+    public Map<String, List<ReportDto>> getReportsGroupedByTime(boolean hideEmpty, LocalDateTime startDate, LocalDateTime endDate, String groupLevel, List<UUID> keyIds) {
+        List<Report> allReports = findBetween(startDate, endDate, keyIds);
 
         if (hideEmpty) {
             allReports = allReports.stream()
@@ -277,8 +279,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public RecordDto generateAggregatedReport(LocalDateTime startDate, LocalDateTime endDate) {
-        List<Report> reportsInRange = reportRepository.findByCreatedDateBetweenOrderByCreatedDateDesc(startDate, endDate);
+    public RecordDto generateAggregatedReport(LocalDateTime startDate, LocalDateTime endDate, List<UUID> keyIds) {
+        List<Report> reportsInRange = findBetween(startDate, endDate, keyIds);
 
         RecordDto aggregatedReport = new RecordDto();
         aggregatedReport.setId("aggregated-" + UUID.randomUUID());
@@ -300,6 +302,13 @@ public class ReportServiceImpl implements ReportService {
         }
 
         return aggregatedReport;
+    }
+
+    private List<Report> findBetween(LocalDateTime startDate, LocalDateTime endDate, List<UUID> keyIds) {
+        if (keyIds == null) {
+            return reportRepository.findByCreatedDateBetweenOrderByCreatedDateDesc(startDate, endDate);
+        }
+        return reportRepository.findByCreatedDateBetweenAndKeyIdInOrderByCreatedDateDesc(startDate, endDate, keyIds);
     }
 
     @Override

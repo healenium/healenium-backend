@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -122,10 +124,11 @@ public class HealingController {
      * Getting healing with their results for provided request
      */
     @GetMapping("/healing")
-    public Set<HealingDto> getHealings(RequestDto dto) {
+    public Set<HealingDto> getHealings(RequestDto dto, @RequestParam(required = false) String keyIds) {
+        List<UUID> keyIdFilter = Utils.parseKeyIds(keyIds);
         return tenantTx.required(() -> {
             log.debug("[Get Healing] Request: {}", dto);
-            Set<HealingDto> healings = healingService.getHealings(dto);
+            Set<HealingDto> healings = healingService.getHealings(dto, keyIdFilter);
             log.debug("[Get Healing] Response: {}", healings);
             return healings;
         });
@@ -135,10 +138,11 @@ public class HealingController {
      * Getting healing results for selector
      */
     @GetMapping("/healing/results")
-    public Set<HealingResultDto> getResults(RequestDto dto) {
+    public Set<HealingResultDto> getResults(RequestDto dto, @RequestParam(required = false) String keyIds) {
+        List<UUID> keyIdFilter = Utils.parseKeyIds(keyIds);
         return tenantTx.required(() -> {
             log.debug("[Get Healing Result] Request: {}", dto);
-            Set<HealingResultDto> healingResults = healingService.getHealingResults(dto);
+            Set<HealingResultDto> healingResults = healingService.getHealingResults(dto, keyIdFilter);
             log.debug("[Get Healing Result] Response: {}", healingResults);
             return healingResults;
         });

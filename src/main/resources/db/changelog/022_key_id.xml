@@ -1,0 +1,34 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   logicalFilePath="changelog/022_key_id.xml"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet id="022-add-key-id-report" author="healenium">
+        <addColumn tableName="report">
+            <column name="key_id" type="UUID"/>
+        </addColumn>
+        <createIndex indexName="idx_report_key_id" tableName="report">
+            <column name="key_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="022-add-key-id-healing" author="healenium">
+        <addColumn tableName="healing">
+            <column name="key_id" type="UUID"/>
+        </addColumn>
+        <createIndex indexName="idx_healing_key_id" tableName="healing">
+            <column name="key_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="022-add-key-id-healing-result" author="healenium">
+        <addColumn tableName="healing_result">
+            <column name="key_id" type="UUID"/>
+        </addColumn>
+        <createIndex indexName="idx_healing_result_key_id" tableName="healing_result">
+            <column name="key_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

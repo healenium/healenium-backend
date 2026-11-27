@@ -8,8 +8,11 @@ import org.springframework.util.DigestUtils;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.epam.healenium.constants.Constants.SESSION_KEY_V1;
 import static com.epam.healenium.constants.Constants.SESSION_KEY_V2;
@@ -70,6 +73,29 @@ public class Utils {
             log.warn("Error during parse url. Message: {}", e.getMessage());
         }
         return StringUtils.EMPTY;
+    }
+
+    /**
+     * Parses the comma-separated {@code keyIds} query parameter.
+     *
+     * @param keyIds raw query value, may be null or blank
+     * @return the key ids, or null when no filter was requested
+     * @throws IllegalArgumentException when a value is not a UUID (mapped to 400)
+     */
+    public List<UUID> parseKeyIds(String keyIds) {
+        if (StringUtils.isBlank(keyIds)) {
+            return null;
+        }
+        return Arrays.stream(keyIds.split(","))
+                .map(String::trim)
+                .map(value -> {
+                    try {
+                        return UUID.fromString(value);
+                    } catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException("Invalid keyIds value: " + value);
+                    }
+                })
+                .toList();
     }
 
     public static String getSessionKey(Map<String, String> headers) {

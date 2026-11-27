@@ -413,7 +413,10 @@ public class IntegrationServiceImpl implements IntegrationService {
             return value;
         }
         
-        if (!ACCESS_AI.equals(accessLevel) && value.length() > 6) {
+        if (!ACCESS_AI.equals(accessLevel)) {
+            if (value.length() <= 6) {
+                return "*****";
+            }
             String prefix = value.substring(0, 3);
             String suffix = value.substring(value.length() - 3);
             return prefix + "*****" + suffix;

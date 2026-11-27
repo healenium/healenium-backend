@@ -115,7 +115,7 @@ public class TestSaveLocators extends TestContainersInitializer {
 
     @Test
     public void testHealingResultFromEmptyDb() {
-        Set<HealingResultDto> resultDtos = healingService.getHealingResults(requestDto);
+        Set<HealingResultDto> resultDtos = healingService.getHealingResults(requestDto, null);
         Assertions.assertNotEquals(1, resultDtos.size(), "Incorrect amount of healing results were found");
     }
 

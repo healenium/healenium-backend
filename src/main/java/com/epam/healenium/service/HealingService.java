@@ -6,6 +6,7 @@ import org.openqa.selenium.By;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 public interface HealingService {
 
@@ -21,7 +22,7 @@ public interface HealingService {
      * @param dto
      * @return
      */
-    Set<HealingDto> getHealings(RequestDto dto);
+    Set<HealingDto> getHealings(RequestDto dto, List<UUID> keyIds);
 
     /**
      * Search for stored healing results
@@ -29,7 +30,7 @@ public interface HealingService {
      * @param dto
      * @return
      */
-    Set<HealingResultDto> getHealingResults(RequestDto dto);
+    Set<HealingResultDto> getHealingResults(RequestDto dto, List<UUID> keyIds);
 
     /**
      * Store successHealing

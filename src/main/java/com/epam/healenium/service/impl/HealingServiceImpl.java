@@ -87,9 +87,9 @@ public class HealingServiceImpl implements HealingService {
     }
 
     @Override
-    public Set<HealingDto> getHealings(RequestDto dto) {
+    public Set<HealingDto> getHealings(RequestDto dto, List<UUID> keyIds) {
         Set<HealingDto> result = new HashSet<>();
-        healingRepository.findAll(HealingSpecBuilder.buildSpec(dto)).stream()
+        healingRepository.findAll(HealingSpecBuilder.buildSpec(dto, keyIds)).stream()
                 .collect(Collectors.groupingBy(Healing::getSelector))
                 .forEach((selector, healingList) -> {
                     // collect healing results
@@ -112,12 +112,21 @@ public class HealingServiceImpl implements HealingService {
     }
 
     @Override
-    public Set<HealingResultDto> getHealingResults(RequestDto dto) {
+    public Set<HealingResultDto> getHealingResults(RequestDto dto, List<UUID> keyIds) {
         String selectorId = selectorIdStrategy.getSelectorId(dto.getLocator(), dto.getUrl(), dto.getCommand(), settingsService.isKeySelectorUrl());
         log.debug("[Get Healing Result] Selector ID: {}", selectorId);
         return healingRepository.findBySelectorId(selectorId).stream()
-                .flatMap(it -> healingMapper.modelToResultDto(it.getResults()).stream())
+                .flatMap(it -> healingMapper.modelToResultDto(filterByKeyIds(it.getResults(), keyIds)).stream())
                 .collect(Collectors.toSet());
+    }
+
+    private Collection<HealingResult> filterByKeyIds(Collection<HealingResult> results, List<UUID> keyIds) {
+        if (keyIds == null) {
+            return results;
+        }
+        return results.stream()
+                .filter(result -> result.getKeyId() != null && keyIds.contains(result.getKeyId()))
+                .toList();
     }
 
     @Override

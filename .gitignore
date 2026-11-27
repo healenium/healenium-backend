@@ -33,3 +33,4 @@ src/**/*.ks
 
 out/
 .DS_Store
+logs/
